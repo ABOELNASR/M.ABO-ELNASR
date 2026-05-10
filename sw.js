@@ -1,0 +1,119 @@
+// sw.js - Service Worker (إشعار تراكمي واحد أيقونة التطبيق + توست)
+const CACHE_NAME = 'bakery-pwa-final';
+const urlsToCache = [
+  './',
+  './index.html',
+  'https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js'
+];
+
+let notificationsLog = [];
+
+self.addEventListener('install', event => {
+  console.log('✅ SW final - install');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+      .catch(err => console.error('Cache failed:', err))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+  console.log('✅ SW final - activate');
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(name => {
+          if (name !== CACHE_NAME) return caches.delete(name);
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('push', event => {
+  if (!(self.Notification && self.Notification.permission === 'granted')) {
+    return;
+  }
+
+  let title = 'إشعار';
+  let body = '';
+
+  if (event.data) {
+    try {
+      const payload = event.data.json();
+      if (payload.notification) {
+        title = payload.notification.title || title;
+        body = payload.notification.body || body;
+      }
+    } catch (e) {
+      body = event.data.text();
+    }
+  }
+
+  // أضف الإجراء إلى السجل
+  notificationsLog.unshift({ title, body });
+  if (notificationsLog.length > 5) notificationsLog.pop();
+
+  // بناء نص الإشعار التراكمي
+  const lines = notificationsLog.map(item => `${item.title}: ${item.body}`);
+  const groupTitle = 'تنبيهات المخبز';
+  const groupBody = lines.join('\n');
+
+  // عرض الإشعار الخارجي الواحد - استخدام مسار نسبي
+  event.waitUntil(
+    self.registration.showNotification(groupTitle, {
+      body: groupBody,
+      icon: './icons/launchericon-192x192.png',
+      badge: './icons/launchericon-72x72.png',
+      vibrate: [200, 100, 200],
+      tag: 'bakery-summary',
+      renotify: true
+    }).then(() => {
+      return clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+        clientList.forEach(client => {
+          client.postMessage({
+            type: 'SHOW_TOAST',
+            title: title,
+            body: body
+          });
+        });
+      });
+    })
+  );
+});
+
+// فتح التطبيق عند النقر - استخدام مسار نسبي
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  notificationsLog = [];
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('./');
+      }
+    })
+  );
+});
+
+self.addEventListener('fetch', event => {
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.href.includes('script.google.com')) return;
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
+});
