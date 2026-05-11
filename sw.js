@@ -1,4 +1,4 @@
-// sw.js - Service Worker (إشعار تراكمي واحد أيقونة التطبيق + توست)
+// sw.js - Service Worker (إشعار تراكمي)
 const CACHE_NAME = 'bakery-pwa-final';
 const urlsToCache = [
   './',
@@ -58,10 +58,10 @@ self.addEventListener('push', event => {
 
   // بناء نص الإشعار التراكمي
   const lines = notificationsLog.map(item => `${item.title}: ${item.body}`);
-  const groupTitle = 'تنبيهات المخبز';
+  const groupTitle = 'المخبز';
   const groupBody = lines.join('\n');
 
-  // عرض الإشعار الخارجي الواحد - استخدام مسار نسبي
+  // عرض الإشعار الخارجي الواحد
   event.waitUntil(
     self.registration.showNotification(groupTitle, {
       body: groupBody,
@@ -84,7 +84,6 @@ self.addEventListener('push', event => {
   );
 });
 
-// فتح التطبيق عند النقر - استخدام مسار نسبي
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   notificationsLog = [];
