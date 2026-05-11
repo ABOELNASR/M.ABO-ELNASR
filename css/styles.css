@@ -2021,6 +2021,16 @@ body.dark-mode .add-user-form select {
         font-size: 0.7rem;
     }
 }
+@media (max-width: 700px) {
+    .table-section.fullscreen table {
+        font-size: 0.55rem;
+    }
+    
+    .table-section.fullscreen th,
+    .table-section.fullscreen td {
+        padding: 5px 3px;
+    }
+}
 
 .table-section.fullscreen .toolbar {
     display: flex;
