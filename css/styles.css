@@ -2111,3 +2111,41 @@ body.dark-mode .add-user-form select {
         flex: 0 0 80px;
     }
 }
+/* ... نفس الملف السابق كله ... */
+
+/* ========== أضف التنسيقات دي في آخر الملف ========== */
+
+/* تنسيق أزرار الإجراءات السريعة - صفين */
+.actions-row.actions-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 320px;
+}
+
+.actions-row.actions-two .btn {
+    width: 100%;
+    text-align: center;
+}
+
+/* تنسيق الزر المنفرد في المنتصف */
+.actions-row.single-center {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.actions-row.single-center .btn {
+    max-width: 200px;
+}
+
+/* للموبايل */
+@media (max-width: 700px) {
+    .actions-row.actions-two {
+        max-width: 280px;
+    }
+    .actions-row.single-center .btn {
+        max-width: 160px;
+    }
+}
