@@ -1,4 +1,4 @@
-// ========== ui.js - دوال واجهة المستخدم (بدون ميزة الكاميرا) ==========
+// ========== ui.js - دوال واجهة المستخدم ==========
 
 // ========== عرض الجدول الرئيسي ==========
 
@@ -7,9 +7,6 @@ function renderTable() {
     let filtered = subscribers.filter(s => subscriberMatchesSearch(s, currentSearch));
     if (currentFilter === 'paid') filtered = filtered.filter(s => isFullyPaid(s.id));
     if (currentFilter === 'unpaid') filtered = filtered.filter(s => !isFullyPaid(s.id));
-    
-    // تطبيق البحث المتقدم
-    filtered = applyAdvancedFilters(filtered);
     
     const tbody = document.getElementById('tableBody');
     if (!tbody) return;
@@ -138,25 +135,66 @@ function renderTable() {
     attachTableEvents();
 }
 
-// ========== عرض الكروت (Card View) ==========
+// ========== عرض الكروت (Card View) - كارت جنب كارت ==========
 
 function renderCards() {
     let filtered = subscribers.filter(s => subscriberMatchesSearch(s, currentSearch));
     if (currentFilter === 'paid') filtered = filtered.filter(s => isFullyPaid(s.id));
     if (currentFilter === 'unpaid') filtered = filtered.filter(s => !isFullyPaid(s.id));
     
-    // تطبيق البحث المتقدم
-    filtered = applyAdvancedFilters(filtered);
-    
     const container = document.getElementById('cardsViewContainer');
     if (!container) return;
+
+    const searchTerm = currentSearch.trim();
+    let targetNumber = null;
+    const englishNumber = parseInt(searchTerm);
+    const arabicNumber = parseInt(arabicToEnglishNumber(searchTerm));
+    if (!isNaN(englishNumber) && englishNumber.toString() === searchTerm) targetNumber = englishNumber;
+    else if (!isNaN(arabicNumber)) targetNumber = arabicNumber;
+
+    // البحث برقم: عرض كل البطاقات اللي عندها نفس عدد الأفراد
+    if (targetNumber !== null) {
+        let cardsHtml = '';
+        filtered.forEach(sub => {
+            if (sub.cardsList) {
+                sub.cardsList.forEach(card => {
+                    if (card.individuals === targetNumber) {
+                        const bread = getDailyBreadForCard(card);
+                        cardsHtml += `
+                        <div class="subscriber-card row-paid" style="border-right-color: var(--btn-info);">
+                            <div class="card-header">
+                                <span class="card-title">📇 ${escapeHtml(card.cardName)}</span>
+                                <span style="font-size:0.7rem; color: var(--text-secondary);">👤 ${escapeHtml(sub.name)}</span>
+                            </div>
+                            <div class="card-details-grid" style="grid-template-columns: repeat(3, 1fr);">
+                                <div class="card-detail-item">
+                                    <div class="card-detail-label">👥 الأفراد</div>
+                                    <div class="card-detail-value">${card.individuals}</div>
+                                </div>
+                                <div class="card-detail-item">
+                                    <div class="card-detail-label">🍞 الحصة اليومية</div>
+                                    <div class="card-detail-value">${bread} رغيف</div>
+                                </div>
+                                <div class="card-detail-item">
+                                    <div class="card-detail-label">👤 المشترك</div>
+                                    <div class="card-detail-value" style="font-size:0.7rem;">${escapeHtml(sub.name)}</div>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+                });
+            }
+        });
+        container.innerHTML = cardsHtml || '<div style="text-align:center; padding:2rem; color: var(--text-secondary);">لا توجد بطاقات بهذا العدد</div>';
+        return;
+    }
 
     if (!filtered.length) {
         container.innerHTML = '<div style="text-align:center; padding:2rem; color: var(--text-secondary);">لا توجد بيانات</div>';
         return;
     }
 
-    let cardsHtml = '';
+    let cardsHtml = '<div class="cards-view-grid">';
     filtered.forEach(sub => {
         const totalInd = getTotalIndividuals(sub);
         const total = subValue(sub);
@@ -202,11 +240,11 @@ function renderCards() {
                     <div class="card-detail-value">${totalInd}</div>
                 </div>
                 <div class="card-detail-item">
-                    <div class="card-detail-label">🍞 الحصة اليومية</div>
+                    <div class="card-detail-label">🍞 الحصة</div>
                     <div class="card-detail-value">${dailyBread} رغيف</div>
                 </div>
                 <div class="card-detail-item">
-                    <div class="card-detail-label">💰 قيمة الاشتراك</div>
+                    <div class="card-detail-label">💰 الاشتراك</div>
                     <div class="card-detail-value">${formatNumber(total)} ج.م</div>
                 </div>
                 <div class="card-detail-item">
@@ -219,15 +257,16 @@ function renderCards() {
                 </div>
             </div>
             <div class="card-actions-row">
-                ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} style="transform: scale(1.3); margin: 0 5px;" title="خالص">` : ''}
-                ${showEditDelete ? `<button class="action-icon-btn edit-btn" data-id="${sub.id}" title="تعديل المشترك">✏️</button>` : ''}
-                ${showEditDelete ? `<button class="action-icon-btn delete-btn" data-id="${sub.id}" title="حذف المشترك">🗑️</button>` : ''}
-                ${showPaymentActions ? `<button class="action-icon-btn edit-payment-btn" data-id="${sub.id}" title="تعديل المدفوع">💰</button>` : ''}
-                ${showPaymentActions ? `<button class="action-icon-btn edit-bread-btn" data-id="${sub.id}" title="تعديل الحصة">🍞</button>` : ''}
+                ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} style="transform: scale(1.2); margin: 0 3px;" title="خالص">` : ''}
+                ${showEditDelete ? `<button class="action-icon-btn edit-btn" data-id="${sub.id}" title="تعديل">✏️</button>` : ''}
+                ${showEditDelete ? `<button class="action-icon-btn delete-btn" data-id="${sub.id}" title="حذف">🗑️</button>` : ''}
+                ${showPaymentActions ? `<button class="action-icon-btn edit-payment-btn" data-id="${sub.id}" title="مدفوع">💰</button>` : ''}
+                ${showPaymentActions ? `<button class="action-icon-btn edit-bread-btn" data-id="${sub.id}" title="حصة">🍞</button>` : ''}
                 ${!showEditDelete && !showPaymentActions ? '<span style="padding:6px; opacity:0.6;">🔒</span>' : ''}
             </div>
         </div>`;
     });
+    cardsHtml += '</div>';
 
     container.innerHTML = cardsHtml;
 
@@ -267,149 +306,6 @@ function toggleView(mode) {
             renderCards();
         }
     }
-}
-
-// ========== البحث المتقدم ==========
-
-function showAdvancedSearch() {
-    disableBodyScroll();
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    
-    const history = getSearchHistory();
-    
-    let historyHtml = '';
-    if (history.length === 0) {
-        historyHtml = '<div class="no-history">لا توجد عمليات بحث سابقة</div>';
-    } else {
-        history.forEach((item, idx) => {
-            let labelParts = [];
-            if (item.dateFrom) labelParts.push(`📅 من: ${item.dateFrom}`);
-            if (item.dateTo) labelParts.push(`إلى: ${item.dateTo}`);
-            if (item.amountMin) labelParts.push(`💰 أكبر من: ${item.amountMin} ج.م`);
-            if (item.amountMax) labelParts.push(`أقل من: ${item.amountMax} ج.م`);
-            const label = labelParts.join(' | ') || 'بحث بدون معايير';
-            
-            historyHtml += `
-                <div class="search-history-item" data-idx="${idx}">
-                    <span class="history-label">${label}</span>
-                    <span class="history-delete" data-idx="${idx}">✖</span>
-                </div>
-            `;
-        });
-    }
-    
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 550px;">
-            <h3>🔍 بحث متقدم</h3>
-            <div class="advanced-search-grid">
-                <div class="input-group">
-                    <label>📅 من تاريخ</label>
-                    <input type="date" id="advDateFrom" value="${advancedSearch.dateFrom}">
-                </div>
-                <div class="input-group">
-                    <label>📅 إلى تاريخ</label>
-                    <input type="date" id="advDateTo" value="${advancedSearch.dateTo}">
-                </div>
-                <div class="input-group">
-                    <label>💰 أكبر من (ج.م)</label>
-                    <input type="number" id="advAmountMin" value="${advancedSearch.amountMin}" placeholder="0.00" step="0.01">
-                </div>
-                <div class="input-group">
-                    <label>💰 أقل من (ج.م)</label>
-                    <input type="number" id="advAmountMax" value="${advancedSearch.amountMax}" placeholder="0.00" step="0.01">
-                </div>
-            </div>
-            
-            <div class="search-history-section">
-                <div class="search-history-title">📋 آخر ${MAX_SEARCH_HISTORY} عمليات بحث</div>
-                <div id="searchHistoryList">${historyHtml}</div>
-            </div>
-            
-            <div class="date-picker-buttons" style="margin-top: 1rem;">
-                <button id="applyAdvancedSearchBtn" class="btn btn-primary btn-sm">🔍 بحث</button>
-                <button id="clearAdvancedSearchBtn" class="btn btn-danger btn-sm">🗑️ مسح</button>
-                <button id="closeAdvancedSearchBtn" class="btn btn-secondary btn-sm">إلغاء</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    
-    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); enableBodyScroll(); } });
-    document.getElementById('closeAdvancedSearchBtn').onclick = () => { modal.remove(); enableBodyScroll(); };
-    
-    // تطبيق البحث
-    document.getElementById('applyAdvancedSearchBtn').onclick = () => {
-        advancedSearch.dateFrom = document.getElementById('advDateFrom').value;
-        advancedSearch.dateTo = document.getElementById('advDateTo').value;
-        advancedSearch.amountMin = document.getElementById('advAmountMin').value;
-        advancedSearch.amountMax = document.getElementById('advAmountMax').value;
-        
-        // حفظ في السجل
-        saveSearchToHistory({
-            dateFrom: advancedSearch.dateFrom,
-            dateTo: advancedSearch.dateTo,
-            amountMin: advancedSearch.amountMin,
-            amountMax: advancedSearch.amountMax
-        });
-        
-        modal.remove();
-        enableBodyScroll();
-        renderAll();
-    };
-    
-    // مسح البحث
-    document.getElementById('clearAdvancedSearchBtn').onclick = () => {
-        advancedSearch.dateFrom = '';
-        advancedSearch.dateTo = '';
-        advancedSearch.amountMin = '';
-        advancedSearch.amountMax = '';
-        modal.remove();
-        enableBodyScroll();
-        renderAll();
-    };
-    
-    // النقر على عناصر السجل
-    document.querySelectorAll('.search-history-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            if (e.target.classList.contains('history-delete')) {
-                const idx = parseInt(e.target.dataset.idx);
-                let history = getSearchHistory();
-                history.splice(idx, 1);
-                localStorage.setItem(STORAGE_SEARCH_HISTORY, JSON.stringify(history));
-                modal.remove();
-                enableBodyScroll();
-                showAdvancedSearch();
-                return;
-            }
-            
-            const idx = parseInt(item.dataset.idx);
-            const history = getSearchHistory();
-            const criteria = history[idx];
-            if (criteria) {
-                advancedSearch.dateFrom = criteria.dateFrom || '';
-                advancedSearch.dateTo = criteria.dateTo || '';
-                advancedSearch.amountMin = criteria.amountMin || '';
-                advancedSearch.amountMax = criteria.amountMax || '';
-                modal.remove();
-                enableBodyScroll();
-                renderAll();
-            }
-        });
-    });
-    
-    document.querySelectorAll('.history-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const idx = parseInt(btn.dataset.idx);
-            let history = getSearchHistory();
-            history.splice(idx, 1);
-            localStorage.setItem(STORAGE_SEARCH_HISTORY, JSON.stringify(history));
-            modal.remove();
-            enableBodyScroll();
-            showAdvancedSearch();
-        });
-    });
 }
 
 function attachTableEvents() {
@@ -466,7 +362,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// ========== تحديث واجهة المستخدم (آمنة) ==========
+// ========== تحديث واجهة المستخدم ==========
 
 function updateUI() {
     if (!isReadOnly()) {
@@ -815,15 +711,13 @@ async function showRestoreBackupModal() {
     });
 }
 
-// ========== تطبيق الصلاحيات (قائمة الإدارة الديناميكية) - بدون زر الكاميرا ==========
+// ========== تطبيق الصلاحيات ==========
 function applyPermissions() {
-    // إظهار إحصائيات دائمًا للجميع
     const statsSection = document.getElementById('statsSection');
     if (statsSection) {
         statsSection.style.display = 'grid';
     }
 
-    // نموذج الإضافة يظهر فقط إذا كان لدى المستخدم صلاحية إضافة/تعديل
     const addCard = document.getElementById('addSubscriberCard');
     if (addCard) {
         addCard.style.display = hasAddEditSubscriber() ? 'block' : 'none';
@@ -1152,20 +1046,15 @@ function toggleFullscreenTable() {
     }
 }
 
-// ========== ربط الأحداث (فقط زر ملء الشاشة + Toggle + بحث متقدم) ==========
+// ========== ربط الأحداث ==========
 window.addEventListener('DOMContentLoaded', function() {
     const fullscreenBtn = document.getElementById('toggleFullscreenBtn');
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', toggleFullscreenTable);
     }
     
-    // ربط أزرار Toggle
     const tableViewBtn = document.getElementById('tableViewBtn');
     const cardsViewBtn = document.getElementById('cardsViewBtn');
     if (tableViewBtn) tableViewBtn.addEventListener('click', () => toggleView('table'));
     if (cardsViewBtn) cardsViewBtn.addEventListener('click', () => toggleView('cards'));
-    
-    // ربط زر البحث المتقدم
-    const advancedSearchBtn = document.getElementById('advancedSearchBtn');
-    if (advancedSearchBtn) advancedSearchBtn.addEventListener('click', showAdvancedSearch);
 });
