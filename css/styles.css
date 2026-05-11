@@ -1943,7 +1943,7 @@ body.dark-mode .add-user-form select {
 
 .table-section.fullscreen .table-wrapper {
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
     border-radius: 1rem;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
@@ -1951,7 +1951,6 @@ body.dark-mode .add-user-form select {
 .table-section.fullscreen table {
     min-width: 100%;
     font-size: 0.45rem;
-    table-layout: fixed;
     white-space: nowrap;
 }
 
