@@ -209,7 +209,6 @@ async function addOrUpdate() {
             addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
         }
         editId = null;
-        showBellNotification('المخبز', `تم تعديل المشترك • ${name} ✓`);
         requestPushNotification('المخبز', `تم تعديل المشترك • ${name} ✓`);
     } else {
         const newId = Date.now() + Math.floor(Math.random() * 10000);
@@ -225,7 +224,6 @@ async function addOrUpdate() {
         subscribers.push(newSubscriber);
         const totalInd = getTotalIndividuals({ cardsList });
         addActivityLog('إضافة مشترك', `تم إضافة مشترك جديد: ${name} مع ${cardsList.length} بطاقات (إجمالي الأفراد ${totalInd})`);
-        showBellNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
         requestPushNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
     }
     
@@ -266,7 +264,6 @@ async function deleteSub(id) {
     delete paymentDates[id];
     
     addActivityLog('حذف مشترك', `تم حذف المشترك ${sub.name} (الملاحظة: ${note})`);
-    showBellNotification('المخبز', `تم حذف المشترك • ${sub.name} ✗`);
     requestPushNotification('المخبز', `تم حذف المشترك • ${sub.name} ✗`);
     await saveData();
     renderAll();
@@ -324,7 +321,6 @@ async function editPayment(subId) {
     paymentDates[subId][key] = new Date().toISOString().slice(0, 10);
     
     addActivityLog('تعديل مبلغ مدفوع', `تم تعديل المدفوع للمشترك ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
-    showBellNotification('المخبز', `تم تعديل مدفوعات • ${sub.name} ✓`);
     requestPushNotification('المخبز', `تم تعديل مدفوعات • ${sub.name} ✓`);
     await saveData();
     renderAll();
@@ -353,7 +349,6 @@ async function toggleFullPayment(subId, wantPaid) {
             if (!paymentDates[subId]) paymentDates[subId] = {};
             paymentDates[subId][key] = new Date().toISOString().slice(0, 10);
             addActivityLog('تسديد كامل', `تم تسديد كامل مبلغ الاشتراك للمشترك ${sub.name}`);
-            showBellNotification('المخبز', `تم تسديد كامل الاشتراك • ${sub.name} • بقيمة ${formatNumber(totalValue)} ج.م ✓`);
             requestPushNotification('المخبز', `تم تسديد كامل الاشتراك • ${sub.name} • بقيمة ${formatNumber(totalValue)} ج.م ✓`);
             await saveData();
             renderAll();
@@ -365,7 +360,6 @@ async function toggleFullPayment(subId, wantPaid) {
             if (monthlyPayments[subId]) delete monthlyPayments[subId][key];
             if (paymentDates[subId]) delete paymentDates[subId][key];
             addActivityLog('إلغاء مدفوعات', `تم إلغاء جميع دفعات الشهر للمشترك ${sub.name}`);
-            showBellNotification('المخبز', `تم إلغاء مدفوعات • ${sub.name} ✗`);
             requestPushNotification('المخبز', `تم إلغاء مدفوعات • ${sub.name} ✗`);
             await saveData();
             renderAll();
@@ -439,7 +433,6 @@ async function editDailyBread(subId) {
         });
         
         addActivityLog('تعديل الحصة اليومية', `تم تعديل حصة المشترك ${sub.name}`);
-        showBellNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
         requestPushNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
         await saveData();
         renderAll();
