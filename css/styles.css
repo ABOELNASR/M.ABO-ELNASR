@@ -1980,7 +1980,7 @@ body.dark-mode .add-user-form select {
 
 @media (min-width: 769px) {
     .table-section.fullscreen table {
-        font-size: 0.55rem;
+        font-size: 0.65rem;
     }
     .table-section.fullscreen th,
     .table-section.fullscreen td {
