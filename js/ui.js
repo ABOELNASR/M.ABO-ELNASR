@@ -135,7 +135,7 @@ function renderTable() {
     attachTableEvents();
 }
 
-// ========== عرض الكروت (Card View) - كارت جنب كارت ==========
+// ========== عرض الكروت (Card View) - مع تبويبين ==========
 
 function renderCards() {
     let filtered = subscribers.filter(s => subscriberMatchesSearch(s, currentSearch));
@@ -152,7 +152,6 @@ function renderCards() {
     if (!isNaN(englishNumber) && englishNumber.toString() === searchTerm) targetNumber = englishNumber;
     else if (!isNaN(arabicNumber)) targetNumber = arabicNumber;
 
-    // البحث برقم: عرض كل البطاقات اللي عندها نفس عدد الأفراد
     if (targetNumber !== null) {
         let cardsHtml = '';
         filtered.forEach(sub => {
@@ -169,15 +168,15 @@ function renderCards() {
                             <div class="card-details-grid" style="grid-template-columns: repeat(3, 1fr);">
                                 <div class="card-detail-item">
                                     <div class="card-detail-label">👥 الأفراد</div>
-                                    <div class="card-detail-value">${card.individuals}</div>
+                                    <div class="card-detail-value" data-fit-text>${card.individuals}</div>
                                 </div>
                                 <div class="card-detail-item">
                                     <div class="card-detail-label">🍞 الحصة اليومية</div>
-                                    <div class="card-detail-value">${bread} رغيف</div>
+                                    <div class="card-detail-value" data-fit-text>${bread} رغيف</div>
                                 </div>
                                 <div class="card-detail-item">
                                     <div class="card-detail-label">👤 المشترك</div>
-                                    <div class="card-detail-value" style="font-size:0.7rem;">${escapeHtml(sub.name)}</div>
+                                    <div class="card-detail-value" data-fit-text style="font-size:0.7rem;">${escapeHtml(sub.name)}</div>
                                 </div>
                             </div>
                         </div>`;
@@ -186,6 +185,7 @@ function renderCards() {
             }
         });
         container.innerHTML = cardsHtml || '<div style="text-align:center; padding:2rem; color: var(--text-secondary);">لا توجد بطاقات بهذا العدد</div>';
+        applyFitTextToCards();
         return;
     }
 
@@ -202,6 +202,8 @@ function renderCards() {
         const rem = total - paid;
         const dailyBread = getDailyBread(sub);
         const checked = rem <= 0 ? 'checked' : '';
+        const days = getDays(currentYear, currentMonth);
+        const monthlyBread = dailyBread * days;
         
         let cardClass = rem <= 0 ? 'row-paid' : 'row-unpaid';
         if (currentSelectedRowId == sub.id) cardClass += ' row-selected';
@@ -224,40 +226,72 @@ function renderCards() {
             remainingText = `${formatNumber(rem)} ج.م`;
         }
 
+        // بناء قائمة البطاقات للتبويب الثاني
+        let cardsListHtml = '';
+        if (sub.cardsList && sub.cardsList.length) {
+            cardsListHtml = '<div class="card-cards-list">';
+            sub.cardsList.forEach((card, idx) => {
+                const cardBread = getDailyBreadForCard(card);
+                const cardMonthlyBread = cardBread * days;
+                cardsListHtml += `
+                <div class="card-card-item">
+                    <span class="card-card-name">📇 ${escapeHtml(card.cardName)}</span>
+                    <span class="card-card-ind">👥 ${card.individuals}</span>
+                    <span class="card-card-bread">🍞 ${cardBread}/يوم</span>
+                    <span class="card-card-monthly">📅 ${cardMonthlyBread}/شهر</span>
+                </div>`;
+            });
+            cardsListHtml += `
+                <div class="card-card-totals">
+                    <span>👥 إجمالي الأفراد: ${totalInd}</span>
+                    <span>🍞 إجمالي الحصة الشهرية: ${monthlyBread} رغيف</span>
+                </div>`;
+            cardsListHtml += '</div>';
+        }
+
         cardsHtml += `
         <div class="subscriber-card ${cardClass}" data-id="${sub.id}">
-            <div class="card-header">
-                <span class="card-title">👤 ${escapeHtml(sub.name)}</span>
-                <span class="card-badge ${badgeClass}">${badgeText}</span>
+            <div class="card-tabs">
+                <button class="card-tab active" data-tab="info">📋 معلومات</button>
+                <button class="card-tab" data-tab="cards">📇 البطاقات</button>
             </div>
-            <div class="card-details-grid">
-                <div class="card-detail-item">
-                    <div class="card-detail-label">📇 البطاقات</div>
-                    <div class="card-detail-value">${sub.cardsList ? sub.cardsList.length : 0}</div>
+            <div class="card-tab-content active" data-content="info">
+                <div class="card-header">
+                    <span class="card-title">👤 ${escapeHtml(sub.name)}</span>
+                    <span class="card-badge ${badgeClass}">${badgeText}</span>
                 </div>
-                <div class="card-detail-item">
-                    <div class="card-detail-label">👥 الأفراد</div>
-                    <div class="card-detail-value">${totalInd}</div>
+                <div class="card-details-grid">
+                    <div class="card-detail-item">
+                        <div class="card-detail-label">📇 البطاقات</div>
+                        <div class="card-detail-value" data-fit-text>${sub.cardsList ? sub.cardsList.length : 0}</div>
+                    </div>
+                    <div class="card-detail-item">
+                        <div class="card-detail-label">👥 الأفراد</div>
+                        <div class="card-detail-value" data-fit-text>${totalInd}</div>
+                    </div>
+                    <div class="card-detail-item">
+                        <div class="card-detail-label">🍞 الحصة</div>
+                        <div class="card-detail-value" data-fit-text>${dailyBread} رغيف</div>
+                    </div>
+                    <div class="card-detail-item">
+                        <div class="card-detail-label">💰 الاشتراك</div>
+                        <div class="card-detail-value" data-fit-text>${formatNumber(total)} ج.م</div>
+                    </div>
+                    <div class="card-detail-item">
+                        <div class="card-detail-label">✅ المدفوع</div>
+                        <div class="card-detail-value" data-fit-text>${formatNumber(paid)} ج.م</div>
+                    </div>
+                    <div class="card-detail-item">
+                        <div class="card-detail-label">⏳ المتبقي</div>
+                        <div class="card-detail-value ${remainingClass}" data-fit-text>${remainingText}</div>
+                    </div>
                 </div>
-                <div class="card-detail-item">
-                    <div class="card-detail-label">🍞 الحصة</div>
-                    <div class="card-detail-value">${dailyBread} رغيف</div>
-                </div>
-                <div class="card-detail-item">
-                    <div class="card-detail-label">💰 الاشتراك</div>
-                    <div class="card-detail-value">${formatNumber(total)} ج.م</div>
-                </div>
-                <div class="card-detail-item">
-                    <div class="card-detail-label">✅ المدفوع</div>
-                    <div class="card-detail-value">${formatNumber(paid)} ج.م</div>
-                </div>
-                <div class="card-detail-item">
-                    <div class="card-detail-label">⏳ المتبقي</div>
-                    <div class="card-detail-value ${remainingClass}">${remainingText}</div>
-                </div>
+            </div>
+            <div class="card-tab-content" data-content="cards">
+                ${cardsListHtml || '<div style="text-align:center;color:var(--text-secondary);">لا توجد بطاقات</div>'}
             </div>
             <div class="card-actions-row">
-                ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} style="transform: scale(1.2); margin: 0 3px;" title="خالص">` : ''}
+                ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid card-checkbox" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} title="خالص">` : ''}
                 ${showEditDelete ? `<button class="action-icon-btn edit-btn" data-id="${sub.id}" title="تعديل">✏️</button>` : ''}
                 ${showEditDelete ? `<button class="action-icon-btn delete-btn" data-id="${sub.id}" title="حذف">🗑️</button>` : ''}
                 ${showPaymentActions ? `<button class="action-icon-btn edit-payment-btn" data-id="${sub.id}" title="مدفوع">💰</button>` : ''}
@@ -271,12 +305,46 @@ function renderCards() {
     container.innerHTML = cardsHtml;
 
     // ربط أحداث الكروت
+    bindCardEvents();
+    // تبويبات الكروت
+    bindCardTabs();
+    // fit text
+    applyFitTextToCards();
+}
+
+function bindCardTabs() {
+    document.querySelectorAll('.subscriber-card').forEach(card => {
+        card.querySelectorAll('.card-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const tabName = tab.dataset.tab;
+                
+                // تحديث الأزرار النشطة
+                card.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // تحديث المحتوى
+                card.querySelectorAll('.card-tab-content').forEach(c => c.classList.remove('active'));
+                const content = card.querySelector(`.card-tab-content[data-content="${tabName}"]`);
+                if (content) content.classList.add('active');
+            });
+        });
+    });
+}
+
+function bindCardEvents() {
     document.querySelectorAll('.subscriber-card .edit-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editSub(parseInt(b.dataset.id)); });
     document.querySelectorAll('.subscriber-card .delete-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); deleteSub(parseInt(b.dataset.id)); });
     document.querySelectorAll('.subscriber-card .edit-payment-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editPayment(parseInt(b.dataset.id)); });
     document.querySelectorAll('.subscriber-card .edit-bread-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editDailyBread(parseInt(b.dataset.id)); });
     document.querySelectorAll('.subscriber-card .checkbox-paid').forEach(cb => {
         cb.onchange = (e) => { e.stopPropagation(); toggleFullPayment(parseInt(cb.dataset.id), cb.checked); };
+    });
+}
+
+function applyFitTextToCards() {
+    document.querySelectorAll('.card-detail-value[data-fit-text]').forEach(el => {
+        fitTextToContainer(el, 0.85, 0.55);
     });
 }
 
@@ -357,7 +425,7 @@ document.addEventListener('click', (e) => {
         if (currentSelectedRowId !== null) {
             currentSelectedRowId = null;
             expandedRowId = null;
-            renderTable();
+            renderAll();
         }
     }
 });
@@ -549,7 +617,7 @@ function showEditSubscriberModal(sub) {
         }
         
         addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
-        requestPushNotification('تعديل مشترك', `تم تعديل المشترك: ${name}`);
+        requestPushNotification('المخبز', `تم تعديل ${name}`);
         await saveData();
         closeModal();
     };
@@ -627,8 +695,8 @@ function showCreditBalanceReport() {
             addActivityLog('تسوية نقاط', `تمت تسوية مستحقات ${sub.name} بمبلغ ${formatNumber(credit)} ج.م`);
             await saveData();
             renderAll();
-            showToast(`✅ تمت تسوية مستحقات ${sub.name} بنجاح.`);
-            requestPushNotification('تسوية نقاط', `تمت تسوية مستحقات: ${sub.name} بقيمة ${formatNumber(credit)} ج.م`);
+            showBellNotification('المخبز', `تمت تسوية مستحقات ${sub.name}`);
+            requestPushNotification('المخبز', `تمت تسوية مستحقات: ${sub.name} بقيمة ${formatNumber(credit)} ج.م`);
             modal.remove();
             enableBodyScroll();
             showCreditBalanceReport();
@@ -695,7 +763,7 @@ async function showRestoreBackupModal() {
                 if (result.error) throw new Error(result.error);
                 
                 localStorage.removeItem(STORAGE_DATA);
-                showToast('✅ تمت الاستعادة بنجاح. جاري إعادة تحميل التطبيق...');
+                showBellNotification('المخبز', 'تمت الاستعادة بنجاح');
                 requestPushNotification('استعادة نسخة احتياطية', `تمت استعادة نسخة: ${date}`);
                 setTimeout(() => {
                     modal.remove();
@@ -938,7 +1006,7 @@ function showUserManagement() {
                     saveUsersToLocal();
                     saveData();
                     addActivityLog('حذف مستخدم', `تم حذف ${user.username}`);
-                    showToast(`✅ تم حذف ${user.username}`);
+                    showBellNotification('المخبز', `تم حذف المستخدم ${user.username}`);
                     renderUserGrid();
                 }
             };
@@ -974,7 +1042,7 @@ function showUserManagement() {
                     const userNameDisplay = document.getElementById('userNameDisplay');
                     if (userNameDisplay) userNameDisplay.innerText = currentUser.username;
                 }
-                showToast(`✅ تم تحديث ${newUsername}`);
+                showBellNotification('المخبز', `تم تحديث المستخدم ${newUsername}`);
                 renderUserGrid();
             };
         });
@@ -1000,7 +1068,7 @@ function showUserManagement() {
         saveUsersToLocal();
         saveData();
         addActivityLog('إضافة مستخدم', `تم إضافة ${username}`);
-        showToast(`✅ تم إضافة ${username}`);
+        showBellNotification('المخبز', `تم إضافة المستخدم ${username}`);
         renderUserGrid();
         document.getElementById('newUsername').value = '';
         document.getElementById('newPassword').value = '';
