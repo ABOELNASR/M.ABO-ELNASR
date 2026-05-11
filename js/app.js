@@ -48,7 +48,6 @@ async function setupPushNotifications() {
 
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'SHOW_TOAST') {
-                // إشعار داخلي مع رمز الجرس
                 showBellNotification(event.data.title, event.data.body);
             }
         });
@@ -70,27 +69,29 @@ async function setupPushNotifications() {
     }
 }
 
-// ========== إشعار داخلي مع رمز الجرس ==========
+// ========== إشعار داخلي مع رمز الجرس (يدعم HTML) ==========
 function showBellNotification(title, body) {
+    // تلوين العلامات
+    let coloredBody = body
+        .replace(/✓/g, '<span class="bell-mark-green">✓</span>')
+        .replace(/✗/g, '<span class="bell-mark-red">✗</span>');
+
     const notif = document.createElement('div');
     notif.className = 'bell-notification';
     notif.innerHTML = `
         <span class="bell-icon">🔔</span>
         <div class="bell-content">
             <span class="bell-title">${title}</span>
-            <span class="bell-body">${body}</span>
+            <span class="bell-body">${coloredBody}</span>
         </div>
     `;
     document.body.appendChild(notif);
     
-    // إظهار الإشعار
     setTimeout(() => notif.classList.add('show'), 100);
-    
-    // إخفاء الإشعار بعد 3 ثواني
     setTimeout(() => {
         notif.classList.remove('show');
         setTimeout(() => notif.remove(), 300);
-    }, 3000);
+    }, 4000);
 }
 
 // ========== تهيئة التطبيق بالكامل ==========
@@ -129,7 +130,6 @@ async function initApp() {
         loadLocalData();
     }
 
-    // إظهار الأقسام الأساسية
     const statsSection = document.getElementById('statsSection');
     if (statsSection) statsSection.style.display = 'grid';
     const tableSection = document.getElementById('tableSection');
@@ -142,7 +142,6 @@ async function initApp() {
     applyPermissions();
     renderAll();
 
-    // ربط طي/فتح النموذج
     const toggleFormBtn = document.getElementById('toggleFormBtn');
     const formTitle = document.getElementById('formTitle');
     const addSubscriberCard = document.getElementById('addSubscriberCard');
@@ -168,7 +167,6 @@ async function initApp() {
         };
     }
 
-    // ربط باقي الأحداث
     const addCardBtn = document.getElementById('addCardBtn');
     const subNameInput = document.getElementById('subName');
     if (addCardBtn && subNameInput) {
@@ -247,14 +245,12 @@ async function initApp() {
     setupPushNotifications();
 }
 
-// ========== بدء التطبيق ==========
 window.addEventListener('DOMContentLoaded', () => {
     initApp().catch(err => {
         console.error('حدث خطأ أثناء بدء التطبيق:', err);
     });
 });
 
-// ========== زر العودة للأعلى ==========
 const scrollBtn = document.getElementById('scrollToTopBtn');
 if (scrollBtn) {
     window.addEventListener('scroll', () => {
