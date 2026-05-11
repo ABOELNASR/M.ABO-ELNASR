@@ -86,7 +86,7 @@ function renderTable() {
         }
 
         rowsHtml += `<tr class="${rowClass}" data-id="${sub.id}">
-            <td><strong>${escapeHtml(sub.name)}</strong><br><span style="font-size:0.65rem;">بطاقات: ${sub.cardsList ? sub.cardsList.length : 0}</span></td>
+            <td><strong>${escapeHtml(sub.name)}</strong></td>
             <td>${sub.cardsList ? sub.cardsList.length : 0}</td>
             <td>${totalInd}</td>
             <td>${dailyBread} رغيف</td>
