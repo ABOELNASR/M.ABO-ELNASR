@@ -48,6 +48,7 @@
     --card-view-border: #e0e0e0;
     --card-view-hover: #f0f4ff;
     --input-dark-bg: #1a1d24;
+    --card-hover-color: #ff9800;
 }
 
 body.dark-mode {
@@ -88,6 +89,7 @@ body.dark-mode {
     --card-view-border: #30363d;
     --card-view-hover: #252b34;
     --input-dark-bg: #1a1d24;
+    --card-hover-color: #ff9800;
 }
 
 body {
@@ -307,9 +309,6 @@ body.modal-open {
         font-size: 1rem;
         bottom: 12px;
         right: 12px;
-        border-radius: 50%;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     .action-buttons-container {
         flex-wrap: nowrap !important;
@@ -343,19 +342,42 @@ body.modal-open {
         flex-wrap: wrap;
         justify-content: center;
     }
-    .actions-row:first-child {
+    .actions-row:first-of-type {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0.4rem;
+        width: 100%;
+        max-width: 320px;
     }
-    .actions-row:nth-child(2) {
+    .actions-row:nth-of-type(2) {
         display: flex;
         justify-content: center;
+        width: 100%;
     }
-    .actions-row:nth-child(3) {
+    .actions-row:nth-of-type(3) {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0.4rem;
+        width: 100%;
+        max-width: 320px;
+    }
+    .log-entry {
+        flex-wrap: nowrap;
+        font-size: 0.6rem;
+        padding: 4px;
+    }
+    .log-time {
+        min-width: 110px;
+        font-size: 0.6rem;
+    }
+    .log-action {
+        font-size: 0.6rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .log-user {
+        min-width: 70px;
+        font-size: 0.6rem;
     }
 }
 
@@ -1105,7 +1127,7 @@ body.dark-mode select {
 /* ========== عرض الكروت (Card View) - كارت جنب كارت ========== */
 .cards-view-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 0.8rem;
 }
 
@@ -1124,8 +1146,8 @@ body.dark-mode select {
 }
 
 .subscriber-card:hover {
-    border-color: var(--btn-light-green);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    border-color: var(--card-hover-color);
+    box-shadow: 0 6px 24px rgba(255, 152, 0, 0.15);
     transform: translateY(-2px);
 }
 
@@ -1140,6 +1162,92 @@ body.dark-mode select {
 .subscriber-card.row-selected {
     background: var(--selected-row-bg);
     border-color: #ff9800;
+}
+
+/* تبويبات الكارت */
+.card-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-light);
+    padding-bottom: 0.3rem;
+}
+
+.card-tab {
+    flex: 1;
+    padding: 5px 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s;
+}
+
+.card-tab.active {
+    background: var(--btn-light-green);
+    color: white;
+}
+
+.card-tab:hover:not(.active) {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.card-tab-content {
+    display: none;
+}
+
+.card-tab-content.active {
+    display: block;
+}
+
+/* قائمة البطاقات في التبويب */
+.card-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-card-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    font-size: 0.65rem;
+    border: 1px solid var(--border-light);
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.card-card-name {
+    font-weight: bold;
+    color: var(--text-primary);
+    flex: 1 1 100px;
+}
+
+.card-card-ind, .card-card-bread, .card-card-monthly {
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-size: 0.6rem;
+}
+
+.card-card-totals {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 8px;
+    margin-top: 4px;
+    background: rgba(38, 166, 154, 0.1);
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
 .card-header {
@@ -1187,18 +1295,23 @@ body.dark-mode select {
     background: var(--card-bg);
     border-radius: 10px;
     border: 1px solid var(--border-light);
+    overflow: hidden;
 }
 
 .card-detail-label {
     font-size: 0.6rem;
     color: var(--text-secondary);
     margin-bottom: 1px;
+    white-space: nowrap;
 }
 
 .card-detail-value {
     font-size: 0.75rem;
     font-weight: bold;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .card-detail-value.remaining-positive {
@@ -1212,6 +1325,7 @@ body.dark-mode select {
 .card-actions-row {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 5px;
     flex-wrap: wrap;
     padding-top: 0.4rem;
@@ -1222,6 +1336,17 @@ body.dark-mode select {
     width: 30px;
     height: 30px;
     font-size: 1.1rem;
+}
+
+.card-checkbox {
+    width: 30px !important;
+    height: 30px !important;
+    transform: scale(1) !important;
+    cursor: pointer;
+    accent-color: var(--btn-light-green);
+    border-radius: 8px !important;
+    margin: 0 2px;
+    flex-shrink: 0;
 }
 
 /* ========== الجدول ========== */
@@ -1387,6 +1512,16 @@ tr.row-selected td {
 .bell-body {
     font-size: 0.7rem;
     color: var(--text-secondary);
+}
+
+.bell-mark-green {
+    color: #43a047;
+    font-weight: bold;
+}
+
+.bell-mark-red {
+    color: #ef5350;
+    font-weight: bold;
 }
 
 /* ========== تذييل الصفحة ========== */
@@ -1928,9 +2063,27 @@ body.dark-mode .add-user-form select {
 }
 
 .table-section.fullscreen .cards-count-header {
-    margin-left: 35px;
+    margin-left: 40px;
     margin-right: 0;
     font-size: 0.65rem;
+}
+
+.table-section.fullscreen .subscriber-card {
+    font-size: 0.65rem;
+    padding: 0.5rem;
+}
+
+.table-section.fullscreen .card-detail-value {
+    font-size: 0.65rem;
+}
+
+.table-section.fullscreen .card-detail-label {
+    font-size: 0.5rem;
+}
+
+.table-section.fullscreen .card-checkbox {
+    width: 24px !important;
+    height: 24px !important;
 }
 
 /* ========== إصلاح الوضع الأفقي في PWA ========== */
