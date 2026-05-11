@@ -287,9 +287,9 @@ function renderCards() {
                 </div>
             </div>
             <div class="card-tab-content" data-content="cards">
-    <div class="card-cards-header">👤 ${escapeHtml(sub.name)}</div>
-    ${cardsListHtml || '<div style="text-align:center;color:var(--text-secondary);">لا توجد بطاقات</div>'}
-</div>
+                <div class="card-cards-header">👤 ${escapeHtml(sub.name)}</div>
+                ${cardsListHtml || '<div style="text-align:center;color:var(--text-secondary);">لا توجد بطاقات</div>'}
+            </div>
             <div class="card-actions-row">
                 ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid card-checkbox" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} title="خالص">` : ''}
                 ${showEditDelete ? `<button class="action-icon-btn edit-btn" data-id="${sub.id}" title="تعديل">✏️</button>` : ''}
@@ -836,7 +836,6 @@ function applyPermissions() {
         row.appendChild(testBtn);
         actionsContainer.appendChild(row);
     } else if (isAdmin()) {
-        // 5 أزرار: 2-1-2
         const row1 = document.createElement('div');
         row1.className = 'actions-row actions-two';
         const dailyBtn = document.createElement('button');
@@ -879,7 +878,6 @@ function applyPermissions() {
         row3.appendChild(manageBtn);
         actionsContainer.appendChild(row3);
     } else {
-        // كاتب: 4 أزرار - 2×2
         const row1 = document.createElement('div');
         row1.className = 'actions-row actions-two';
         const dailyBtn = document.createElement('button');
