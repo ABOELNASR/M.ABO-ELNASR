@@ -1,4 +1,4 @@
-// ========== subscribers.js - عمليات المشتركين والبطاقات (مع Web Push Notifications) ==========
+// ========== subscribers.js - عمليات المشتركين والبطاقات ==========
 
 // ========== إدارة البطاقات المؤقتة (نموذج الإضافة/التعديل) ==========
 
@@ -24,7 +24,6 @@ function renderTempCards() {
     });
     container.innerHTML = html;
     
-    // حذف بطاقة مع تسجيلها في السجل
     document.querySelectorAll('.remove-card-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -211,7 +210,7 @@ async function addOrUpdate() {
         }
         editId = null;
         showToast(`✏️ تم تعديل المشترك ${name}`);
-        requestPushNotification('تعديل مشترك', `تم تعديل المشترك: ${name}`);
+        requestPushNotification('المخبز', `تم تعديل ${name}`);
     } else {
         const newId = Date.now() + Math.floor(Math.random() * 10000);
         const newSubscriber = {
@@ -227,7 +226,7 @@ async function addOrUpdate() {
         const totalInd = getTotalIndividuals({ cardsList });
         addActivityLog('إضافة مشترك', `تم إضافة مشترك جديد: ${name} مع ${cardsList.length} بطاقات (إجمالي الأفراد ${totalInd})`);
         showToast(`➕ تم إضافة المشترك ${name} مع ${cardsList.length} بطاقات، إجمالي الأفراد ${totalInd}`);
-        requestPushNotification('إضافة مشترك', `تم إضافة المشترك: ${name}`);
+        requestPushNotification('المخبز', `تم إضافة ${name}`);
     }
     
     await saveData();
@@ -268,7 +267,7 @@ async function deleteSub(id) {
     
     addActivityLog('حذف مشترك', `تم حذف المشترك ${sub.name} (الملاحظة: ${note})`);
     showToast(`🗑️ تم حذف المشترك ${sub.name}. ملاحظة: ${note}`);
-    requestPushNotification('حذف مشترك', `تم حذف المشترك: ${sub.name}`);
+    requestPushNotification('المخبز', `تم حذف ${sub.name}`);
     await saveData();
     renderAll();
 }
@@ -326,7 +325,7 @@ async function editPayment(subId) {
     
     addActivityLog('تعديل مبلغ مدفوع', `تم تعديل المدفوع للمشترك ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
     showToast(`✏️ تم تعديل المدفوع للمشترك ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
-    requestPushNotification('تعديل المدفوع', `تم تعديل مدفوعات: ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
+    requestPushNotification('المخبز', `تم تعديل مدفوعات ${sub.name}`);
     await saveData();
     renderAll();
 }
@@ -352,9 +351,9 @@ async function toggleFullPayment(subId, wantPaid) {
             monthlyPayments[subId][key] = subValue(sub);
             if (!paymentDates[subId]) paymentDates[subId] = {};
             paymentDates[subId][key] = new Date().toISOString().slice(0, 10);
-            addActivityLog('تسديد كامل', `تم تسديد كامل مبلغ الاشتراك للمشترك ${sub.name} (${remaining.toFixed(2)} ج.م)`);
-            showToast(`✅ تم تسجيل الدفعة الكاملة للمشترك ${sub.name} (${remaining.toFixed(2)} ج.م)`);
-            requestPushNotification('تسديد كامل', `تم تسديد: ${sub.name} بقيمة ${remaining.toFixed(2)} ج.م`);
+            addActivityLog('تسديد كامل', `تم تسديد كامل مبلغ الاشتراك للمشترك ${sub.name}`);
+            showToast(`✅ تم تسجيل الدفعة الكاملة للمشترك ${sub.name}`);
+            requestPushNotification('المخبز', `تم تسديد ${sub.name}`);
             await saveData();
             renderAll();
         } else {
@@ -366,7 +365,7 @@ async function toggleFullPayment(subId, wantPaid) {
             if (paymentDates[subId]) delete paymentDates[subId][key];
             addActivityLog('إلغاء مدفوعات', `تم إلغاء جميع دفعات الشهر للمشترك ${sub.name}`);
             showToast(`🔄 تم إلغاء المدفوعات للمشترك ${sub.name}`);
-            requestPushNotification('إلغاء مدفوعات', `تم إلغاء مدفوعات: ${sub.name}`);
+            requestPushNotification('المخبز', `تم إلغاء مدفوعات ${sub.name}`);
             await saveData();
             renderAll();
         } else {
@@ -375,7 +374,7 @@ async function toggleFullPayment(subId, wantPaid) {
     }
 }
 
-// ========== تعديل الحصة اليومية (مع التقييد بعدم تجاوز الحصة الحقيقية) ==========
+// ========== تعديل الحصة اليومية ==========
 
 async function editDailyBread(subId) {
     if (!hasPaymentActions()) {
@@ -440,7 +439,7 @@ async function editDailyBread(subId) {
         
         addActivityLog('تعديل الحصة اليومية', `تم تعديل حصة المشترك ${sub.name}`);
         showToast(`✅ تم تعديل الحصة اليومية للمشترك ${sub.name}`);
-        requestPushNotification('تعديل الحصة', `تم تعديل حصة المشترك: ${sub.name}`);
+        requestPushNotification('المخبز', `تم تعديل حصة ${sub.name}`);
         await saveData();
         renderAll();
         modal.remove();
