@@ -226,7 +226,6 @@ function renderCards() {
             remainingText = `${formatNumber(rem)} ج.م`;
         }
 
-        // بناء قائمة البطاقات للتبويب الثاني
         let cardsListHtml = '';
         if (sub.cardsList && sub.cardsList.length) {
             cardsListHtml = '<div class="card-cards-list">';
@@ -304,11 +303,8 @@ function renderCards() {
 
     container.innerHTML = cardsHtml;
 
-    // ربط أحداث الكروت
     bindCardEvents();
-    // تبويبات الكروت
     bindCardTabs();
-    // fit text
     applyFitTextToCards();
 }
 
@@ -319,11 +315,9 @@ function bindCardTabs() {
                 e.stopPropagation();
                 const tabName = tab.dataset.tab;
                 
-                // تحديث الأزرار النشطة
                 card.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
                 
-                // تحديث المحتوى
                 card.querySelectorAll('.card-tab-content').forEach(c => c.classList.remove('active'));
                 const content = card.querySelector(`.card-tab-content[data-content="${tabName}"]`);
                 if (content) content.classList.add('active');
@@ -617,7 +611,7 @@ function showEditSubscriberModal(sub) {
         }
         
         addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
-        requestPushNotification('المخبز', `تم تعديل ${name}`);
+        requestPushNotification('المخبز', `تم تعديل المشترك • ${name} ✓`);
         await saveData();
         closeModal();
     };
@@ -695,8 +689,8 @@ function showCreditBalanceReport() {
             addActivityLog('تسوية نقاط', `تمت تسوية مستحقات ${sub.name} بمبلغ ${formatNumber(credit)} ج.م`);
             await saveData();
             renderAll();
-            showBellNotification('المخبز', `تمت تسوية مستحقات ${sub.name}`);
-            requestPushNotification('المخبز', `تمت تسوية مستحقات: ${sub.name} بقيمة ${formatNumber(credit)} ج.م`);
+            showBellNotification('المخبز', `تمت تسوية مستحقات • ${sub.name} ✓`);
+            requestPushNotification('المخبز', `تمت تسوية مستحقات • ${sub.name} ✓`);
             modal.remove();
             enableBodyScroll();
             showCreditBalanceReport();
@@ -763,8 +757,8 @@ async function showRestoreBackupModal() {
                 if (result.error) throw new Error(result.error);
                 
                 localStorage.removeItem(STORAGE_DATA);
-                showBellNotification('المخبز', 'تمت الاستعادة بنجاح');
-                requestPushNotification('استعادة نسخة احتياطية', `تمت استعادة نسخة: ${date}`);
+                showToast('✅ تمت الاستعادة بنجاح. جاري إعادة تحميل التطبيق...');
+                requestPushNotification('المخبز', `تمت استعادة نسخة احتياطية`);
                 setTimeout(() => {
                     modal.remove();
                     enableBodyScroll();
@@ -779,17 +773,13 @@ async function showRestoreBackupModal() {
     });
 }
 
-// ========== تطبيق الصلاحيات ==========
+// ========== تطبيق الصلاحيات - التوزيع الجديد 2-1-2 ==========
 function applyPermissions() {
     const statsSection = document.getElementById('statsSection');
-    if (statsSection) {
-        statsSection.style.display = 'grid';
-    }
+    if (statsSection) statsSection.style.display = 'grid';
 
     const addCard = document.getElementById('addSubscriberCard');
-    if (addCard) {
-        addCard.style.display = hasAddEditSubscriber() ? 'block' : 'none';
-    }
+    if (addCard) addCard.style.display = hasAddEditSubscriber() ? 'block' : 'none';
     
     const userNameDisplay = document.getElementById('userNameDisplay');
     if (userNameDisplay) userNameDisplay.innerText = currentUser ? currentUser.username : '';
@@ -840,10 +830,14 @@ function applyPermissions() {
         testBtn.innerText = '📡 اختبار الاتصال';
         testBtn.className = 'btn btn-info btn-sm';
         testBtn.onclick = testConnection;
-        actionsContainer.appendChild(testBtn);
-    } else {
+        const row = document.createElement('div');
+        row.className = 'actions-row single-center';
+        row.appendChild(testBtn);
+        actionsContainer.appendChild(row);
+    } else if (isAdmin()) {
+        // 5 أزرار: 2-1-2
         const row1 = document.createElement('div');
-        row1.className = 'actions-row';
+        row1.className = 'actions-row actions-two';
         const dailyBtn = document.createElement('button');
         dailyBtn.id = 'dailyReportBtn';
         dailyBtn.innerText = '📆 تقرير يوم دفع';
@@ -854,37 +848,68 @@ function applyPermissions() {
         cardsBtn.innerText = '📇 تقرير البطاقات';
         cardsBtn.className = 'btn btn-info btn-sm';
         cardsBtn.onclick = () => showCardsReport(false);
+        row1.appendChild(dailyBtn);
+        row1.appendChild(cardsBtn);
+        actionsContainer.appendChild(row1);
+
+        const row2 = document.createElement('div');
+        row2.className = 'actions-row single-center';
         const creditBtn = document.createElement('button');
         creditBtn.id = 'creditBalanceBtn';
         creditBtn.innerText = '🪙 فرق النقاط';
         creditBtn.className = 'btn btn-info btn-sm';
         creditBtn.onclick = showCreditBalanceReport;
-        row1.appendChild(dailyBtn);
-        row1.appendChild(cardsBtn);
-        row1.appendChild(creditBtn);
-        actionsContainer.appendChild(row1);
+        row2.appendChild(creditBtn);
+        actionsContainer.appendChild(row2);
 
-        const row2 = document.createElement('div');
-        row2.className = 'actions-row';
+        const row3 = document.createElement('div');
+        row3.className = 'actions-row actions-two';
         const testBtn = document.createElement('button');
         testBtn.id = 'testConnectionBtn';
         testBtn.innerText = '📡 اختبار الاتصال';
         testBtn.className = 'btn btn-info btn-sm';
         testBtn.onclick = testConnection;
+        const manageBtn = document.createElement('button');
+        manageBtn.id = 'manageUsersBtn';
+        manageBtn.innerText = '👥 إدارة المستخدمين';
+        manageBtn.className = 'btn btn-info btn-sm';
+        manageBtn.onclick = showUserManagement;
+        row3.appendChild(testBtn);
+        row3.appendChild(manageBtn);
+        actionsContainer.appendChild(row3);
+    } else {
+        // كاتب: 4 أزرار - 2×2
+        const row1 = document.createElement('div');
+        row1.className = 'actions-row actions-two';
+        const dailyBtn = document.createElement('button');
+        dailyBtn.id = 'dailyReportBtn';
+        dailyBtn.innerText = '📆 تقرير يوم دفع';
+        dailyBtn.className = 'btn btn-info btn-sm';
+        dailyBtn.onclick = showDatePickerReport;
+        const cardsBtn = document.createElement('button');
+        cardsBtn.id = 'cardsReportBtn';
+        cardsBtn.innerText = '📇 تقرير البطاقات';
+        cardsBtn.className = 'btn btn-info btn-sm';
+        cardsBtn.onclick = () => showCardsReport(false);
+        row1.appendChild(dailyBtn);
+        row1.appendChild(cardsBtn);
+        actionsContainer.appendChild(row1);
+
+        const row2 = document.createElement('div');
+        row2.className = 'actions-row actions-two';
+        const creditBtn = document.createElement('button');
+        creditBtn.id = 'creditBalanceBtn';
+        creditBtn.innerText = '🪙 فرق النقاط';
+        creditBtn.className = 'btn btn-info btn-sm';
+        creditBtn.onclick = showCreditBalanceReport;
+        const testBtn = document.createElement('button');
+        testBtn.id = 'testConnectionBtn';
+        testBtn.innerText = '📡 اختبار الاتصال';
+        testBtn.className = 'btn btn-info btn-sm';
+        testBtn.onclick = testConnection;
+        row2.appendChild(creditBtn);
         row2.appendChild(testBtn);
         actionsContainer.appendChild(row2);
-
-        if (isAdmin()) {
-            const row3 = document.createElement('div');
-            row3.className = 'actions-row';
-            const manageBtn = document.createElement('button');
-            manageBtn.id = 'manageUsersBtn';
-            manageBtn.innerText = '👥 إدارة المستخدمين';
-            manageBtn.className = 'btn btn-info btn-sm';
-            manageBtn.onclick = showUserManagement;
-            row3.appendChild(manageBtn);
-            actionsContainer.appendChild(row3);
-        }
     }
 }
 
