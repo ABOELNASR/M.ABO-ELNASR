@@ -2028,10 +2028,21 @@ body.dark-mode .add-user-form select {
     
     .table-section.fullscreen th,
     .table-section.fullscreen td {
-        padding: 5px 3px;
+        padding: 7px 5px;
+    }
+    
+    .table-section.fullscreen .action-icon-btn {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 0.65rem !important;
+    }
+    
+    .table-section.fullscreen .checkbox-paid {
+        width: 14px !important;
+        height: 14px !important;
+        transform: scale(1) !important;
     }
 }
-
 .table-section.fullscreen .toolbar {
     display: flex;
     flex-wrap: wrap;
