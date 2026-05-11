@@ -42,11 +42,12 @@
     --warning-text: #f57f17;
     --scrollbar-thumb: #b0bec5;
     --scrollbar-track: #f5f5f5;
-    --footer-text: #2e7d32;
+    --footer-text: #ffffff;
     --row-hover-bg: rgba(255, 235, 59, 0.25);
     --card-view-bg: #f9fafb;
     --card-view-border: #e0e0e0;
     --card-view-hover: #f0f4ff;
+    --input-dark-bg: #1a1d24;
 }
 
 body.dark-mode {
@@ -81,11 +82,12 @@ body.dark-mode {
     --warning-text: #ffb74d;
     --scrollbar-thumb: #484f58;
     --scrollbar-track: #161b22;
-    --footer-text: #66bb6a;
+    --footer-text: #ffffff;
     --row-hover-bg: rgba(255, 235, 59, 0.3);
     --card-view-bg: #1c2128;
     --card-view-border: #30363d;
     --card-view-hover: #252b34;
+    --input-dark-bg: #1a1d24;
 }
 
 body {
@@ -137,10 +139,6 @@ body.modal-open {
     .stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
-    .month-picker {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
 }
 
 @media (orientation: landscape) and (max-width: 1000px) {
@@ -148,15 +146,11 @@ body.modal-open {
         grid-template-columns: repeat(3, 1fr);
     }
     .month-picker {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
     }
-    .month-control { order: 1; }
-    .days-info { order: 2; }
-    .datetime-info { order: 3; }
-    .month-picker > div:last-child {
-        order: 4;
+    .month-picker > * {
         width: 100%;
         justify-content: center;
     }
@@ -201,7 +195,9 @@ body.modal-open {
         font-size: 1rem;
     }
     .month-picker {
-        flex-wrap: nowrap;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
         padding: 0.4rem 0.8rem;
         gap: 0.5rem;
     }
@@ -261,11 +257,14 @@ body.modal-open {
 
     .actions-container {
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
         gap: 0.3rem !important;
+        width: 100%;
     }
     .actions-row {
-        flex-wrap: nowrap !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
         gap: 0.3rem !important;
     }
     .actions-row .btn {
@@ -303,11 +302,14 @@ body.modal-open {
         grid-template-columns: repeat(2, 1fr) !important;
     }
     .scroll-to-top-btn {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
         font-size: 1rem;
         bottom: 12px;
         right: 12px;
+        border-radius: 50%;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     .action-buttons-container {
         flex-wrap: nowrap !important;
@@ -331,6 +333,29 @@ body.modal-open {
     }
     .report-card-details {
         font-size: 0.65rem;
+    }
+    .actions-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .actions-row {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .actions-row:first-child {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
+    }
+    .actions-row:nth-child(2) {
+        display: flex;
+        justify-content: center;
+    }
+    .actions-row:nth-child(3) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
     }
 }
 
@@ -513,6 +538,33 @@ body.modal-open {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
+@media (min-width: 1025px) {
+    .month-picker {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.7rem;
+    }
+    .month-picker .month-control {
+        order: 1;
+    }
+    .month-picker .days-info {
+        order: 2;
+    }
+    .month-picker .datetime-info {
+        order: 3;
+    }
+    .month-picker .actions-container {
+        order: 4;
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.3rem;
+    }
+    .actions-row {
+        justify-content: center;
+    }
+}
+
 .month-control {
     display: flex;
     align-items: center;
@@ -619,6 +671,7 @@ body.modal-open {
     color: var(--text-primary);
     margin-bottom: 0.6rem;
     padding-right: 0.3rem;
+    cursor: pointer;
 }
 
 body.dark-mode .form-title {
@@ -670,15 +723,38 @@ body.dark-mode .form-title {
 }
 
 body.dark-mode .input-group input {
-    background-color: var(--input-bg) !important;
+    background-color: var(--input-dark-bg) !important;
     color: var(--text-primary) !important;
-    border: 1px solid #aaa;
+    border: 1px solid #444;
 }
 
 body.dark-mode .input-group input:focus {
     outline: none;
     border-color: var(--btn-light-green);
     box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.2);
+}
+
+body.dark-mode input[type="number"] {
+    background-color: var(--input-dark-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid #444;
+}
+
+body.dark-mode input[type="number"]:focus {
+    border-color: var(--btn-light-green);
+    box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.2);
+}
+
+body.dark-mode textarea {
+    background-color: var(--input-dark-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid #444;
+}
+
+body.dark-mode select {
+    background-color: var(--input-dark-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid #444;
 }
 
 .warning-message {
@@ -1166,6 +1242,7 @@ body.dark-mode .input-group input:focus {
     color: var(--text-primary);
     border-bottom: 1px solid var(--border-light);
     margin-bottom: 0.5rem;
+    margin-left: 45px;
 }
 
 table {
@@ -1263,6 +1340,53 @@ tr.row-selected td {
     background-color: var(--hover-bg);
     transform: scale(1.12);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== إشعار الجرس الداخلي ========== */
+.bell-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1200;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    padding: 0.7rem 1rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-right: 4px solid var(--btn-light-green);
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    max-width: 350px;
+    direction: rtl;
+}
+
+.bell-notification.show {
+    transform: translateX(0);
+}
+
+.bell-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.bell-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.bell-title {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--btn-light-green);
+}
+
+.bell-body {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
 }
 
 /* ========== تذييل الصفحة ========== */
@@ -1501,7 +1625,7 @@ body.dark-mode .date-picker-content input[type="date"] {
 }
 
 body.dark-mode .notes-textarea {
-    background-color: #1a1d24;
+    background-color: var(--input-dark-bg);
     color: #e0e0e0;
     border: 1px solid #444;
 }
@@ -1563,7 +1687,7 @@ body.dark-mode .notes-textarea {
 
 body.dark-mode .add-user-form input,
 body.dark-mode .add-user-form select {
-    background-color: #0d1117;
+    background-color: var(--input-dark-bg);
     color: #c9d1d9;
     border: 1px solid #444;
 }
@@ -1618,28 +1742,27 @@ body.dark-mode .add-user-form select {
     bottom: 20px;
     right: 20px;
     z-index: 999;
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background-color: var(--btn-light-green);
     color: white;
     border: none;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    opacity: 0.9;
-    border: 2px solid var(--bg-container);
+    opacity: 0.85;
 }
 
 .scroll-to-top-btn:hover {
     opacity: 1;
     transform: scale(1.1);
     background-color: var(--btn-light-green-hover);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* ========== أيقونة تحميل دوارة ========== */
@@ -1704,7 +1827,7 @@ body.dark-mode .add-user-form select {
     bottom: 0;
     z-index: 1500;
     background: var(--bg-container);
-    padding: 0.8rem;
+    padding: 0.5rem;
     display: flex;
     flex-direction: column;
     border-radius: 0;
@@ -1720,14 +1843,14 @@ body.dark-mode .add-user-form select {
 
 .table-section.fullscreen table {
     min-width: 100%;
-    font-size: 0.55rem;
+    font-size: 0.45rem;
     table-layout: fixed;
     white-space: nowrap;
 }
 
 .table-section.fullscreen th,
 .table-section.fullscreen td {
-    padding: 4px 2px;
+    padding: 3px 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1739,9 +1862,9 @@ body.dark-mode .add-user-form select {
     right: 0.5rem;
     left: auto;
     z-index: 10;
-    font-size: 1rem;
-    width: 28px;
-    height: 28px;
+    font-size: 0.9rem;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1750,25 +1873,22 @@ body.dark-mode .add-user-form select {
 
 @media (min-width: 769px) {
     .table-section.fullscreen table {
-        font-size: 0.7rem;
+        font-size: 0.55rem;
     }
     .table-section.fullscreen th,
     .table-section.fullscreen td {
-        padding: 6px 4px;
+        padding: 4px 2px;
     }
 }
 
-/* ========== التعديل الأساسي: إجبار أزرار الإجراءات أفقياً بالكامل في وضع Fullscreen ========== */
 .table-section.fullscreen .action-buttons-container {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     justify-content: center;
     align-items: center;
-    gap: 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 4px 0;
+    gap: 2px;
+    padding: 2px 0;
     max-width: 100%;
 }
 
@@ -1782,38 +1902,35 @@ body.dark-mode .add-user-form select {
 
 .table-section.fullscreen .action-icon-btn {
     flex-shrink: 0;
-    width: 26px;
-    height: 26px;
-    font-size: 1rem;
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
     margin: 0;
 }
 
 @media (max-width: 768px) {
-    .table-section.fullscreen .action-buttons-container {
-        justify-content: flex-start;
-        gap: 3px;
-    }
     .table-section.fullscreen .action-icon-btn {
-        width: 24px;
-        height: 24px;
-        font-size: 0.9rem;
+        width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
     }
 }
 
 .table-section.fullscreen .toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 4px;
     margin-bottom: 0.5rem;
-    padding: 0.4rem;
+    padding: 0.3rem;
     background: var(--card-bg);
     border-radius: 0.8rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .table-section.fullscreen .cards-count-header {
-    margin-left: 40px;
+    margin-left: 35px;
     margin-right: 0;
+    font-size: 0.65rem;
 }
 
 /* ========== إصلاح الوضع الأفقي في PWA ========== */
@@ -1840,16 +1957,4 @@ body.dark-mode .add-user-form select {
     .card-item .card-individuals {
         flex: 0 0 80px;
     }
-}
-
-/* ========== حقل الحصة اليومية بلون داكن في الوضع المظلم ========== */
-body.dark-mode input[type="number"] {
-    background-color: #0d1117;
-    color: #c9d1d9;
-    border: 1px solid #444;
-}
-
-body.dark-mode input[type="number"]:focus {
-    border-color: var(--btn-light-green);
-    box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.2);
 }
