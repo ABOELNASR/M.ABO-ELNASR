@@ -6,13 +6,11 @@ const STORAGE_DATA = 'bakery_system_data';
 const STORAGE_SYSTEM_NOTES = 'system_notes';
 const STORAGE_ACTIVITY_LOG = 'activity_log';
 const STORAGE_DELETED_CARDS_LOG = 'deleted_cards_log';
-const STORAGE_SEARCH_HISTORY = 'search_history';
 
-const APP_VERSION = '2.1';
+const APP_VERSION = '2.2';
 const BREAD_PRICE_PER_LOAF = 0.20;
 const CREDIT_PRICE_PER_LOAF = 0.25;
 const DEFAULT_DAILY_BREAD_PER_PERSON = 5;
-const MAX_SEARCH_HISTORY = 5;
 
 const ROLES = {
     ADMIN: 'admin',
@@ -62,10 +60,4 @@ let usersList = [];
 let systemNotes = '';
 let activityLog = [];
 let deletedCardsLog = [];
-let viewMode = 'table'; // 'table' أو 'cards'
-let advancedSearch = {
-    dateFrom: '',
-    dateTo: '',
-    amountMin: '',
-    amountMax: ''
-};
+let viewMode = 'table';
