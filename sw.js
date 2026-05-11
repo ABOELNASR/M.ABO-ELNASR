@@ -6,7 +6,9 @@ const urlsToCache = [
   'https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js'
 ];
 
-let notificationsLog = [];
+if (!self._notificationsLog) {
+  self._notificationsLog = [];
+}
 
 self.addEventListener('install', event => {
   console.log('✅ SW final - install');
@@ -52,16 +54,14 @@ self.addEventListener('push', event => {
     }
   }
 
-  // أضف الإجراء إلى السجل
-  notificationsLog.unshift({ title, body });
-  if (notificationsLog.length > 5) notificationsLog.pop();
+  self._notificationsLog.unshift({ title, body });
+  if (self._notificationsLog.length > 15) self._notificationsLog.pop();
 
-  // بناء نص الإشعار التراكمي
-  const lines = notificationsLog.map(item => `${item.title}: ${item.body}`);
+  // النص من غير العنوان
+  const lines = self._notificationsLog.map(item => item.body);
   const groupTitle = 'المخبز';
   const groupBody = lines.join('\n');
 
-  // عرض الإشعار الخارجي الواحد
   event.waitUntil(
     self.registration.showNotification(groupTitle, {
       body: groupBody,
@@ -86,7 +86,7 @@ self.addEventListener('push', event => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  notificationsLog = [];
+  self._notificationsLog = [];
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
       for (const client of clientList) {
