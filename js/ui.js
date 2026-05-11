@@ -690,7 +690,6 @@ function showCreditBalanceReport() {
             addActivityLog('تسوية نقاط', `تمت تسوية مستحقات ${sub.name} بمبلغ ${formatNumber(credit)} ج.م`);
             await saveData();
             renderAll();
-            showBellNotification('المخبز', `تمت تسوية مستحقات • ${sub.name} ✓`);
             requestPushNotification('المخبز', `تمت تسوية مستحقات • ${sub.name} ✓`);
             modal.remove();
             enableBodyScroll();
@@ -1030,7 +1029,6 @@ function showUserManagement() {
                     saveUsersToLocal();
                     saveData();
                     addActivityLog('حذف مستخدم', `تم حذف ${user.username}`);
-                    showBellNotification('المخبز', `تم حذف المستخدم ${user.username}`);
                     renderUserGrid();
                 }
             };
@@ -1066,7 +1064,6 @@ function showUserManagement() {
                     const userNameDisplay = document.getElementById('userNameDisplay');
                     if (userNameDisplay) userNameDisplay.innerText = currentUser.username;
                 }
-                showBellNotification('المخبز', `تم تحديث المستخدم ${newUsername}`);
                 renderUserGrid();
             };
         });
@@ -1092,7 +1089,6 @@ function showUserManagement() {
         saveUsersToLocal();
         saveData();
         addActivityLog('إضافة مستخدم', `تم إضافة ${username}`);
-        showBellNotification('المخبز', `تم إضافة المستخدم ${username}`);
         renderUserGrid();
         document.getElementById('newUsername').value = '';
         document.getElementById('newPassword').value = '';
