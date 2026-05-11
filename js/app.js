@@ -1,4 +1,4 @@
-// ========== app.js - تهيئة التطبيق وربط الأحداث الرئيسية (مع Web Push Notifications) ==========
+// ========== app.js - تهيئة التطبيق وربط الأحداث الرئيسية ==========
 
 // Initialize Firebase
 firebase.initializeApp(FIREBASE_CONFIG);
@@ -25,7 +25,6 @@ function updateDateTime() {
 }
 setInterval(updateDateTime, 1000);
 
-// دالة مساعدة لربط حدث مع التحقق من وجود العنصر
 function safeAddEventListener(id, event, handler) {
     const el = document.getElementById(id);
     if (el) el.addEventListener(event, handler);
@@ -39,23 +38,24 @@ function safeSetOnclick(id, handler) {
 // ========== تفعيل Web Push Notifications ==========
 async function setupPushNotifications() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        console.warn('⚠️ المتصفح لا يدعم الإشعارات أو Service Worker.');
+        console.warn('⚠️ المتصفح لا يدعم الإشعارات.');
         return;
     }
 
     try {
-        // 1. تسجيل Service Worker المخصص (sw.js)
         const registration = await navigator.serviceWorker.register('./sw.js');
-        console.log('✅ Service Worker تم تسجيله:', registration);
+        console.log('✅ SW مسجل:', registration);
 
-        // 2. طلب الإذن من المستخدم
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SHOW_TOAST') {
+                // إشعار داخلي مع رمز الجرس
+                showBellNotification(event.data.title, event.data.body);
+            }
+        });
+
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') {
-            console.log('⚠️ لم يتم منح إذن الإشعارات.');
-            return;
-        }
+        if (permission !== 'granted') return;
 
-        // 3. الحصول على رمز FCM مع تمرير التسجيل يدوياً
         const currentToken = await messaging.getToken({
             vapidKey: VAPID_PUBLIC_KEY,
             serviceWorkerRegistration: registration
@@ -63,33 +63,40 @@ async function setupPushNotifications() {
 
         if (currentToken) {
             console.log('✅ FCM Token:', currentToken);
-            // حفظ الرمز في الخادم
             await savePushSubscription({ token: currentToken, platform: 'web' });
-
-            // استقبال رسائل المقدمة (Foreground)
-            messaging.onMessage((payload) => {
-                console.log('📩 رسالة في المقدمة:', payload);
-                const notification = payload.notification || {};
-                showToast(`🔔 ${notification.title || 'إشعار'}: ${notification.body || ''}`);
-            });
-        } else {
-            console.log('⚠️ تعذر الحصول على رمز FCM.');
         }
-
     } catch (err) {
-        console.error('❌ فشل إعداد الإشعارات:', err);
+        console.error('⚠️ فشل إعداد الإشعارات:', err);
     }
 }
 
-// تهيئة التطبيق عند تحميل الصفحة
-window.addEventListener('DOMContentLoaded', async () => {
-    // تفعيل Web Push Notifications
-    setupPushNotifications();
+// ========== إشعار داخلي مع رمز الجرس ==========
+function showBellNotification(title, body) {
+    const notif = document.createElement('div');
+    notif.className = 'bell-notification';
+    notif.innerHTML = `
+        <span class="bell-icon">🔔</span>
+        <div class="bell-content">
+            <span class="bell-title">${title}</span>
+            <span class="bell-body">${body}</span>
+        </div>
+    `;
+    document.body.appendChild(notif);
     
-    // تهيئة المستخدمين
+    // إظهار الإشعار
+    setTimeout(() => notif.classList.add('show'), 100);
+    
+    // إخفاء الإشعار بعد 3 ثواني
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 300);
+    }, 3000);
+}
+
+// ========== تهيئة التطبيق بالكامل ==========
+async function initApp() {
     initUsers();
-    
-    // الوضع الداكن
+
     const dark = localStorage.getItem('darkMode') === 'enabled';
     if (dark) document.body.classList.add('dark-mode');
     const darkToggle = document.getElementById('darkModeToggle');
@@ -99,21 +106,69 @@ window.addEventListener('DOMContentLoaded', async () => {
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled');
         };
     }
-    
-    // تحميل المستخدمين من السحابة
+
     await loadUsersFromCloud();
-    
-    // التحقق من الجلسة
+
     if (!checkSession()) {
         showLoginScreen();
-    } else {
-        const appContainer = document.getElementById('appContainer');
-        if (appContainer) appContainer.style.display = 'block';
-        applyPermissions();
-        await loadData();
+        return;
     }
-    
-    // ----- ربط عناصر واجهة المستخدم -----
+
+    const appContainer = document.getElementById('appContainer');
+    if (!appContainer) {
+        console.error('❌ appContainer غير موجود في الصفحة!');
+        return;
+    }
+    appContainer.style.display = 'block';
+    console.log('📦 appContainer ظاهر');
+
+    try {
+        await loadData();
+    } catch (e) {
+        console.warn('تعذر تحميل البيانات من السحابة، استخدام المحلية');
+        loadLocalData();
+    }
+
+    // إظهار الأقسام الأساسية
+    const statsSection = document.getElementById('statsSection');
+    if (statsSection) statsSection.style.display = 'grid';
+    const tableSection = document.getElementById('tableSection');
+    if (tableSection) tableSection.style.display = 'block';
+    const toolbar = document.getElementById('toolbar');
+    if (toolbar) toolbar.style.display = 'flex';
+    const cardsCountHeader = document.getElementById('cardsCountHeader');
+    if (cardsCountHeader) cardsCountHeader.style.display = 'block';
+
+    applyPermissions();
+    renderAll();
+
+    // ربط طي/فتح النموذج
+    const toggleFormBtn = document.getElementById('toggleFormBtn');
+    const formTitle = document.getElementById('formTitle');
+    const addSubscriberCard = document.getElementById('addSubscriberCard');
+
+    if (toggleFormBtn && addSubscriberCard) {
+        toggleFormBtn.onclick = (e) => {
+            e.stopPropagation();
+            addSubscriberCard.classList.toggle('form-collapsed');
+            const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
+            toggleFormBtn.innerText = isCollapsed ? '▼' : '▲';
+            toggleFormBtn.title = isCollapsed ? 'فتح النموذج' : 'طي النموذج';
+        };
+    }
+    if (formTitle && addSubscriberCard) {
+        formTitle.onclick = (e) => {
+            e.stopPropagation();
+            addSubscriberCard.classList.toggle('form-collapsed');
+            const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
+            if (toggleFormBtn) {
+                toggleFormBtn.innerText = isCollapsed ? '▼' : '▲';
+                toggleFormBtn.title = isCollapsed ? 'فتح النموذج' : 'طي النموذج';
+            }
+        };
+    }
+
+    // ربط باقي الأحداث
     const addCardBtn = document.getElementById('addCardBtn');
     const subNameInput = document.getElementById('subName');
     if (addCardBtn && subNameInput) {
@@ -133,8 +188,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (typeof updateDuplicateWarnings === 'function') updateDuplicateWarnings();
         });
     }
-    
-    // القائمة المنسدلة للإدارة
+
     const adminDropdown = document.getElementById('adminDropdown');
     if (adminDropdown) {
         adminDropdown.addEventListener('click', (e) => {
@@ -147,8 +201,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             adminDropdown.classList.remove('active');
         });
     }
-    
-    // أزرار التصفية والبحث
+
     safeSetOnclick('clearFilterBtn', () => {
         currentFilter = 'all';
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -156,42 +209,49 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (allBtn) allBtn.classList.add('active');
         if (typeof renderTable === 'function') renderTable();
     });
-    
+
     safeSetOnclick('clearSearchBtn', () => {
         const searchInput = document.getElementById('searchInput');
         if (searchInput) searchInput.value = '';
         currentSearch = '';
         if (typeof renderTable === 'function') renderTable();
     });
-    
+
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.oninput = e => {
             currentSearch = e.target.value;
-            if (typeof renderTable === 'function') renderTable();
+            if (typeof renderAll === 'function') renderAll();
         };
     }
-    
+
     document.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => {
         document.querySelectorAll('.filter-btn').forEach(f => f.classList.remove('active'));
         b.classList.add('active');
         currentFilter = b.dataset.filter;
         if (typeof renderTable === 'function') renderTable();
     });
-    
-    // أزرار العمليات الرئيسية
+
     safeSetOnclick('saveBtn', addOrUpdate);
     safeSetOnclick('cancelEditBtn', cancelEdit);
     safeSetOnclick('prevMonthBtn', () => changeMonth(-1));
     safeSetOnclick('nextMonthBtn', () => changeMonth(1));
     safeSetOnclick('logoutBtn', logout);
     safeSetOnclick('addCardBtn', addNewCard);
-    
-    // تهيئة البطاقات المؤقتة
+
     tempCardsList = [];
     if (typeof renderTempCards === 'function') renderTempCards();
     updateDateTime();
     if (typeof updateDuplicateWarnings === 'function') updateDuplicateWarnings();
+
+    setupPushNotifications();
+}
+
+// ========== بدء التطبيق ==========
+window.addEventListener('DOMContentLoaded', () => {
+    initApp().catch(err => {
+        console.error('حدث خطأ أثناء بدء التطبيق:', err);
+    });
 });
 
 // ========== زر العودة للأعلى ==========
