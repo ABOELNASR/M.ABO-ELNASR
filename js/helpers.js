@@ -1,4 +1,4 @@
-// ========== helpers.js - الدوال المساعدة العامة (مع دعم Web Push Notifications وسجل البطاقات المحذوفة) ==========
+// ========== helpers.js - الدوال المساعدة العامة ==========
 
 // ========== دوال واجهة المستخدم والإشعارات ==========
 
@@ -248,59 +248,6 @@ function getFilteredCardsCount(searchTerm) {
         }
     }
     return count;
-}
-
-// ========== دوال البحث المتقدم ==========
-
-/**
- * فلترة المشتركين حسب البحث المتقدم (التاريخ والمبلغ)
- */
-function applyAdvancedFilters(subscriberList) {
-    return subscriberList.filter(sub => {
-        const total = subValue(sub);
-        const paid = getPaid(sub.id);
-        const rem = total - paid;
-        const createdAt = sub.createdAt ? sub.createdAt.slice(0, 10) : '';
-        
-        if (advancedSearch.dateFrom && createdAt && createdAt < advancedSearch.dateFrom) return false;
-        if (advancedSearch.dateTo && createdAt && createdAt > advancedSearch.dateTo) return false;
-        if (advancedSearch.amountMin !== '' && rem < parseFloat(advancedSearch.amountMin)) return false;
-        if (advancedSearch.amountMax !== '' && rem > parseFloat(advancedSearch.amountMax)) return false;
-        
-        return true;
-    });
-}
-
-/**
- * حفظ معايير البحث في السجل
- */
-function saveSearchToHistory(searchCriteria) {
-    let history = getSearchHistory();
-    history.unshift({
-        ...searchCriteria,
-        timestamp: new Date().toISOString()
-    });
-    if (history.length > MAX_SEARCH_HISTORY) history.pop();
-    localStorage.setItem(STORAGE_SEARCH_HISTORY, JSON.stringify(history));
-}
-
-/**
- * استرجاع سجل البحث
- */
-function getSearchHistory() {
-    try {
-        const stored = localStorage.getItem(STORAGE_SEARCH_HISTORY);
-        return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-/**
- * مسح سجل البحث
- */
-function clearSearchHistory() {
-    localStorage.removeItem(STORAGE_SEARCH_HISTORY);
 }
 
 // ========== دوال متنوعة ==========
