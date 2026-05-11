@@ -208,12 +208,12 @@ async function initApp() {
         if (typeof renderTable === 'function') renderTable();
     });
 
-    safeSetOnclick('clearSearchBtn', () => {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) searchInput.value = '';
-        currentSearch = '';
-        if (typeof renderTable === 'function') renderTable();
-    });
+safeSetOnclick('clearSearchBtn', () => {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+    currentSearch = '';
+    if (typeof renderAll === 'function') renderAll();
+});
 
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
