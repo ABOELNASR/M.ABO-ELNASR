@@ -2109,6 +2109,17 @@ body.dark-mode .add-user-form select {
         max-width: 160px;
     }
 }
+.card-cards-header {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    text-align: center;
+    padding: 6px;
+    margin-bottom: 6px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+}
 
 /* ========== إصلاح الوضع الأفقي في PWA ========== */
 @media all and (display-mode: standalone) and (orientation: landscape) {
