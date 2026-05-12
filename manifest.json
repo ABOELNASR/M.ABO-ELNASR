@@ -4,7 +4,7 @@
   "description": "نظام إدارة اشتراكات الخبز المدعم مع دفع شهري وتقارير",
   "start_url": "./",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "theme_color": "#2c7a4d",
   "background_color": "#ffffff",
   "orientation": "any",
