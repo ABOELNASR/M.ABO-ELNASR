@@ -147,25 +147,25 @@ async function initApp() {
     const addSubscriberCard = document.getElementById('addSubscriberCard');
 
     if (toggleFormBtn && addSubscriberCard) {
-        toggleFormBtn.onclick = (e) => {
-            e.stopPropagation();
-            addSubscriberCard.classList.toggle('form-collapsed');
-            const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
+    toggleFormBtn.onclick = (e) => {
+        e.stopPropagation();
+        addSubscriberCard.classList.toggle('form-collapsed');
+        const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
+        toggleFormBtn.innerText = isCollapsed ? '▼' : '▲';
+        toggleFormBtn.title = isCollapsed ? 'فتح النموذج' : 'طي النموذج';
+    };
+}
+if (formTitle && addSubscriberCard) {
+    formTitle.onclick = (e) => {
+        e.stopPropagation();
+        addSubscriberCard.classList.toggle('form-collapsed');
+        const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
+        if (toggleFormBtn) {
             toggleFormBtn.innerText = isCollapsed ? '▼' : '▲';
             toggleFormBtn.title = isCollapsed ? 'فتح النموذج' : 'طي النموذج';
-        };
-    }
-    if (formTitle && addSubscriberCard) {
-        formTitle.onclick = (e) => {
-            e.stopPropagation();
-            addSubscriberCard.classList.toggle('form-collapsed');
-            const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
-            if (toggleFormBtn) {
-                toggleFormBtn.innerText = isCollapsed ? '▼' : '▲';
-                toggleFormBtn.title = isCollapsed ? 'فتح النموذج' : 'طي النموذج';
-            }
-        };
-    }
+        }
+    };
+}
 
     const addCardBtn = document.getElementById('addCardBtn');
     const subNameInput = document.getElementById('subName');
