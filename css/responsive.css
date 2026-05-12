@@ -1,0 +1,373 @@
+/* ========== الاستعلامات الإعلامية العامة ========== */
+@media (orientation: portrait) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (orientation: landscape) and (max-width: 1000px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .month-picker {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .month-picker > * {
+        width: 100%;
+        justify-content: center;
+    }
+    .table-wrapper {
+        overflow-x: auto;
+    }
+    table {
+        min-width: 650px;
+    }
+}
+
+/* ========== دعم الوضع الأفقي للهواتف المحمولة ========== */
+@media screen and (max-width: 900px) and (orientation: landscape) {
+    body {
+        padding: 0.3rem;
+    }
+    .app-container {
+        padding: 0.5rem;
+        border-radius: 1rem;
+    }
+    .header {
+        margin-bottom: 0.5rem;
+        padding: 0.4rem;
+    }
+    .header h1 {
+        font-size: 1rem;
+        padding: 0.2rem 1rem;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 0.4rem;
+        margin-bottom: 0.8rem;
+    }
+    .stat-card {
+        padding: 0.4rem;
+        border-radius: 0.8rem;
+    }
+    .stat-label {
+        font-size: 0.55rem;
+    }
+    .stat-value {
+        font-size: 1rem;
+    }
+    
+    /* ========== إعادة تنسيق month-picker للوضع الأفقي - صفين ========== */
+    .month-picker {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        padding: 0.5rem 0.8rem !important;
+        margin-bottom: 0.8rem !important;
+        flex-wrap: nowrap !important;
+    }
+    
+    /* السطر الأول: الشهر + الأيام + الساعة في صف أفقي */
+    .month-picker > .row-one {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        flex-wrap: nowrap !important;
+        width: 100%;
+    }
+    
+    .month-picker > .row-one .month-control,
+    .month-picker > .row-one .days-info,
+    .month-picker > .row-one .datetime-info {
+        flex-shrink: 0;
+    }
+    
+    /* السطر الثاني: أزرار الإجراءات في صف أفقي */
+    .month-picker > .row-two {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0.3rem !important;
+        flex-wrap: nowrap !important;
+        width: 100%;
+    }
+    
+    .month-picker > .row-two .actions-container {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0.3rem !important;
+    }
+    
+    .month-picker > .row-two .actions-container > * {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 0.3rem !important;
+    }
+
+    .month-control button {
+        font-size: 1rem;
+    }
+    
+    #currentMonthYear {
+        font-size: 0.8rem;
+        min-width: 80px;
+    }
+    
+    .days-info {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.5rem;
+    }
+    
+    .datetime-info {
+        font-size: 0.6rem;
+        min-width: 100px;
+    }
+    
+    .form-card {
+        padding: 0.5rem;
+        margin-bottom: 0.8rem;
+    }
+    .toolbar {
+        flex-wrap: nowrap;
+        gap: 4px;
+    }
+    .search-box input {
+        width: 120px;
+    }
+    .filter-btn, .clear-filter-btn {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+    }
+    .cards-count-header {
+        font-size: 0.7rem;
+    }
+    table {
+        font-size: 0.7rem;
+        min-width: 750px;
+    }
+    th, td {
+        padding: 6px 4px;
+    }
+    .action-icon-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 1rem;
+    }
+    .btn {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+    .btn-sm {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+    }
+
+    .actions-container {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        gap: 0.3rem !important;
+        width: 100%;
+    }
+    .actions-row {
+        flex-wrap: nowrap !important;
+        justify-content: center !important;
+        gap: 0.3rem !important;
+    }
+    .actions-row .btn {
+        padding: 3px 8px;
+        font-size: 0.6rem;
+        white-space: nowrap;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .app-container {
+        min-width: 320px;
+    }
+}
+
+/* ========== شاشات الموبايل العمودية ========== */
+@media (max-width: 700px) {
+    body {
+        padding: 0.5rem;
+    }
+    .app-container {
+        padding: 0.8rem;
+    }
+    .top-controls {
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+    }
+    .search-box input {
+        width: 150px;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .scroll-to-top-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+        bottom: 12px;
+        right: 12px;
+    }
+    .action-buttons-container {
+        flex-wrap: nowrap !important;
+        gap: 2px;
+    }
+    .action-icon-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+        padding: 2px;
+    }
+    .modal-content {
+        width: 95%;
+        padding: 0.6rem;
+    }
+    .report-card-item {
+        padding: 0.4rem;
+    }
+    .report-card-title {
+        font-size: 0.75rem;
+    }
+    .report-card-details {
+        font-size: 0.65rem;
+    }
+    
+    /* ========== تنسيق أزرار الإجراءات السريعة - للموبايل الرأسي فقط ========== */
+    .actions-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    
+    .actions-row.actions-two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .actions-row.actions-two .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .actions-row.single-center {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .actions-row.single-center .btn {
+        max-width: 160px;
+    }
+    
+    /* وضع ملء الشاشة للموبايل */
+    .table-section.fullscreen .action-icon-btn {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+    }
+    .table-section.fullscreen .checkbox-paid {
+        width: 14px;
+        height: 14px;
+        transform: scale(1);
+    }
+    .table-section.fullscreen table {
+        font-size: 0.55rem;
+    }
+    .table-section.fullscreen th,
+    .table-section.fullscreen td {
+        padding: 7px 5px;
+    }
+}
+
+/* ========== شاشات الكمبيوتر ========== */
+@media (min-width: 1025px) {
+    .month-picker {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.7rem;
+    }
+    .month-picker .month-control {
+        order: 1;
+    }
+    .month-picker .days-info {
+        order: 2;
+    }
+    .month-picker .datetime-info {
+        order: 3;
+    }
+    .month-picker .actions-container {
+        order: 4;
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.3rem;
+    }
+    .actions-row {
+        justify-content: center;
+    }
+}
+
+@media (min-width: 769px) {
+    .actions-container {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: center;
+        gap: 0.7rem;
+    }
+    .actions-row {
+        flex-wrap: nowrap !important;
+    }
+    
+    .table-section.fullscreen table {
+        font-size: 0.65rem;
+    }
+    .table-section.fullscreen th,
+    .table-section.fullscreen td {
+        padding: 4px 2px;
+    }
+}
+
+@media (min-width: 768px) {
+    .card-item {
+        flex-wrap: wrap;
+    }
+    .card-item .card-name {
+        flex: 1 1 100%;
+        margin-bottom: 0.5rem;
+    }
+    .card-item .card-individuals {
+        flex: 0 0 80px;
+    }
+}
+
+/* ========== إصلاح الوضع الأفقي في PWA ========== */
+@media all and (display-mode: standalone) and (orientation: landscape) {
+    body {
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+    .app-container {
+        max-width: 100%;
+        min-height: 100vh;
+    }
+}

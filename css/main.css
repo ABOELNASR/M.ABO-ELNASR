@@ -1,0 +1,7 @@
+/* ========== الملف الرئيسي - يستدعي جميع ملفات CSS ========== */
+@import url('variables.css');
+@import url('dark-mode.css');
+@import url('layout.css');
+@import url('components.css');
+@import url('animations.css');
+@import url('responsive.css');
