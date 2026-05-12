@@ -337,6 +337,9 @@ body.modal-open {
         flex-wrap: nowrap;
         font-size: 0.6rem;
         padding: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
     }
     .log-time {
         min-width: 110px;
@@ -1696,6 +1699,8 @@ body.dark-mode .date-picker-content input[type="date"] {
     flex-wrap: nowrap;
     gap: 5px;
     white-space: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .log-time {
