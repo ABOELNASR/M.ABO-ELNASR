@@ -351,10 +351,13 @@ body.modal-open {
         flex-shrink: 0;
     }
     .log-user {
+        width: 60px;
         min-width: 60px;
+        max-width: 60px;
         font-size: 0.6rem;
         flex-shrink: 0;
         white-space: nowrap;
+        text-align: right;
     }
 }
 
@@ -1719,10 +1722,13 @@ body.dark-mode .date-picker-content input[type="date"] {
 
 .log-user {
     color: var(--text-secondary);
-    min-width: 60px;
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
     white-space: nowrap;
     flex-shrink: 0;
     text-align: right;
+    word-break: keep-all;
 }
 
 /* ========== الملاحظات العامة ========== */
