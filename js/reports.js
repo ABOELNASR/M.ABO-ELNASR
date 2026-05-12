@@ -190,7 +190,7 @@ function showDatePickerReport() {
                 for (const key in subDates) {
                     if (subDates[key] === selectedDate) {
                         const amt = monthlyPayments[sub.id]?.[key] || 0;
-                        list.push(`${sub.name} - ${amt.toFixed(2)} ج.م`);
+                        list.push(`${sub.name} - ${formatNumber(amt)} ج.م`);
                         total += amt;
                     }
                 }
@@ -198,7 +198,7 @@ function showDatePickerReport() {
         }
         
         if (list.length) {
-            alert(`📅 المدفوعات في ${selectedDate}:\n${list.join('\n')}\n\n💰 الإجمالي: ${total.toFixed(2)} ج.م`);
+            alert(`📅 المدفوعات في ${selectedDate}:\n${list.join('\n')}\n\n💰 الإجمالي: ${formatNumber(total)} ج.م`);
         } else {
             alert(`لا توجد مدفوعات في ${selectedDate}`);
         }
@@ -639,7 +639,7 @@ function showSystemNotes() {
     };
 }
 
-// ========== سجل العمليات ==========
+// ========== سجل العمليات (مُحدث لاستخدام جدول HTML لمشاكل التوافق) ==========
 
 /**
  * عرض سجل العمليات
@@ -650,26 +650,32 @@ function showActivityLog() {
     modal.className = 'modal-overlay';
     
     let logsHtml = `
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 95%; overflow: auto;">
             <h3>📜 سجل العمليات</h3>
             <div style="max-height: 60vh; overflow: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; white-space: nowrap;">
     `;
     
     if (activityLog.length === 0) {
-        logsHtml += '<div style="text-align:center; padding:1rem;">لا توجد عمليات مسجلة</div>';
+        logsHtml += '<tr><td colspan="3" style="text-align:center; padding:1rem;">لا توجد عمليات مسجلة</td></tr>';
     } else {
         activityLog.forEach(log => {
+            const time = formatDateTimeArabic(log.timestamp);
+            const action = `${log.action}: ${log.details}`;
+            const user = log.user || 'غير معروف';
+            
             logsHtml += `
-                <div class="log-entry">
-                    <span class="log-time">${formatDateTimeArabic(log.timestamp)}</span>
-                    <span class="log-action"><strong>${escapeHtml(log.action)}</strong>: ${escapeHtml(log.details)}</span>
-                    <span class="log-user">👤 ${escapeHtml(log.user)}</span>
-                </div>
+                <tr style="border-bottom: 1px solid var(--border-light);">
+                    <td style="padding: 6px 8px; text-align: right; color: var(--btn-light-green); font-weight: bold; white-space: nowrap; min-width: 140px;">🕒 ${escapeHtml(time)}</td>
+                    <td style="padding: 6px 8px; text-align: right; white-space: nowrap;">📌 ${escapeHtml(action)}</td>
+                    <td style="padding: 6px 8px; text-align: right; color: var(--text-secondary); white-space: nowrap; width: 80px;">👤 ${escapeHtml(user)}</td>
+                </tr>
             `;
         });
     }
     
     logsHtml += `
+            </table>
             </div>
             <button id="closeLogBtn" class="btn btn-secondary btn-sm" style="margin-top:1rem;">إغلاق</button>
         </div>
