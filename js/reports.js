@@ -668,7 +668,7 @@ function showActivityLog() {
                 <tr style="border-bottom: 1px solid var(--border-light);">
                     <td style="padding: 6px 8px; text-align: right; color: var(--btn-light-green); font-weight: bold; white-space: nowrap; min-width: 140px;">🕒 ${escapeHtml(time)}</td>
                     <td style="padding: 6px 8px; text-align: right; white-space: nowrap;">📌 ${escapeHtml(action)}</td>
-                    <td style="padding: 4px 4px 4px 0; text-align: right; color: var(--text-secondary); white-space: nowrap; width: 60px; font-size: 0.65rem;">👤 ${escapeHtml(user)}</td>
+                    <td style="padding: 4px 4px 4px 0; text-align: right; color: var(--text-secondary); white-space: nowrap; width: 50px; font-size: 0.6rem;">👤 ${escapeHtml(user)}</td>
                 </tr>
             `;
         });
