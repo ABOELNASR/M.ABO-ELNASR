@@ -360,7 +360,6 @@ body.modal-open {
         flex-shrink: 0;
         white-space: nowrap;
         text-align: right;
-        word-break: keep-all;
     }
 }
 
