@@ -351,9 +351,8 @@ body.modal-open {
         flex-shrink: 0;
     }
     .log-user {
-        width: 60px;
+        width: auto;
         min-width: 60px;
-        max-width: 60px;
         font-size: 0.6rem;
         flex-shrink: 0;
         white-space: nowrap;
@@ -1715,20 +1714,15 @@ body.dark-mode .date-picker-content input[type="date"] {
 
 .log-action {
     flex: 1;
-    overflow: visible;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
-    flex-shrink: 0;
 }
 
 .log-user {
     color: var(--text-secondary);
-    width: 80px;
-    min-width: 80px;
-    max-width: 80px;
+    min-width: 100px;
     white-space: nowrap;
-    flex-shrink: 0;
-    text-align: right;
-    word-break: keep-all;
 }
 
 /* ========== الملاحظات العامة ========== */
@@ -2031,35 +2025,26 @@ body.dark-mode .add-user-form select {
     margin: 0;
 }
 
-@media (max-width: 768px) {
-    .table-section.fullscreen .action-icon-btn {
-        width: 20px;
-        height: 20px;
-        font-size: 0.7rem;
-    }
-}
 @media (max-width: 700px) {
+    .table-section.fullscreen .action-icon-btn {
+        width: 18px;
+        height: 18px;
+        font-size: 0.65rem;
+    }
+    .table-section.fullscreen .checkbox-paid {
+        width: 14px;
+        height: 14px;
+        transform: scale(1);
+    }
     .table-section.fullscreen table {
         font-size: 0.55rem;
     }
-    
     .table-section.fullscreen th,
     .table-section.fullscreen td {
         padding: 7px 5px;
     }
-    
-    .table-section.fullscreen .action-icon-btn {
-        width: 18px !important;
-        height: 18px !important;
-        font-size: 0.65rem !important;
-    }
-    
-    .table-section.fullscreen .checkbox-paid {
-        width: 14px !important;
-        height: 14px !important;
-        transform: scale(1) !important;
-    }
 }
+
 .table-section.fullscreen .toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -2073,7 +2058,7 @@ body.dark-mode .add-user-form select {
 
 .table-section.fullscreen .cards-count-header {
     margin-left: 55px;
-    margin-right: 27px;
+    margin-right: 10px;
     font-size: 0.65rem;
 }
 
@@ -2125,17 +2110,6 @@ body.dark-mode .add-user-form select {
     .actions-row.single-center .btn {
         max-width: 160px;
     }
-}
-.card-cards-header {
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: var(--text-primary);
-    text-align: center;
-    padding: 6px;
-    margin-bottom: 6px;
-    background: var(--card-bg);
-    border-radius: 8px;
-    border: 1px solid var(--border-light);
 }
 
 /* ========== إزالة الظل الأزرق من كل العناصر ========== */
