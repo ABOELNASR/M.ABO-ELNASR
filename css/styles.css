@@ -333,35 +333,6 @@ body.modal-open {
     .report-card-details {
         font-size: 0.65rem;
     }
-    .log-entry {
-        display: table;
-        width: 100%;
-        table-layout: fixed;
-        font-size: 0.6rem;
-        padding: 4px;
-        white-space: nowrap;
-    }
-    .log-time {
-        display: table-cell;
-        font-size: 0.6rem;
-        white-space: nowrap;
-        padding-right: 8px;
-    }
-    .log-action {
-        display: table-cell;
-        font-size: 0.6rem;
-        white-space: nowrap;
-        padding-right: 8px;
-        overflow: visible;
-    }
-    .log-user {
-        display: table-cell;
-        width: 60px;
-        font-size: 0.6rem;
-        white-space: nowrap;
-        text-align: left;
-        direction: ltr;
-    }
 }
 
 /* ========== المكونات العلوية ========== */
@@ -1694,39 +1665,6 @@ body.dark-mode .date-picker-content input[type="date"] {
     font-size: 0.7rem;
     color: var(--text-secondary);
     margin-top: 0.3rem;
-}
-
-/* ========== سجل العمليات ========== */
-.log-entry {
-    font-size: 0.7rem;
-    padding: 6px;
-    border-bottom: 1px solid var(--border-light);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 5px;
-    white-space: nowrap;
-}
-
-.log-time {
-    color: var(--btn-light-green);
-    font-weight: bold;
-    min-width: 140px;
-    white-space: nowrap;
-}
-
-.log-action {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.log-user {
-    color: var(--text-secondary);
-    min-width: 100px;
-    white-space: nowrap;
 }
 
 /* ========== الملاحظات العامة ========== */
