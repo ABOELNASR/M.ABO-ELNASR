@@ -359,7 +359,8 @@ body.modal-open {
         width: 60px;
         font-size: 0.6rem;
         white-space: nowrap;
-        text-align: right;
+        text-align: left;
+        direction: ltr;
     }
 }
 
