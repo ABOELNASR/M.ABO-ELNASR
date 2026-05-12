@@ -1715,9 +1715,9 @@ body.dark-mode .date-picker-content input[type="date"] {
 
 .log-action {
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .log-user {
