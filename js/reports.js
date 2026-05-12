@@ -652,7 +652,7 @@ function showActivityLog() {
     let logsHtml = `
         <div class="modal-content">
             <h3>📜 سجل العمليات</h3>
-            <div style="max-height: 60vh; overflow-y: auto;">
+            <div style="max-height: 60vh; overflow: auto;">
     `;
     
     if (activityLog.length === 0) {
