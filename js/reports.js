@@ -639,13 +639,10 @@ function showSystemNotes() {
     };
 }
 
-// ========== سجل العمليات (مُحدث لاستخدام جدول HTML لمشاكل التوافق) ==========
+// ========== سجل العمليات (تنسيق محسّن - بدون تمرير أفقي) ==========
 
 /**
  * عرض سجل العمليات
- */
-/**
- * عرض سجل العمليات (تنسيق محسّن للموبايل)
  */
 function showActivityLog() {
     disableBodyScroll();
@@ -653,34 +650,68 @@ function showActivityLog() {
     modal.className = 'modal-overlay';
     
     let logsHtml = `
-        <div class="modal-content" style="max-width: 85%; padding: 0.5rem;">
-            <h3 style="font-size: 0.8rem; margin-bottom: 0.4rem;">📜 سجل العمليات</h3>
-            <div style="max-height: 55vh; overflow: auto;">
-            <table style="width: auto; border-collapse: collapse; font-size: 0.58rem; margin: 0 auto;">
+        <div class="modal-content" style="max-width: 95%; width: 95%; padding: 0.4rem;">
+            <h3 style="font-size: 0.75rem; margin-bottom: 0.3rem;">📜 سجل العمليات</h3>
+            <div style="max-height: 70vh; overflow-y: auto; overflow-x: hidden;">
     `;
     
     if (activityLog.length === 0) {
-        logsHtml += '<tr><td colspan="3" style="text-align:center; padding:1rem;">لا توجد عمليات مسجلة</td></tr>';
+        logsHtml += '<div style="text-align:center; padding:1rem; color: var(--text-secondary);">لا توجد عمليات مسجلة</div>';
     } else {
-        activityLog.forEach(log => {
+        activityLog.forEach((log, index) => {
             const time = formatDateTimeArabic(log.timestamp);
             const action = `${log.action}: ${log.details}`;
             const user = log.user || 'غير معروف';
             
             logsHtml += `
-                <tr style="border-bottom: 1px solid var(--border-light);">
-                    <td style="padding: 3px 5px; text-align: right; color: var(--btn-light-green); font-weight: bold; white-space: nowrap; font-size: 0.58rem;">🕒 ${escapeHtml(time)}</td>
-                    <td style="padding: 3px 5px; text-align: right; white-space: nowrap; font-size: 0.58rem;">📌 ${escapeHtml(action)}</td>
-                    <td style="padding: 3px 5px; text-align: right; color: var(--text-secondary); white-space: nowrap; font-size: 0.58rem;">👤 ${escapeHtml(user)}</td>
-                </tr>
+                <div style="
+                    background: ${index % 2 === 0 ? 'var(--card-bg)' : 'var(--hover-bg)'};
+                    border-radius: 8px;
+                    padding: 0.4rem 0.5rem;
+                    margin-bottom: 0.3rem;
+                    border-right: 3px solid var(--btn-light-green);
+                    font-size: 0.6rem;
+                    line-height: 1.5;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                ">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: baseline;">
+                        <span style="color: var(--btn-light-green); font-weight: bold; font-size: 0.55rem; white-space: nowrap;">
+                            🕒 ${escapeHtml(time)}
+                        </span>
+                        <span style="color: var(--text-secondary); font-size: 0.55rem; white-space: nowrap;">
+                            👤 ${escapeHtml(user)}
+                        </span>
+                    </div>
+                    <div style="
+                        margin-top: 0.2rem;
+                        color: var(--text-primary);
+                        font-size: 0.58rem;
+                        word-break: break-word;
+                        line-height: 1.4;
+                    ">
+                        📌 ${escapeHtml(action)}
+                    </div>
+                </div>
             `;
         });
     }
     
     logsHtml += `
-            </table>
             </div>
-            <button id="closeLogBtn" class="btn btn-secondary btn-sm" style="margin-top:0.4rem; font-size:0.6rem; padding:3px 10px;">إغلاق</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; gap: 0.5rem;">
+                <span style="font-size: 0.55rem; color: var(--text-secondary);">
+                    📊 ${activityLog.length} عملية مسجلة
+                </span>
+                <div style="display: flex; gap: 0.4rem;">
+                    <button id="clearLogBtn" class="btn btn-sm btn-danger" style="font-size:0.6rem; padding:3px 8px;">
+                        🗑️ مسح السجل
+                    </button>
+                    <button id="closeLogBtn" class="btn btn-sm btn-secondary" style="font-size:0.6rem; padding:3px 8px;">
+                        إغلاق
+                    </button>
+                </div>
+            </div>
         </div>
     `;
     
@@ -688,6 +719,20 @@ function showActivityLog() {
     document.body.appendChild(modal);
     modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); enableBodyScroll(); } });
     document.getElementById('closeLogBtn').onclick = () => { modal.remove(); enableBodyScroll(); };
+    
+    const clearBtn = document.getElementById('clearLogBtn');
+    if (clearBtn) {
+        clearBtn.onclick = () => {
+            if (confirm('هل أنت متأكد من مسح جميع سجل العمليات؟')) {
+                activityLog = [];
+                saveActivityLogToLocal();
+                modal.remove();
+                enableBodyScroll();
+                showToast('✅ تم مسح سجل العمليات');
+                addActivityLog('مسح السجل', 'تم مسح سجل العمليات بالكامل');
+            }
+        };
+    }
 }
 
 // ========== إرسال التقرير بالبريد الإلكتروني ==========
