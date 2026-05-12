@@ -644,16 +644,19 @@ function showSystemNotes() {
 /**
  * عرض سجل العمليات
  */
+/**
+ * عرض سجل العمليات (تنسيق محسّن للموبايل)
+ */
 function showActivityLog() {
     disableBodyScroll();
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     
     let logsHtml = `
-        <div class="modal-content" style="max-width: 95%; overflow: auto;">
-            <h3>📜 سجل العمليات</h3>
-            <div style="max-height: 60vh; overflow: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; white-space: nowrap;">
+        <div class="modal-content" style="max-width: 95%; padding: 0.6rem; overflow: auto;">
+            <h3 style="font-size: 0.85rem; margin-bottom: 0.5rem;">📜 سجل العمليات</h3>
+            <div style="max-height: 55vh; overflow: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.6rem; table-layout: auto;">
     `;
     
     if (activityLog.length === 0) {
@@ -666,9 +669,9 @@ function showActivityLog() {
             
             logsHtml += `
                 <tr style="border-bottom: 1px solid var(--border-light);">
-                    <td style="padding: 6px 8px; text-align: right; color: var(--btn-light-green); font-weight: bold; white-space: nowrap; min-width: 140px;">🕒 ${escapeHtml(time)}</td>
-                    <td style="padding: 6px 8px; text-align: right; white-space: nowrap;">📌 ${escapeHtml(action)}</td>
-                    <td style="padding: 6px 8px; text-align: right; color: var(--text-secondary); white-space: nowrap; width: auto;">👤 ${escapeHtml(user)}</td>
+                    <td style="padding: 4px 6px; text-align: right; color: var(--btn-light-green); font-weight: bold; white-space: nowrap; font-size: 0.6rem;">🕒 ${escapeHtml(time)}</td>
+                    <td style="padding: 4px 6px; text-align: right; white-space: nowrap; font-size: 0.6rem;">📌 ${escapeHtml(action)}</td>
+                    <td style="padding: 4px 6px; text-align: right; color: var(--text-secondary); white-space: nowrap; font-size: 0.6rem; width: 1%;">👤 ${escapeHtml(user)}</td>
                 </tr>
             `;
         });
@@ -677,7 +680,7 @@ function showActivityLog() {
     logsHtml += `
             </table>
             </div>
-            <button id="closeLogBtn" class="btn btn-secondary btn-sm" style="margin-top:1rem;">إغلاق</button>
+            <button id="closeLogBtn" class="btn btn-secondary btn-sm" style="margin-top:0.5rem; font-size:0.65rem; padding:4px 12px;">إغلاق</button>
         </div>
     `;
     
