@@ -334,29 +334,33 @@ body.modal-open {
         font-size: 0.65rem;
     }
     .log-entry {
+        display: flex;
         flex-wrap: nowrap;
         font-size: 0.6rem;
         padding: 4px;
         white-space: nowrap;
+        min-width: max-content;
     }
     .log-time {
-        min-width: 110px;
+        min-width: 100px;
         font-size: 0.6rem;
         flex-shrink: 0;
     }
     .log-action {
         font-size: 0.6rem;
-        overflow: visible;
         white-space: nowrap;
         flex-shrink: 0;
+        overflow: visible;
     }
     .log-user {
-        width: auto;
+        width: 60px;
         min-width: 60px;
+        max-width: 60px;
         font-size: 0.6rem;
         flex-shrink: 0;
         white-space: nowrap;
         text-align: right;
+        word-break: keep-all;
     }
 }
 
