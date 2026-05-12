@@ -653,10 +653,10 @@ function showActivityLog() {
     modal.className = 'modal-overlay';
     
     let logsHtml = `
-        <div class="modal-content" style="max-width: 95%; padding: 0.6rem; overflow: auto;">
-            <h3 style="font-size: 0.85rem; margin-bottom: 0.5rem;">📜 سجل العمليات</h3>
+        <div class="modal-content" style="max-width: 85%; padding: 0.5rem;">
+            <h3 style="font-size: 0.8rem; margin-bottom: 0.4rem;">📜 سجل العمليات</h3>
             <div style="max-height: 55vh; overflow: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.6rem; table-layout: auto;">
+            <table style="width: auto; border-collapse: collapse; font-size: 0.58rem; margin: 0 auto;">
     `;
     
     if (activityLog.length === 0) {
@@ -669,9 +669,10 @@ function showActivityLog() {
             
             logsHtml += `
                 <tr style="border-bottom: 1px solid var(--border-light);">
-                    <td style="padding: 4px 6px; text-align: right; color: var(--btn-light-green); font-weight: bold; white-space: nowrap; font-size: 0.6rem;">🕒 ${escapeHtml(time)}</td>
-                    <td style="padding: 4px 6px; text-align: right; white-space: nowrap; font-size: 0.6rem;">📌 ${escapeHtml(action)}</td>
-                    <td style="padding: 4px 0 4px 6px; text-align: right; color: var(--text-secondary); white-space: nowrap; font-size: 0.6rem; width: 1%;">👤 ${escapeHtml(user)}</td>
+                    <td style="padding: 3px 5px; text-align: right; color: var(--btn-light-green); font-weight: bold; white-space: nowrap; font-size: 0.58rem;">🕒 ${escapeHtml(time)}</td>
+                    <td style="padding: 3px 5px; text-align: right; white-space: nowrap; font-size: 0.58rem;">📌 ${escapeHtml(action)}</td>
+                    <td style="padding: 3px 5px; text-align: right; color: var(--text-secondary); white-space: nowrap; font-size: 0.58rem;">👤 ${escapeHtml(user)}</td>
+                </tr>
             `;
         });
     }
@@ -679,7 +680,7 @@ function showActivityLog() {
     logsHtml += `
             </table>
             </div>
-            <button id="closeLogBtn" class="btn btn-secondary btn-sm" style="margin-top:0.5rem; font-size:0.65rem; padding:4px 12px;">إغلاق</button>
+            <button id="closeLogBtn" class="btn btn-secondary btn-sm" style="margin-top:0.4rem; font-size:0.6rem; padding:3px 10px;">إغلاق</button>
         </div>
     `;
     
