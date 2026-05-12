@@ -334,32 +334,31 @@ body.modal-open {
         font-size: 0.65rem;
     }
     .log-entry {
-        display: flex;
-        flex-wrap: nowrap;
+        display: table;
+        width: 100%;
         font-size: 0.6rem;
         padding: 4px;
         white-space: nowrap;
-        min-width: max-content;
+        table-layout: auto;
     }
     .log-time {
-        min-width: 100px;
+        display: table-cell;
         font-size: 0.6rem;
-        flex-shrink: 0;
+        white-space: nowrap;
+        padding-right: 8px;
     }
     .log-action {
+        display: table-cell;
         font-size: 0.6rem;
         white-space: nowrap;
-        flex-shrink: 0;
-        overflow: visible;
+        padding-right: 8px;
     }
     .log-user {
-        width: 60px;
-        min-width: 60px;
-        max-width: 60px;
+        display: table-cell;
         font-size: 0.6rem;
-        flex-shrink: 0;
         white-space: nowrap;
         text-align: right;
+        padding-left: 8px;
     }
 }
 
