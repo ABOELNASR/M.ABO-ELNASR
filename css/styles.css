@@ -344,15 +344,18 @@ body.modal-open {
     .log-time {
         min-width: 110px;
         font-size: 0.6rem;
+        flex-shrink: 0;
     }
     .log-action {
         font-size: 0.6rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow: visible;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
     .log-user {
         min-width: 70px;
         font-size: 0.6rem;
+        flex-shrink: 0;
     }
 }
 
@@ -1712,9 +1715,9 @@ body.dark-mode .date-picker-content input[type="date"] {
 
 .log-action {
     flex: 1;
-    overflow: visible;
-    white-space: normal;
-    word-break: break-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .log-user {
