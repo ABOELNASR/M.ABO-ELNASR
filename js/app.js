@@ -94,6 +94,65 @@ function showBellNotification(title, body) {
     }, 4000);
 }
 
+// ========== إعادة ترتيب month-picker للوضع الأفقي في الموبايل ==========
+function organizeMonthPickerForLandscape() {
+    const monthPicker = document.querySelector('.month-picker');
+    if (!monthPicker) return;
+    
+    // التحقق من أننا في الوضع الأفقي للموبايل
+    const isLandscapeMobile = window.innerWidth <= 900 && window.matchMedia('(orientation: landscape)').matches;
+    
+    if (!isLandscapeMobile) {
+        // إعادة الترتيب الطبيعي إذا مش في الوضع الأفقي
+        const rowOne = monthPicker.querySelector('.row-one');
+        const rowTwo = monthPicker.querySelector('.row-two');
+        if (rowOne || rowTwo) {
+            // استخراج العناصر من الصفوف
+            const monthControl = rowOne ? rowOne.querySelector('.month-control') : null;
+            const daysInfo = rowOne ? rowOne.querySelector('.days-info') : null;
+            const dateTimeInfo = rowOne ? rowOne.querySelector('.datetime-info') : null;
+            const actionsContainer = rowTwo ? rowTwo.querySelector('#actionsContainer') : null;
+            
+            // تفريغ monthPicker
+            monthPicker.innerHTML = '';
+            
+            // إعادة إضافة العناصر مباشرة
+            if (monthControl) monthPicker.appendChild(monthControl);
+            if (daysInfo) monthPicker.appendChild(daysInfo);
+            if (dateTimeInfo) monthPicker.appendChild(dateTimeInfo);
+            if (actionsContainer) monthPicker.appendChild(actionsContainer);
+        }
+        return;
+    }
+    
+    // تجنب إعادة الترتيب إذا كان قد تم بالفعل
+    if (monthPicker.querySelector('.row-one') && monthPicker.querySelector('.row-two')) return;
+    
+    const monthControl = monthPicker.querySelector('.month-control');
+    const daysInfo = monthPicker.querySelector('.days-info');
+    const dateTimeInfo = monthPicker.querySelector('.datetime-info');
+    const actionsContainer = document.getElementById('actionsContainer');
+    
+    if (!monthControl || !daysInfo || !dateTimeInfo || !actionsContainer) return;
+    
+    // إنشاء السطر الأول
+    const rowOne = document.createElement('div');
+    rowOne.className = 'row-one';
+    rowOne.appendChild(monthControl);
+    rowOne.appendChild(daysInfo);
+    rowOne.appendChild(dateTimeInfo);
+    
+    // إنشاء السطر الثاني
+    const rowTwo = document.createElement('div');
+    rowTwo.className = 'row-two';
+    rowTwo.appendChild(actionsContainer);
+    
+    // إعادة ترتيب monthPicker
+    monthPicker.innerHTML = '';
+    monthPicker.appendChild(rowOne);
+    monthPicker.appendChild(rowTwo);
+}
+
 // ========== تهيئة التطبيق بالكامل ==========
 async function initApp() {
     initUsers();
@@ -241,6 +300,19 @@ safeSetOnclick('clearSearchBtn', () => {
     if (typeof renderTempCards === 'function') renderTempCards();
     updateDateTime();
     if (typeof updateDuplicateWarnings === 'function') updateDuplicateWarnings();
+
+    // ترتيب month-picker للوضع الأفقي
+    organizeMonthPickerForLandscape();
+    
+    // مراقبة تغيير حجم الشاشة أو الاتجاه
+    window.addEventListener('resize', () => {
+        organizeMonthPickerForLandscape();
+    });
+    
+    // مراقبة تغيير الاتجاه
+    window.matchMedia('(orientation: landscape)').addEventListener('change', () => {
+        organizeMonthPickerForLandscape();
+    });
 
     setupPushNotifications();
 }
