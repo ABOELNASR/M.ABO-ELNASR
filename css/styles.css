@@ -1916,6 +1916,7 @@ body.dark-mode .add-user-form select {
 .form-collapsed .toggle-form-btn {
     transform: rotate(0deg);
 }
+
 .form-card:not(.form-collapsed) .toggle-form-btn {
     transform: rotate(180deg);
 }
