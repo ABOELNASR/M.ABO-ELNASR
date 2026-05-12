@@ -2120,41 +2120,10 @@ body.dark-mode .add-user-form select {
     border-radius: 8px;
     border: 1px solid var(--border-light);
 }
-/* ========== إزالة الظل الأزرق عند الضغط على الأزرار في الموبايل ========== */
-button:focus,
-button:active,
-input:focus,
-input:active,
-select:focus,
-select:active,
-.btn:focus,
-.btn:active,
-.action-icon-btn:focus,
-.action-icon-btn:active,
-.view-toggle-btn:focus,
-.view-toggle-btn:active,
-.card-tab:focus,
-.card-tab:active,
-.filter-btn:focus,
-.filter-btn:active,
-.clear-filter-btn:focus,
-.clear-filter-btn:active,
-.search-clear:focus,
-.search-clear:active,
-.add-card-btn:focus,
-.add-card-btn:active,
-.toggle-form-btn:focus,
-.toggle-form-btn:active,
-.scroll-to-top-btn:focus,
-.scroll-to-top-btn:active,
-.dark-mode-toggle:focus,
-.dark-mode-toggle:active,
-.admin-dropdown-btn:focus,
-.admin-dropdown-btn:active,
-.remove-card-btn:focus,
-.remove-card-btn:active,
-.checkbox-paid:focus,
-.checkbox-paid:active {
+
+/* ========== إزالة الظل الأزرق من كل العناصر ========== */
+*:focus,
+*:active {
     outline: none !important;
     -webkit-tap-highlight-color: transparent !important;
     box-shadow: none !important;
