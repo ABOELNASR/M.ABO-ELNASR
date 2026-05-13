@@ -1,5 +1,5 @@
 /* ========== عرض الكروت (Card View) ========== */
-.cards-view-grid {
+.cards-view-gri {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 0.8rem;
