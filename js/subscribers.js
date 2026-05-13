@@ -189,6 +189,38 @@ async function addOrUpdate() {
         const idx = subscribers.findIndex(s => s.id == editId);
         if (idx !== -1) {
             const oldSub = subscribers[idx];
+            
+            // ⭐ التحقق من تغيير عدد الأفراد وتحديث الحصة اليومية تلقائياً
+            const key = getKey(currentYear, currentMonth);
+            const today = new Date().getDate();
+            const days = getDays(currentYear, currentMonth);
+            
+            cardsList.forEach((newCard, cardIdx) => {
+                const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
+                if (oldCard && oldCard.individuals !== newCard.individuals && today > 1 && today < days) {
+                    // تغيير عدد الأفراد في منتصف الشهر
+                    const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
+                    const newTotalDailyBread = cardsList.reduce((sum, c, i) => {
+                        if (i === cardIdx) return sum + (c.dailyBreadOverride || newDefaultBread);
+                        return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                    }, 0);
+                    
+                    if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                    if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                    
+                    // إزالة تغييرات سابقة لنفس اليوم
+                    breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                    
+                    breadOverrides[oldSub.id][key].push({
+                        day: today,
+                        totalDailyBread: newTotalDailyBread,
+                        reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
+                    });
+                    
+                    breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+                }
+            });
+            
             const historyEntry = {
                 action: 'تعديل المشترك',
                 note: 'بدون ملاحظة',
@@ -416,11 +448,21 @@ async function editDailyBread(subId) {
     modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); enableBodyScroll(); } });
     document.getElementById('cancelBreadBtn').onclick = () => { modal.remove(); enableBodyScroll(); };
     document.getElementById('saveBreadBtn').onclick = async () => {
+        const key = getKey(currentYear, currentMonth);
+        const today = new Date().getDate();
+        const days = getDays(currentYear, currentMonth);
+        let hasChanges = false;
+        let newTotalDailyBread = 0;
+        
         sub.cardsList.forEach((card, idx) => {
             const input = document.getElementById(`bread_${idx}`);
             const val = input.value.trim();
             const defaultDaily = card.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
+            const oldBread = card.dailyBreadOverride !== null ? card.dailyBreadOverride : defaultDaily;
+            
+            let newBread;
             if (val === '') {
+                newBread = defaultDaily;
                 card.dailyBreadOverride = null;
             } else {
                 let num = parseInt(val);
@@ -428,10 +470,37 @@ async function editDailyBread(subId) {
                 if (num > defaultDaily) {
                     num = defaultDaily;
                 }
+                newBread = num;
                 card.dailyBreadOverride = num;
             }
+            
+            newTotalDailyBread += newBread;
             card.updatedAt = new Date().toISOString();
+            
+            // ⭐ تسجيل تغيير الحصة إذا اختلفت القيمة وكان في وسط الشهر
+            if (oldBread !== newBread && today > 1 && today < days) {
+                hasChanges = true;
+            }
         });
+        
+        // ⭐ تسجيل التغيير في breadOverrides إذا كان في منتصف الشهر
+        if (hasChanges) {
+            if (!breadOverrides[sub.id]) breadOverrides[sub.id] = {};
+            if (!breadOverrides[sub.id][key]) breadOverrides[sub.id][key] = [];
+            
+            // إزالة تغييرات سابقة لنفس اليوم
+            breadOverrides[sub.id][key] = breadOverrides[sub.id][key].filter(o => o.day !== today);
+            
+            breadOverrides[sub.id][key].push({
+                day: today,
+                totalDailyBread: newTotalDailyBread,
+                reason: 'تعديل الحصة اليومية'
+            });
+            
+            breadOverrides[sub.id][key].sort((a, b) => a.day - b.day);
+            
+            showToast(`✅ تم تعديل الحصة. سيتم احتساب المتبقي من اليوم ${today} إلى نهاية الشهر.`);
+        }
         
         addActivityLog('تعديل الحصة اليومية', `تم تعديل حصة المشترك ${sub.name}`);
         requestPushNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
