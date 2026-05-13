@@ -5,6 +5,7 @@ function toggleFullscreenTable() {
     const btn = document.getElementById('toggleFullscreenBtn');
     const toolbar = document.getElementById('toolbar');
     const cardsCountHeader = document.getElementById('cardsCountHeader');
+    const btnContainer = btn ? btn.parentElement : null;
     
     if (!section || !btn) return;
     
@@ -15,6 +16,15 @@ function toggleFullscreenTable() {
         btn.title = 'إغلاق وضع ملء الشاشة';
         disableBodyScroll();
         
+        // نقل الزر جوه الـ table-section
+        section.insertBefore(btn, section.firstChild);
+        btn.style.position = 'absolute';
+        btn.style.top = '0.5rem';
+        btn.style.right = '0.5rem';
+        btn.style.left = 'auto';
+        btn.style.zIndex = '10';
+        
+        // نقل toolbar و cardsCountHeader جوه fullscreen
         if (toolbar && cardsCountHeader) {
             const tableWrapper = document.getElementById('tableWrapper');
             if (tableWrapper) {
@@ -27,11 +37,22 @@ function toggleFullscreenTable() {
         btn.title = 'تكبير الجدول';
         enableBodyScroll();
         
+        // إرجاع الزر لمكانه الأصلي
+        if (btnContainer) {
+            btnContainer.appendChild(btn);
+        }
+        btn.style.position = '';
+        btn.style.top = '';
+        btn.style.right = '';
+        btn.style.left = '';
+        btn.style.zIndex = '';
+        
+        // إرجاع toolbar و cardsCountHeader لأماكنهم
         if (toolbar && cardsCountHeader) {
-            const formCard = document.getElementById('addSubscriberCard');
-            if (formCard) {
-                formCard.insertAdjacentElement('afterend', toolbar);
-                toolbar.insertAdjacentElement('beforebegin', cardsCountHeader);
+            const viewToggle = document.getElementById('viewToggle');
+            if (viewToggle) {
+                viewToggle.insertAdjacentElement('afterend', cardsCountHeader);
+                cardsCountHeader.insertAdjacentElement('afterend', btnContainer);
             }
         }
     }
