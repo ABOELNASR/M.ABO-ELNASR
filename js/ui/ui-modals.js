@@ -86,12 +86,31 @@ function showEditSubscriberModal(sub) {
             });
         });
         document.querySelectorAll('.remove-card-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const idx = parseInt(btn.dataset.editIdx);
+                const card = tempCardsList[idx];
+                const cardName = card.cardName || 'بطاقة غير مسماة';
+                const individuals = parseInt(card.individuals) || 0;
+                const subscriberName = sub.name;
+                
+                // ⭐ ملاحظة إلزامية لحذف بطاقة من مشترك موجود
+                const note = prompt(`🗑️ حذف البطاقة "${cardName}" من المشترك "${subscriberName}"\nالرجاء كتابة سبب الحذف (ملاحظة إلزامية):`);
+                if (note === null) {
+                    showToast('تم إلغاء الحذف', true);
+                    return;
+                }
+                if (!note.trim()) {
+                    showToast('❌ الملاحظة مطلوبة لحذف البطاقة', true);
+                    return;
+                }
+                
                 tempCardsList.splice(idx, 1);
                 renderEditCards();
                 updateDuplicateWarnings();
+                logDeletedCard(cardName, individuals, subscriberName, note);
+                addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
+                showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
             });
         });
     };
@@ -118,8 +137,14 @@ function showEditSubscriberModal(sub) {
         
         const idx = subscribers.findIndex(s => s.id == sub.id);
         if (idx !== -1) {
-            subscribers[idx].name = name;
-            subscribers[idx].cardsList = tempCardsList.map(card => ({
+            const oldSub = subscribers[idx];
+            
+            // ⭐ التحقق من تغيير عدد الأفراد وتحديث الحصة اليومية تلقائياً
+            const key = getKey(currentYear, currentMonth);
+            const today = new Date().getDate();
+            const days = getDays(currentYear, currentMonth);
+            
+            const cardsList = tempCardsList.map(card => ({
                 cardName: String(card.cardName || '').trim(),
                 individuals: parseInt(card.individuals) || 1,
                 dailyBreadOverride: card.dailyBreadOverride || null,
@@ -128,6 +153,40 @@ function showEditSubscriberModal(sub) {
                 history: Array.isArray(card.history) ? card.history : [],
                 notes: String(card.notes || '')
             }));
+            
+            cardsList.forEach((newCard, cardIdx) => {
+                const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
+                if (oldCard && oldCard.individuals !== newCard.individuals && today > 1 && today < days) {
+                    // ⭐ تغيير عدد الأفراد في منتصف الشهر - تحديث الحصة تلقائياً
+                    const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
+                    
+                    // إذا كان فيه override موجود، نحافظ عليه إذا كان أقل من الافتراضي الجديد
+                    if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
+                        newCard.dailyBreadOverride = newDefaultBread;
+                    }
+                    
+                    // حساب إجمالي الحصة اليومية الجديدة
+                    const newTotalDailyBread = cardsList.reduce((sum, c) => {
+                        return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                    }, 0);
+                    
+                    if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                    if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                    
+                    breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                    
+                    breadOverrides[oldSub.id][key].push({
+                        day: today,
+                        totalDailyBread: newTotalDailyBread,
+                        reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
+                    });
+                    
+                    breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+                }
+            });
+            
+            subscribers[idx].name = name;
+            subscribers[idx].cardsList = cardsList;
             subscribers[idx].updatedAt = new Date().toISOString();
         }
         
