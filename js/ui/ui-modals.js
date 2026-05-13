@@ -137,33 +137,60 @@ function showEditSubscriberModal(sub) {
         const idx = subscribers.findIndex(s => s.id == sub.id);
         if (idx !== -1) {
             const oldSub = subscribers[idx];
+            const key = getKey(currentYear, currentMonth);
+            const today = new Date().getDate();
+            const days = getDays(currentYear, currentMonth);
+            const oldCardsCount = oldSub.cardsList ? oldSub.cardsList.length : 0;
             
             const cardsList = tempCardsList.map(card => ({
                 cardName: String(card.cardName || '').trim(),
                 individuals: parseInt(card.individuals) || 1,
-                dailyBreadOverride: card.dailyBreadOverride || null,
+                dailyBreadOverride: null,
                 createdAt: card.createdAt || new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 history: Array.isArray(card.history) ? card.history : [],
                 notes: String(card.notes || '')
             }));
             
-            // ⭐ تحديث الحصة اليومية تلقائياً عند تغيير عدد الأفراد في أي يوم
+            const newCardsCount = cardsList.length;
+            
+            // ⭐ كشف إضافة بطاقة جديدة
+            const hasNewCard = newCardsCount > oldCardsCount;
+            
+            // ⭐ كشف تغيير في عدد الأفراد - تصفير override
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
                 if (oldCard && oldCard.individuals !== newCard.individuals) {
-                    const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
-                    
-                    // ⭐ إجبار الحصة اليومية على التحديث للافتراضي الجديد
                     newCard.dailyBreadOverride = null;
-                    
-                    // ⭐ تنظيف breadOverrides لأن الحساب من أول الشهر
-                    const key = getKey(currentYear, currentMonth);
-                    if (breadOverrides[oldSub.id] && breadOverrides[oldSub.id][key]) {
-                        delete breadOverrides[oldSub.id][key];
-                    }
                 }
             });
+            
+            // ⭐ إضافة بطاقة جديدة - حساب من تاريخ اليوم
+            if (hasNewCard && today > 1 && today < days) {
+                const newTotalDailyBread = cardsList.reduce((sum, c) => {
+                    return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                }, 0);
+                
+                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                
+                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                
+                breadOverrides[oldSub.id][key].push({
+                    day: today,
+                    totalDailyBread: newTotalDailyBread,
+                    reason: `إضافة بطاقة جديدة (${newCardsCount} بطاقات)`
+                });
+                
+                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+            }
+            
+            // ⭐ لو مفيش بطاقة جديدة، نمسح breadOverrides
+            if (!hasNewCard) {
+                if (breadOverrides[oldSub.id] && breadOverrides[oldSub.id][key]) {
+                    delete breadOverrides[oldSub.id][key];
+                }
+            }
             
             subscribers[idx].name = name;
             subscribers[idx].cardsList = cardsList;
