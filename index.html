@@ -170,11 +170,13 @@
         <!-- عداد البطاقات -->
         <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
 
-        <!-- حاوية الجدول مع زر وضع ملء الشاشة -->
+        <!-- زر ملء الشاشة -->
+        <div style="text-align: right; margin-bottom: 4px;">
+            <button id="toggleFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
+        </div>
+
+        <!-- حاوية الجدول -->
         <div class="table-section" id="tableSection">
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 4px;">
-                <button id="toggleFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
-            </div>
             <div class="table-wrapper" id="tableWrapper">
                 <table id="subscribersTable">
                     <thead>
