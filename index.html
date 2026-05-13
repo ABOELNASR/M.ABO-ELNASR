@@ -6,6 +6,7 @@
     <title>منظومة الخبز المدعم - نظام اشتراكات</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c7a4d">
+    <meta name="background-color" content="#2c7a4d">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="المخبز">
@@ -25,6 +26,11 @@
     <link rel="stylesheet" href="css/main.css">
     
     <style>
+        /* إخفاء الخلفية البيضاء قبل تحميل التطبيق */
+        html, body {
+            background-color: #2c7a4d !important;
+        }
+        
         /* منع تحديد النص ونسخه */
         body, .app-container, .modal-content, input, textarea, button, table, .stat-card, .toast-notification {
             user-select: none;
