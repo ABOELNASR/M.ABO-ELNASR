@@ -26,6 +26,7 @@ function showEditSubscriberModal(sub) {
             <div class="cards-header" style="margin-bottom: 0.5rem;">
                 <span class="cards-title">📇 البطاقات التموينية</span>
                 <button type="button" class="add-card-btn" id="editAddCardBtn">+ إضافة بطاقة</button>
+                <button type="button" class="add-card-btn" id="editSelectCardBtn" style="background: var(--btn-light-green);">📋 اختيار من البطاقات</button>
             </div>
             <div id="editCardsListContainer" class="cards-list"></div>
             <div id="editCardNameWarning" class="warning-message" style="display: none;"></div>
@@ -104,23 +105,89 @@ function showEditSubscriberModal(sub) {
                     return;
                 }
                 
+                // ⭐ إرجاع البطاقة للقائمة المتاحة عند الحذف
+                availableCards.push({ cardName: cardName, individuals: individuals });
+                
                 tempCardsList.splice(idx, 1);
                 renderEditCards();
                 updateDuplicateWarnings();
                 logDeletedCard(cardName, individuals, subscriberName, note);
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
-                showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
+                showToast(`🗑️ تم حذف البطاقة وإعادتها للقائمة. السبب: ${note}`);
             });
         });
     };
     
     renderEditCards();
+    
+    // زر إضافة بطاقة يدوية
     document.getElementById('editAddCardBtn').onclick = () => {
         tempCardsList.push({
             cardName: '',
             individuals: ''
         });
         renderEditCards();
+    };
+    
+    // ⭐ زر اختيار من البطاقات المتاحة
+    document.getElementById('editSelectCardBtn').onclick = () => {
+        if (availableCards.length === 0) {
+            showToast('⚠️ لا توجد بطاقات متاحة. أضف بطاقات من إدارة البطاقات أولاً.', true);
+            return;
+        }
+        
+        let cardsListHtml = availableCards.map((card, idx) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 4px; background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 8px; cursor: pointer;" class="select-card-item" data-idx="${idx}">
+                <span>📇 ${escapeHtml(card.cardName)} - 👥 ${card.individuals} أفراد</span>
+                <span style="color: var(--btn-light-green); font-weight: bold;">✅ اختيار</span>
+            </div>
+        `).join('');
+        
+        const selectModal = document.createElement('div');
+        selectModal.className = 'modal-overlay';
+        selectModal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <h3>📋 اختر بطاقة من البطاقات المتاحة</h3>
+                <input type="text" id="searchAvailableCards" placeholder="🔍 بحث..." class="report-search-box" style="margin-bottom: 0.5rem;">
+                <div style="max-height: 250px; overflow-y: auto;" id="availableCardsSelectList">${cardsListHtml}</div>
+                <button id="cancelSelectCardBtn" class="btn btn-secondary btn-sm" style="margin-top:1rem;">إلغاء</button>
+            </div>
+        `;
+        document.body.appendChild(selectModal);
+        
+        selectModal.addEventListener('click', (e) => { if (e.target === selectModal) { selectModal.remove(); enableBodyScroll(); } });
+        document.getElementById('cancelSelectCardBtn').onclick = () => { selectModal.remove(); enableBodyScroll(); };
+        
+        // بحث في البطاقات
+        document.getElementById('searchAvailableCards').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.select-card-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        });
+        
+        // اختيار بطاقة
+        document.querySelectorAll('.select-card-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const idx = parseInt(item.dataset.idx);
+                const selectedCard = availableCards[idx];
+                tempCardsList.push({
+                    cardName: selectedCard.cardName,
+                    individuals: selectedCard.individuals,
+                    dailyBreadOverride: null,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    history: [],
+                    notes: ''
+                });
+                availableCards.splice(idx, 1);
+                selectModal.remove();
+                enableBodyScroll();
+                renderEditCards();
+                showToast('✅ تم إضافة البطاقة من القائمة');
+            });
+        });
     };
     
     document.getElementById('saveEditBtn').onclick = async () => {
@@ -362,5 +429,80 @@ function showUserManagement() {
         document.getElementById('newUsername').value = '';
         document.getElementById('newPassword').value = '';
         document.getElementById('newEmail').value = '';
+    };
+}
+
+// ========== نافذة إدارة البطاقات المتاحة ==========
+
+function showAvailableCardsManager() {
+    if (!isAdmin()) return;
+
+    disableBodyScroll();
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>🃏 إدارة البطاقات المتاحة</h3>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="text" id="newCardName" placeholder="اسم البطاقة" style="flex: 2;">
+                <input type="number" id="newCardIndividuals" placeholder="عدد الأفراد" value="1" min="1" style="flex: 1;">
+                <button id="addAvailableCardBtn" class="btn btn-primary btn-sm">➕ إضافة</button>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto;">
+                <div id="availableCardsList"></div>
+            </div>
+            <button id="closeAvailableCardsBtn" class="btn btn-secondary btn-sm" style="margin-top:1rem;">إغلاق</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); enableBodyScroll(); } });
+    document.getElementById('closeAvailableCardsBtn').onclick = () => { modal.remove(); enableBodyScroll(); };
+
+    const renderAvailableCards = () => {
+        const container = document.getElementById('availableCardsList');
+        if (!availableCards.length) {
+            container.innerHTML = '<div style="text-align:center; padding:1rem; color: var(--text-secondary);">لا توجد بطاقات متاحة</div>';
+            return;
+        }
+        container.innerHTML = availableCards.map((card, idx) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 4px; background: var(--card-bg); border: 1px solid var(--border-light); border-radius: 8px;">
+                <span>📇 ${escapeHtml(card.cardName)} - 👥 ${card.individuals} أفراد</span>
+                <button class="btn btn-sm btn-danger delete-available-card-btn" data-idx="${idx}">🗑️</button>
+            </div>
+        `).join('');
+
+        document.querySelectorAll('.delete-available-card-btn').forEach(btn => {
+            btn.onclick = () => {
+                const idx = parseInt(btn.dataset.idx);
+                const cardName = availableCards[idx].cardName;
+                if (confirm(`حذف البطاقة "${cardName}" من القائمة المتاحة؟`)) {
+                    availableCards.splice(idx, 1);
+                    saveData();
+                    renderAvailableCards();
+                    showToast('✅ تم حذف البطاقة');
+                }
+            };
+        });
+    };
+
+    renderAvailableCards();
+
+    document.getElementById('addAvailableCardBtn').onclick = () => {
+        const name = document.getElementById('newCardName').value.trim();
+        const individuals = parseInt(document.getElementById('newCardIndividuals').value) || 1;
+        if (!name) { showToast('اسم البطاقة مطلوب', true); return; }
+        
+        // التحقق من عدم تكرار اسم البطاقة
+        if (availableCards.some(c => c.cardName === name)) {
+            showToast('❌ اسم البطاقة موجود بالفعل في القائمة', true);
+            return;
+        }
+        
+        availableCards.push({ cardName: name, individuals: individuals });
+        saveData();
+        renderAvailableCards();
+        document.getElementById('newCardName').value = '';
+        document.getElementById('newCardIndividuals').value = '1';
+        showToast('✅ تم إضافة البطاقة');
     };
 }
