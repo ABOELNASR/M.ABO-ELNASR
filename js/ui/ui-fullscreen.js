@@ -6,17 +6,35 @@ function toggleFullscreenTable() {
     const toolbar = document.getElementById('toolbar');
     const cardsCountHeader = document.getElementById('cardsCountHeader');
     const btnContainer = document.getElementById('fullscreenBtnContainer');
+    const viewToggle = document.getElementById('viewToggle');
     
     if (!section || !btn) return;
     
     section.classList.toggle('fullscreen');
     
     if (section.classList.contains('fullscreen')) {
+        // ⭐ حفظ المكان الأصلي للعناصر قبل النقل
+        btn._originalParent = btn.parentElement;
+        btn._originalNextSibling = btn.parentElement.nextElementSibling;
+        
+        toolbar._originalParent = toolbar.parentElement;
+        toolbar._originalNextSibling = toolbar.nextElementSibling;
+        
+        cardsCountHeader._originalParent = cardsCountHeader.parentElement;
+        cardsCountHeader._originalNextSibling = cardsCountHeader.nextElementSibling;
+        
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
         disableBodyScroll();
         
-        // نقل الزر جوه الـ table-section
+        // نقل العناصر جوه الـ table-section
+        const tableWrapper = document.getElementById('tableWrapper');
+        if (tableWrapper) {
+            section.insertBefore(toolbar, tableWrapper);
+            section.insertBefore(cardsCountHeader, toolbar);
+        }
+        
+        // نقل الزر جوه الـ section
         section.insertBefore(btn, section.firstChild);
         btn.style.position = 'absolute';
         btn.style.top = '0.5rem';
@@ -24,21 +42,15 @@ function toggleFullscreenTable() {
         btn.style.left = 'auto';
         btn.style.zIndex = '10';
         
-        // نقل toolbar و cardsCountHeader جوه fullscreen
-        if (toolbar && cardsCountHeader) {
-            const tableWrapper = document.getElementById('tableWrapper');
-            if (tableWrapper) {
-                section.insertBefore(toolbar, tableWrapper);
-                section.insertBefore(cardsCountHeader, toolbar);
-            }
-        }
     } else {
         btn.innerHTML = '🖥️';
         btn.title = 'تكبير الجدول';
         enableBodyScroll();
         
-        // ⭐ إرجاع الزر للحاوية الأصلية فوق الجدول
-        if (btnContainer) {
+        // ⭐ إرجاع كل العناصر لأماكنها الأصلية بالظبط
+        if (btn._originalParent) {
+            btn._originalParent.appendChild(btn);
+        } else if (btnContainer) {
             btnContainer.appendChild(btn);
         }
         btn.style.position = '';
@@ -47,15 +59,30 @@ function toggleFullscreenTable() {
         btn.style.left = '';
         btn.style.zIndex = '';
         
-        // إرجاع toolbar و cardsCountHeader لأماكنهم
-        if (toolbar && cardsCountHeader) {
-            const viewToggle = document.getElementById('viewToggle');
-            if (viewToggle) {
-                viewToggle.insertAdjacentElement('afterend', cardsCountHeader);
-                if (btnContainer) {
-                    cardsCountHeader.insertAdjacentElement('afterend', btnContainer);
-                }
+        // إرجاع toolbar لمكانه الأصلي
+        if (toolbar._originalParent) {
+            if (toolbar._originalNextSibling) {
+                toolbar._originalParent.insertBefore(toolbar, toolbar._originalNextSibling);
+            } else {
+                toolbar._originalParent.appendChild(toolbar);
             }
         }
+        
+        // إرجاع cardsCountHeader لمكانه الأصلي
+        if (cardsCountHeader._originalParent) {
+            if (cardsCountHeader._originalNextSibling) {
+                cardsCountHeader._originalParent.insertBefore(cardsCountHeader, cardsCountHeader._originalNextSibling);
+            } else {
+                cardsCountHeader._originalParent.appendChild(cardsCountHeader);
+            }
+        }
+        
+        // تنظيف المتغيرات المؤقتة
+        delete btn._originalParent;
+        delete btn._originalNextSibling;
+        delete toolbar._originalParent;
+        delete toolbar._originalNextSibling;
+        delete cardsCountHeader._originalParent;
+        delete cardsCountHeader._originalNextSibling;
     }
 }
