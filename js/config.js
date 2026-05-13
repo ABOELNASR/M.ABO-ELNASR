@@ -1,4 +1,4 @@
-// ========== config.js - الإعدادات والمتغيرات العامة =========
+// ========== config.js - الإعدادات والمتغيرات العامة ==========
 
 const STORAGE_USERS = 'app_users';
 const STORAGE_SESSION = 'bakery_user';
