@@ -126,6 +126,7 @@
 
 .table-section.fullscreen .card-actions-row {
     gap: 8px !important;
+    justify-content: space-between !important;
 }
 
 .table-section.fullscreen .card-cards-header {
