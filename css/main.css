@@ -2,6 +2,16 @@
 @import url('variables.css');
 @import url('dark-mode.css');
 @import url('layout.css');
-@import url('components.css');
+
+/* components */
+@import url('components/buttons.css');
+@import url('components/forms.css');
+@import url('components/table.css');
+@import url('components/cards.css');
+@import url('components/modals.css');
+@import url('components/splash.css');
+@import url('components/fullscreen.css');
+@import url('components/misc.css');
+
 @import url('animations.css');
 @import url('responsive.css');
