@@ -23,15 +23,32 @@ function toggleFullscreenTable() {
         cardsCountHeader._originalParent = cardsCountHeader.parentElement;
         cardsCountHeader._originalNextSibling = cardsCountHeader.nextElementSibling;
         
+        if (viewToggle) {
+            viewToggle._originalParent = viewToggle.parentElement;
+            viewToggle._originalNextSibling = viewToggle.nextElementSibling;
+        }
+        
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
         disableBodyScroll();
         
-        // نقل العناصر جوه الـ table-section
+        // ⭐ نقل العناصر جوه الـ table-section بالترتيب
         const tableWrapper = document.getElementById('tableWrapper');
+        const cardsContainer = document.getElementById('cardsViewContainer');
+        
         if (tableWrapper) {
-            section.insertBefore(toolbar, tableWrapper);
-            section.insertBefore(cardsCountHeader, toolbar);
+            // نقل أزرار تبديل العرض أولاً
+            if (viewToggle) {
+                section.insertBefore(viewToggle, tableWrapper);
+            }
+            // نقل عداد البطاقات
+            if (cardsCountHeader) {
+                section.insertBefore(cardsCountHeader, tableWrapper);
+            }
+            // نقل شريط الأدوات (البحث والفلاتر)
+            if (toolbar) {
+                section.insertBefore(toolbar, tableWrapper);
+            }
         }
         
         // نقل الزر جوه الـ section
@@ -77,6 +94,15 @@ function toggleFullscreenTable() {
             }
         }
         
+        // إرجاع viewToggle لمكانه الأصلي
+        if (viewToggle && viewToggle._originalParent) {
+            if (viewToggle._originalNextSibling) {
+                viewToggle._originalParent.insertBefore(viewToggle, viewToggle._originalNextSibling);
+            } else {
+                viewToggle._originalParent.appendChild(viewToggle);
+            }
+        }
+        
         // تنظيف المتغيرات المؤقتة
         delete btn._originalParent;
         delete btn._originalNextSibling;
@@ -84,5 +110,9 @@ function toggleFullscreenTable() {
         delete toolbar._originalNextSibling;
         delete cardsCountHeader._originalParent;
         delete cardsCountHeader._originalNextSibling;
+        if (viewToggle) {
+            delete viewToggle._originalParent;
+            delete viewToggle._originalNextSibling;
+        }
     }
 }
