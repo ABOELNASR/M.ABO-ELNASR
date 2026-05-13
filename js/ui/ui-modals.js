@@ -94,7 +94,6 @@ function showEditSubscriberModal(sub) {
                 const individuals = parseInt(card.individuals) || 0;
                 const subscriberName = sub.name;
                 
-                // ⭐ ملاحظة إلزامية لحذف بطاقة من مشترك موجود
                 const note = prompt(`🗑️ حذف البطاقة "${cardName}" من المشترك "${subscriberName}"\nالرجاء كتابة سبب الحذف (ملاحظة إلزامية):`);
                 if (note === null) {
                     showToast('تم إلغاء الحذف', true);
@@ -139,11 +138,6 @@ function showEditSubscriberModal(sub) {
         if (idx !== -1) {
             const oldSub = subscribers[idx];
             
-            // ⭐ التحقق من تغيير عدد الأفراد وتحديث الحصة اليومية تلقائياً
-            const key = getKey(currentYear, currentMonth);
-            const today = new Date().getDate();
-            const days = getDays(currentYear, currentMonth);
-            
             const cardsList = tempCardsList.map(card => ({
                 cardName: String(card.cardName || '').trim(),
                 individuals: parseInt(card.individuals) || 1,
@@ -154,34 +148,29 @@ function showEditSubscriberModal(sub) {
                 notes: String(card.notes || '')
             }));
             
+            // ⭐ تحديث الحصة اليومية تلقائياً عند تغيير عدد الأفراد في أي يوم
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
-                if (oldCard && oldCard.individuals !== newCard.individuals && today > 1 && today < days) {
-                    // ⭐ تغيير عدد الأفراد في منتصف الشهر - تحديث الحصة تلقائياً
+                if (oldCard && oldCard.individuals !== newCard.individuals) {
                     const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
                     
-                    // إذا كان فيه override موجود، نحافظ عليه إذا كان أقل من الافتراضي الجديد
-                    if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
-                        newCard.dailyBreadOverride = newDefaultBread;
+                    // ⭐ تحديث الحصة اليومية تلقائياً
+                    if (newCard.dailyBreadOverride !== null) {
+                        // لو الحصة المعدلة أكبر من الافتراضي الجديد، نخليها الافتراضي الجديد
+                        if (newCard.dailyBreadOverride > newDefaultBread) {
+                            newCard.dailyBreadOverride = newDefaultBread;
+                        }
+                        // لو الحصة المعدلة أقل من أو تساوي الافتراضي، نسيبها زي ما هي
+                    } else {
+                        // لو مفيش override، الحصة هتكون الافتراضية الجديدة تلقائياً
+                        // (مش محتاجين نعمل حاجة لأن getDailyBreadForCard بتحسب تلقائياً)
                     }
                     
-                    // حساب إجمالي الحصة اليومية الجديدة
-                    const newTotalDailyBread = cardsList.reduce((sum, c) => {
-                        return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
-                    }, 0);
-                    
-                    if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                    if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
-                    
-                    breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
-                    
-                    breadOverrides[oldSub.id][key].push({
-                        day: today,
-                        totalDailyBread: newTotalDailyBread,
-                        reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
-                    });
-                    
-                    breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+                    // ⭐ تنظيف breadOverrides لأن الحساب من أول الشهر
+                    const key = getKey(currentYear, currentMonth);
+                    if (breadOverrides[oldSub.id] && breadOverrides[oldSub.id][key]) {
+                        delete breadOverrides[oldSub.id][key];
+                    }
                 }
             });
             
