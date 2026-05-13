@@ -112,30 +112,20 @@
     font-size: 0.6rem;
 }
 
-/* ⭐ تشيك بوكس الكروت في وضع ملء الشاشة - أقصى اليمين */
 .table-section.fullscreen .card-checkbox {
     width: 26px !important;
     height: 26px !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    margin: 0 !important;
+    margin: 0 0 0 14px !important;
 }
 
-/* ⭐ أزرار الإجراءات في الكروت - نفس حجم العادي */
 .table-section.fullscreen .card-actions-row .action-icon-btn {
     width: 30px !important;
     height: 30px !important;
     font-size: 1.1rem !important;
 }
 
-/* ⭐ صف الإجراءات - أزرار في النص، تشيك بوكس في أقصى اليمين */
 .table-section.fullscreen .card-actions-row {
     gap: 8px !important;
-    justify-content: flex-end !important;
-    position: relative !important;
-    padding-left: 40px !important;
 }
 
 .table-section.fullscreen .card-cards-header {
