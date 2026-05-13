@@ -6,8 +6,9 @@ const STORAGE_DATA = 'bakery_system_data';
 const STORAGE_SYSTEM_NOTES = 'system_notes';
 const STORAGE_ACTIVITY_LOG = 'activity_log';
 const STORAGE_DELETED_CARDS_LOG = 'deleted_cards_log';
+const STORAGE_BREAD_OVERRIDES = 'bread_overrides';
 
-const APP_VERSION = '2.2';
+const APP_VERSION = '2.3';
 const BREAD_PRICE_PER_LOAF = 0.20;
 const CREDIT_PRICE_PER_LOAF = 0.25;
 const DEFAULT_DAILY_BREAD_PER_PERSON = 5;
@@ -61,3 +62,4 @@ let systemNotes = '';
 let activityLog = [];
 let deletedCardsLog = [];
 let viewMode = 'table';
+let breadOverrides = {};
