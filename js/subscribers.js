@@ -38,7 +38,6 @@ function renderTempCards() {
                 subscriberName = editingSub ? editingSub.name : 'مشترك';
             }
             
-            // ملاحظة إلزامية فقط للمشتركين الموجودين حالياً
             if (editId !== null) {
                 const note = prompt(`🗑️ حذف البطاقة "${cardName}" من المشترك "${subscriberName}"\nالرجاء كتابة سبب الحذف (ملاحظة إلزامية):`);
                 if (note === null) {
@@ -56,7 +55,6 @@ function renderTempCards() {
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
                 showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
             } else {
-                // إضافة جديدة - بدون ملاحظة إلزامية
                 tempCardsList.splice(idx, 1);
                 renderTempCards();
                 updateDuplicateWarnings();
@@ -176,7 +174,7 @@ async function addOrUpdate() {
     const cardsList = tempCardsList.map(card => ({
         cardName: String(card.cardName || '').trim(),
         individuals: parseInt(card.individuals) || 1,
-        dailyBreadOverride: card.dailyBreadOverride || null,
+        dailyBreadOverride: null,
         createdAt: card.createdAt || now,
         updatedAt: now,
         history: Array.isArray(card.history) ? card.history : [],
@@ -189,31 +187,58 @@ async function addOrUpdate() {
         const idx = subscribers.findIndex(s => s.id == editId);
         if (idx !== -1) {
             const oldSub = subscribers[idx];
-            
-            // ⭐ تحديث الحصة اليومية تلقائياً عند تغيير عدد الأفراد في أي يوم
             const key = getKey(currentYear, currentMonth);
+            const today = new Date().getDate();
+            const days = getDays(currentYear, currentMonth);
+            const oldCardsCount = oldSub.cardsList ? oldSub.cardsList.length : 0;
+            const newCardsCount = cardsList.length;
             
+            // ⭐ كشف إضافة بطاقة جديدة
+            const hasNewCard = newCardsCount > oldCardsCount;
+            
+            // ⭐ كشف تغيير في عدد الأفراد
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
                 if (oldCard && oldCard.individuals !== newCard.individuals) {
-                    // ⭐ إجبار الحصة اليومية على التحديث للافتراضي الجديد
                     newCard.dailyBreadOverride = null;
-                    
-                    // ⭐ تنظيف breadOverrides لأن الحساب من أول الشهر
-                    if (breadOverrides[oldSub.id] && breadOverrides[oldSub.id][key]) {
-                        delete breadOverrides[oldSub.id][key];
-                    }
                 }
             });
             
+            // ⭐ إضافة بطاقة جديدة - حساب من تاريخ اليوم
+            if (hasNewCard && today > 1 && today < days) {
+                const newTotalDailyBread = cardsList.reduce((sum, c) => {
+                    return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                }, 0);
+                
+                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                
+                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                
+                breadOverrides[oldSub.id][key].push({
+                    day: today,
+                    totalDailyBread: newTotalDailyBread,
+                    reason: `إضافة بطاقة جديدة (${newCardsCount} بطاقات)`
+                });
+                
+                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+            }
+            
+            // ⭐ لو مفيش بطاقة جديدة، نمسح breadOverrides
+            if (!hasNewCard) {
+                if (breadOverrides[oldSub.id] && breadOverrides[oldSub.id][key]) {
+                    delete breadOverrides[oldSub.id][key];
+                }
+            }
+            
             const historyEntry = {
                 action: 'تعديل المشترك',
-                note: 'بدون ملاحظة',
+                note: hasNewCard ? `إضافة بطاقة جديدة` : 'تعديل بيانات',
                 date: now,
                 oldName: oldSub.name,
                 newName: name,
-                oldCards: oldSub.cardsList ? oldSub.cardsList.length : 0,
-                newCards: cardsList.length
+                oldCards: oldCardsCount,
+                newCards: newCardsCount
             };
             const updatedHistory = [...(oldSub.history || []), historyEntry];
             subscribers[idx] = {
@@ -222,7 +247,7 @@ async function addOrUpdate() {
                 cardsList: cardsList,
                 updatedAt: now,
                 history: updatedHistory,
-                lastEditNote: 'بدون ملاحظة'
+                lastEditNote: hasNewCard ? 'إضافة بطاقة جديدة' : 'تعديل بيانات'
             };
             addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
         }
