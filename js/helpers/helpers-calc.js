@@ -46,26 +46,27 @@ function subValue(sub) {
         // ترتيب التغييرات حسب اليوم
         const sortedOverrides = [...overrides].sort((a, b) => a.day - b.day);
         
-        // حساب القيمة بناءً على فترات مختلفة من الشهر
+        // ⭐ أول override هو الحصة من بداية الشهر
         let totalValue = 0;
         let lastDay = 1;
-        let lastDailyBread = getDefaultDailyBread(sub); // الحصة الافتراضية أول الشهر
+        let lastDailyBread = sortedOverrides[0].totalDailyBread || sortedOverrides[0].dailyBread || 0;
         
-        for (const override of sortedOverrides) {
+        for (let i = 0; i < sortedOverrides.length; i++) {
+            const override = sortedOverrides[i];
             const changeDay = override.day;
-            const newDailyBread = override.totalDailyBread || override.dailyBread;
+            const newDailyBread = override.totalDailyBread || override.dailyBread || 0;
+            
+            if (i === 0) {
+                // أول override - بيحدد الحصة من يوم 1
+                lastDay = changeDay;
+                lastDailyBread = newDailyBread;
+                continue;
+            }
             
             // الفترة من lastDay إلى changeDay - 1 بالحصة القديمة
             if (changeDay > lastDay) {
                 const periodDays = changeDay - lastDay;
                 totalValue += lastDailyBread * periodDays * BREAD_PRICE_PER_LOAF;
-                
-                // حساب فرق النقاط عن الحصة الافتراضية
-                const defaultBread = getDefaultDailyBread(sub);
-                const breadDiff = defaultBread - lastDailyBread;
-                if (breadDiff > 0) {
-                    totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
-                }
             }
             
             lastDay = changeDay;
@@ -76,12 +77,6 @@ function subValue(sub) {
         if (lastDay <= days) {
             const periodDays = days - lastDay + 1;
             totalValue += lastDailyBread * periodDays * BREAD_PRICE_PER_LOAF;
-            
-            const defaultBread = getDefaultDailyBread(sub);
-            const breadDiff = defaultBread - lastDailyBread;
-            if (breadDiff > 0) {
-                totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
-            }
         }
         
         return Math.max(0, totalValue);
