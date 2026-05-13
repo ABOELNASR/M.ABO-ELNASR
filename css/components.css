@@ -604,7 +604,7 @@ tr.row-selected td {
     font-size: 1.1rem;
 }
 
-/* ⭐ تشيك بوكس الكروت - أصغر ومبعد لليمين */
+/* تشيك بوكس الكروت - أصغر ومبعد لليمين */
 .card-checkbox {
     width: 26px !important;
     height: 26px !important;
@@ -1078,14 +1078,14 @@ tr.row-selected td {
     font-size: 0.5rem;
 }
 
-/* ⭐ تشيك بوكس الكروت في وضع ملء الشاشة - أصغر */
+/* تشيك بوكس الكروت في وضع ملء الشاشة - أصغر */
 .table-section.fullscreen .card-checkbox {
     width: 24px !important;
     height: 24px !important;
     margin: 0 0 0 14px !important;
 }
 
-/* ⭐ أزرار الإجراءات في الكروت في وضع ملء الشاشة - أكبر */
+/* أزرار الإجراءات في الكروت في وضع ملء الشاشة - أكبر */
 .table-section.fullscreen .card-actions-row .action-icon-btn {
     width: 34px !important;
     height: 34px !important;
@@ -1096,7 +1096,7 @@ tr.row-selected td {
     gap: 8px !important;
 }
 
-/* ⭐ اسم المشترك في تبويب البطاقات في وضع ملء الشاشة - توسيط */
+/* اسم المشترك في تبويب البطاقات في وضع ملء الشاشة - توسيط */
 .table-section.fullscreen .card-cards-header {
     text-align: center !important;
     font-size: 0.7rem !important;
@@ -1147,6 +1147,7 @@ tr.row-selected td {
     color: var(--text-primary);
     font-weight: bold;
 }
+
 /* ========== شاشة التحميل (Splash Screen) ========== */
 .splash-screen {
     position: fixed;
@@ -1208,4 +1209,73 @@ tr.row-selected td {
 @keyframes splashPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
+}
+
+/* ========== شريط الأدوات - بحث ========== */
+.search-box {
+    position: relative;
+    display: inline-block;
+    direction: rtl;
+}
+
+.search-box input {
+    padding: 5px 28px 5px 12px;
+    border-radius: 30px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-container);
+    color: var(--text-primary);
+    width: 200px;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+    text-align: right;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--btn-info);
+    box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1);
+    width: 220px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #999;
+    font-size: 0.8rem;
+    transition: opacity 0.2s;
+}
+
+.search-box input:focus ~ .search-icon {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.search-clear {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1.1rem !important;
+    background-color: #ef5350 !important;
+    color: white !important;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    border: none;
+    box-shadow: 0 2px 6px rgba(239, 83, 80, 0.3);
+}
+
+/* ⭐ إظهار X دايماً لو فيه نص - مش شرط focus */
+.search-box input:not(:placeholder-shown) ~ .search-clear {
+    display: flex !important;
 }
