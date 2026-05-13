@@ -39,59 +39,25 @@ function toggleFullscreenTable() {
         const cardsContainer = document.getElementById('cardsViewContainer');
         const referenceNode = tableWrapper || cardsContainer || section.firstChild;
         
-        // بنضيف بالعكس عشان كل واحد يتحط قبل اللي بعده
-        if (cardsCountHeader) {
-            section.insertBefore(cardsCountHeader, referenceNode);
-        }
-        if (toolbar) {
-            section.insertBefore(toolbar, cardsCountHeader || referenceNode);
-        }
-        if (viewToggle) {
-            section.insertBefore(viewToggle, toolbar || cardsCountHeader || referenceNode);
-        }
+        if (cardsCountHeader) section.insertBefore(cardsCountHeader, referenceNode);
+        if (toolbar) section.insertBefore(toolbar, cardsCountHeader || referenceNode);
+        if (viewToggle) section.insertBefore(viewToggle, toolbar || cardsCountHeader || referenceNode);
         
         // ⭐ زر الخروج - fixed فوق على اليمين
         document.body.appendChild(btn);
-        btn.style.position = 'fixed';
-        btn.style.top = '10px';
-        btn.style.right = '10px';
-        btn.style.left = 'auto';
-        btn.style.zIndex = '1600';
-        btn.style.width = 'auto';
-        btn.style.height = 'auto';
-        btn.style.borderRadius = '50%';
-        btn.style.display = 'flex';
-        btn.style.alignItems = 'center';
-        btn.style.justifyContent = 'center';
-        btn.style.padding = '4px 8px';
-        btn.style.fontSize = '0.9rem';
+        btn.style.cssText = 'position:fixed;top:10px;right:10px;left:auto;z-index:1600;';
         
     } else {
         btn.innerHTML = '🖥️';
         btn.title = 'تكبير الجدول';
         enableBodyScroll();
         
-        // ⭐ تنظيف خصائص الزر
-        btn.style.position = '';
-        btn.style.top = '';
-        btn.style.right = '';
-        btn.style.left = '';
-        btn.style.zIndex = '';
-        btn.style.width = '';
-        btn.style.height = '';
-        btn.style.borderRadius = '';
-        btn.style.display = '';
-        btn.style.alignItems = '';
-        btn.style.justifyContent = '';
-        btn.style.padding = '';
-        btn.style.fontSize = '';
+        btn.style.cssText = '';
         
-        // ⭐ إرجاع كل العناصر لأماكنها الأصلية بالعكس
-        // بنرجع بالعكس عشان الترتيب يضبط
-        const reversed = [...savedElements].reverse();
-        
-        reversed.forEach(saved => {
-            if (saved.parent && saved.el) {
+        // ⭐ إرجاع كل عنصر لمكانه الأصلي بالترتيب الصحيح
+        // من فوق لتحت: viewToggle → toolbar → cardsCountHeader → btn
+        savedElements.forEach(saved => {
+            if (saved.parent && saved.el && saved.el.parentElement !== saved.parent) {
                 try {
                     if (saved.nextSibling && saved.nextSibling.parentElement === saved.parent) {
                         saved.parent.insertBefore(saved.el, saved.nextSibling);
@@ -99,9 +65,7 @@ function toggleFullscreenTable() {
                         saved.parent.appendChild(saved.el);
                     }
                 } catch (e) {
-                    if (saved.parent) {
-                        saved.parent.appendChild(saved.el);
-                    }
+                    saved.parent.appendChild(saved.el);
                 }
             }
         });
