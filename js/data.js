@@ -11,6 +11,7 @@ function loadLocalData() {
             monthlyPayments = d.monthlyPayments || {};
             paymentDates = d.paymentDates || {};
             breadOverrides = d.breadOverrides || {};
+            availableCards = d.availableCards || [];
         } catch (e) {
             console.error('خطأ في قراءة البيانات المحلية:', e);
         }
@@ -29,7 +30,8 @@ function saveLocalData() {
         subscribers: subscribers,
         monthlyPayments: monthlyPayments,
         paymentDates: paymentDates,
-        breadOverrides: breadOverrides
+        breadOverrides: breadOverrides,
+        availableCards: availableCards
     };
     localStorage.setItem(STORAGE_DATA, JSON.stringify(dataToStore));
     localStorage.setItem(STORAGE_SYSTEM_NOTES, systemNotes);
@@ -45,6 +47,7 @@ async function saveDataToCloud() {
         monthlyPayments: monthlyPayments,
         paymentDates: paymentDates,
         breadOverrides: breadOverrides,
+        availableCards: availableCards,
         users: usersList.map(u => ({
             username: u.username,
             password: u.password,
@@ -127,6 +130,7 @@ async function loadData() {
             monthlyPayments = data.monthlyPayments || {};
             paymentDates = data.paymentDates || {};
             breadOverrides = data.breadOverrides || {};
+            availableCards = data.availableCards || [];
             
             if (data.users && Array.isArray(data.users) && data.users.length) {
                 usersList = data.users.map(u => ({
