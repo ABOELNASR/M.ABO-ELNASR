@@ -10,6 +10,7 @@ function loadLocalData() {
             subscribers = subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
             monthlyPayments = d.monthlyPayments || {};
             paymentDates = d.paymentDates || {};
+            breadOverrides = d.breadOverrides || {};
         } catch (e) {
             console.error('خطأ في قراءة البيانات المحلية:', e);
         }
@@ -27,7 +28,8 @@ function saveLocalData() {
     const dataToStore = {
         subscribers: subscribers,
         monthlyPayments: monthlyPayments,
-        paymentDates: paymentDates
+        paymentDates: paymentDates,
+        breadOverrides: breadOverrides
     };
     localStorage.setItem(STORAGE_DATA, JSON.stringify(dataToStore));
     localStorage.setItem(STORAGE_SYSTEM_NOTES, systemNotes);
@@ -42,6 +44,7 @@ async function saveDataToCloud() {
         subscribers: cleanSubscribers,
         monthlyPayments: monthlyPayments,
         paymentDates: paymentDates,
+        breadOverrides: breadOverrides,
         users: usersList.map(u => ({
             username: u.username,
             password: u.password,
@@ -65,7 +68,7 @@ async function saveDataToCloud() {
         });
 
         const result = await response.json();
-        console.log('💾 استجابة الحفظ:', JSON.stringify(result));   // ← تغيير: عرض نتيجة الحفظ
+        console.log('💾 استجابة الحفظ:', JSON.stringify(result));
         if (!response.ok || result.error) {
             throw new Error(result.error || `HTTP ${response.status}`);
         }
@@ -123,6 +126,7 @@ async function loadData() {
             subscribers = (data.subscribers || []).map(s => migrateSubscriber(s)).filter(s => s !== null);
             monthlyPayments = data.monthlyPayments || {};
             paymentDates = data.paymentDates || {};
+            breadOverrides = data.breadOverrides || {};
             
             if (data.users && Array.isArray(data.users) && data.users.length) {
                 usersList = data.users.map(u => ({
