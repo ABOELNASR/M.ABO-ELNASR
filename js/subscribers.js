@@ -196,7 +196,7 @@ async function addOrUpdate() {
             // ⭐ كشف إضافة بطاقة جديدة
             const hasNewCard = newCardsCount > oldCardsCount;
             
-            // ⭐ كشف تغيير في عدد الأفراد
+            // ⭐ كشف تغيير في عدد الأفراد - تصفير override
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
                 if (oldCard && oldCard.individuals !== newCard.individuals) {
@@ -204,8 +204,12 @@ async function addOrUpdate() {
                 }
             });
             
-            // ⭐ إضافة بطاقة جديدة - حساب من تاريخ اليوم
+            // ⭐ إضافة بطاقة جديدة - الفرد الجديد من تاريخ اليوم لآخر الشهر
             if (hasNewCard && today > 1 && today < days) {
+                const oldTotalDailyBread = (oldSub.cardsList || []).reduce((sum, c) => {
+                    return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                }, 0);
+                
                 const newTotalDailyBread = cardsList.reduce((sum, c) => {
                     return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
                 }, 0);
@@ -213,12 +217,18 @@ async function addOrUpdate() {
                 if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
                 if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
                 
-                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                breadOverrides[oldSub.id][key] = [];
+                
+                breadOverrides[oldSub.id][key].push({
+                    day: 1,
+                    totalDailyBread: oldTotalDailyBread,
+                    reason: 'الحصة الأصلية'
+                });
                 
                 breadOverrides[oldSub.id][key].push({
                     day: today,
                     totalDailyBread: newTotalDailyBread,
-                    reason: `إضافة بطاقة جديدة (${newCardsCount} بطاقات)`
+                    reason: 'إضافة بطاقة جديدة'
                 });
                 
                 breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
@@ -233,7 +243,7 @@ async function addOrUpdate() {
             
             const historyEntry = {
                 action: 'تعديل المشترك',
-                note: hasNewCard ? `إضافة بطاقة جديدة` : 'تعديل بيانات',
+                note: hasNewCard ? 'إضافة بطاقة جديدة' : 'تعديل بيانات',
                 date: now,
                 oldName: oldSub.name,
                 newName: name,
@@ -265,6 +275,27 @@ async function addOrUpdate() {
             history: []
         };
         subscribers.push(newSubscriber);
+        
+        // ⭐ مشترك جديد - الحساب من تاريخ الإضافة لنهاية الشهر
+        const today = new Date().getDate();
+        const days = getDays(currentYear, currentMonth);
+        const key = getKey(currentYear, currentMonth);
+        
+        if (today > 1 && today < days) {
+            const totalDailyBread = cardsList.reduce((sum, c) => {
+                return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+            }, 0);
+            
+            if (!breadOverrides[newId]) breadOverrides[newId] = {};
+            if (!breadOverrides[newId][key]) breadOverrides[newId][key] = [];
+            
+            breadOverrides[newId][key] = [{
+                day: today,
+                totalDailyBread: totalDailyBread,
+                reason: 'مشترك جديد - حساب من تاريخ الإضافة'
+            }];
+        }
+        
         const totalInd = getTotalIndividuals({ cardsList });
         addActivityLog('إضافة مشترك', `تم إضافة مشترك جديد: ${name} مع ${cardsList.length} بطاقات (إجمالي الأفراد ${totalInd})`);
         requestPushNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
