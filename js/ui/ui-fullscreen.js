@@ -1,6 +1,5 @@
 // ========== ui-fullscreen.js - وضع ملء الشاشة للجدول ==========
 
-// مصفوفة لتخزين العناصر اللي هتتنقل وبياناتها الأصلية
 let savedElements = [];
 
 function toggleFullscreenTable() {
@@ -16,71 +15,98 @@ function toggleFullscreenTable() {
     section.classList.toggle('fullscreen');
     
     if (section.classList.contains('fullscreen')) {
-        // ⭐ حفظ المواقع الأصلية للعناصر اللي هتنتقل
+        // ⭐ حفظ المواقع الأصلية
         savedElements = [];
         
-        const elementsToMove = [
-            { el: toolbar, id: 'toolbar' },
-            { el: cardsCountHeader, id: 'cardsCountHeader' },
-            { el: viewToggle, id: 'viewToggle' }
-        ];
-        
-        elementsToMove.forEach(item => {
-            if (item.el) {
+        [toolbar, cardsCountHeader, viewToggle, btn].forEach(el => {
+            if (el && el.parentElement) {
                 savedElements.push({
-                    el: item.el,
-                    parent: item.el.parentElement,
-                    nextSibling: item.el.nextElementSibling
+                    el: el,
+                    parent: el.parentElement,
+                    nextSibling: el.nextElementSibling
                 });
             }
         });
-        
-        // حفظ مكان الزر
-        if (btn.parentElement) {
-            savedElements.push({
-                el: btn,
-                parent: btn.parentElement,
-                nextSibling: btn.nextElementSibling
-            });
-        }
         
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
         disableBodyScroll();
         
-        // نقل العناصر جوه الـ section بالترتيب المطلوب
-        if (toolbar) section.appendChild(toolbar);
-        if (cardsCountHeader) section.appendChild(cardsCountHeader);
-        if (viewToggle) section.appendChild(viewToggle);
-        section.appendChild(btn);
+        // ⭐ نقل العناصر جوه الـ section فوق الجدول بالترتيب:
+        // 1. أزرار التبديل 2. toolbar 3. عدد البطاقات 4. الجدول
         
+        const tableWrapper = document.getElementById('tableWrapper');
+        const cardsContainer = document.getElementById('cardsViewContainer');
+        const referenceNode = tableWrapper || cardsContainer || section.firstChild;
+        
+        // بنضيف بالعكس عشان كل واحد يتحط قبل اللي بعده
+        if (cardsCountHeader) {
+            section.insertBefore(cardsCountHeader, referenceNode);
+        }
+        if (toolbar) {
+            section.insertBefore(toolbar, cardsCountHeader || referenceNode);
+        }
+        if (viewToggle) {
+            section.insertBefore(viewToggle, toolbar || cardsCountHeader || referenceNode);
+        }
+        
+        // ⭐ زر الخروج - fixed فوق على اليمين
+        document.body.appendChild(btn);
         btn.style.position = 'fixed';
         btn.style.top = '10px';
         btn.style.right = '10px';
+        btn.style.left = 'auto';
         btn.style.zIndex = '1600';
+        btn.style.width = 'auto';
+        btn.style.height = 'auto';
+        btn.style.borderRadius = '50%';
+        btn.style.display = 'flex';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.padding = '4px 8px';
+        btn.style.fontSize = '0.9rem';
         
     } else {
         btn.innerHTML = '🖥️';
         btn.title = 'تكبير الجدول';
         enableBodyScroll();
         
+        // ⭐ تنظيف خصائص الزر
         btn.style.position = '';
         btn.style.top = '';
         btn.style.right = '';
+        btn.style.left = '';
         btn.style.zIndex = '';
+        btn.style.width = '';
+        btn.style.height = '';
+        btn.style.borderRadius = '';
+        btn.style.display = '';
+        btn.style.alignItems = '';
+        btn.style.justifyContent = '';
+        btn.style.padding = '';
+        btn.style.fontSize = '';
         
-        // ⭐ إرجاع كل العناصر لأماكنها الأصلية
-        savedElements.forEach(saved => {
+        // ⭐ إرجاع كل العناصر لأماكنها الأصلية بالعكس
+        // بنرجع بالعكس عشان الترتيب يضبط
+        const reversed = [...savedElements].reverse();
+        
+        reversed.forEach(saved => {
             if (saved.parent && saved.el) {
-                if (saved.nextSibling && saved.nextSibling.parentElement === saved.parent) {
-                    saved.parent.insertBefore(saved.el, saved.nextSibling);
-                } else {
-                    saved.parent.appendChild(saved.el);
+                try {
+                    if (saved.nextSibling && saved.nextSibling.parentElement === saved.parent) {
+                        saved.parent.insertBefore(saved.el, saved.nextSibling);
+                    } else {
+                        saved.parent.appendChild(saved.el);
+                    }
+                } catch (e) {
+                    if (saved.parent) {
+                        saved.parent.appendChild(saved.el);
+                    }
                 }
             }
         });
         
-        // لو الزر رجع لغير مكانه، رجعه للحاوية
+        // تأكيد رجوع الزر للحاوية الأصلية
         if (btnContainer && btn.parentElement !== btnContainer) {
             btnContainer.appendChild(btn);
         }
