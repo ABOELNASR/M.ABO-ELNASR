@@ -325,6 +325,28 @@
     .actions-row {
         justify-content: center;
     }
+    
+    /* ⭐ تكبير خط سجل العمليات للكمبيوتر فقط */
+    .modal-content h3 {
+        font-size: 1rem !important;
+    }
+    
+    .modal-content div[style*="border-right: 3px solid"] {
+        font-size: 0.8rem !important;
+        padding: 0.6rem 0.7rem !important;
+    }
+    
+    .modal-content div[style*="border-right: 3px solid"] span {
+        font-size: 0.75rem !important;
+    }
+    
+    .modal-content div[style*="border-right: 3px solid"] div span {
+        font-size: 0.7rem !important;
+    }
+    
+    .modal-content div[style*="border-right: 3px solid"] div div {
+        font-size: 0.78rem !important;
+    }
 }
 
 @media (min-width: 769px) {
