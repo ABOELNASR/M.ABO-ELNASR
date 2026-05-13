@@ -259,20 +259,21 @@ if (formTitle && addSubscriberCard) {
         });
     }
 
+    // ⭐ تعديل: مسح الفلتر يستخدم renderAll بدل renderTable
     safeSetOnclick('clearFilterBtn', () => {
         currentFilter = 'all';
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
         if (allBtn) allBtn.classList.add('active');
-        if (typeof renderTable === 'function') renderTable();
+        if (typeof renderAll === 'function') renderAll();
     });
 
-safeSetOnclick('clearSearchBtn', () => {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) searchInput.value = '';
-    currentSearch = '';
-    if (typeof renderAll === 'function') renderAll();
-});
+    safeSetOnclick('clearSearchBtn', () => {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.value = '';
+        currentSearch = '';
+        if (typeof renderAll === 'function') renderAll();
+    });
 
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -282,11 +283,12 @@ safeSetOnclick('clearSearchBtn', () => {
         };
     }
 
+    // ⭐ تعديل: أزرار الفلتر تستخدم renderAll بدل renderTable
     document.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => {
         document.querySelectorAll('.filter-btn').forEach(f => f.classList.remove('active'));
         b.classList.add('active');
         currentFilter = b.dataset.filter;
-        if (typeof renderTable === 'function') renderTable();
+        if (typeof renderAll === 'function') renderAll();
     });
 
     safeSetOnclick('saveBtn', addOrUpdate);
