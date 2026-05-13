@@ -38,7 +38,7 @@ function renderTempCards() {
                 subscriberName = editingSub ? editingSub.name : 'مشترك';
             }
             
-            // ⭐ ملاحظة إلزامية فقط للمشتركين الموجودين حالياً
+            // ملاحظة إلزامية فقط للمشتركين الموجودين حالياً
             if (editId !== null) {
                 const note = prompt(`🗑️ حذف البطاقة "${cardName}" من المشترك "${subscriberName}"\nالرجاء كتابة سبب الحذف (ملاحظة إلزامية):`);
                 if (note === null) {
@@ -56,7 +56,7 @@ function renderTempCards() {
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
                 showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
             } else {
-                // ⭐ إضافة جديدة - بدون ملاحظة إلزامية
+                // إضافة جديدة - بدون ملاحظة إلزامية
                 tempCardsList.splice(idx, 1);
                 renderTempCards();
                 updateDuplicateWarnings();
@@ -190,34 +190,25 @@ async function addOrUpdate() {
         if (idx !== -1) {
             const oldSub = subscribers[idx];
             
-            // ⭐ التحقق من تغيير عدد الأفراد وتحديث الحصة اليومية تلقائياً
+            // ⭐ تحديث الحصة اليومية تلقائياً عند تغيير عدد الأفراد في أي يوم
             const key = getKey(currentYear, currentMonth);
-            const today = new Date().getDate();
-            const days = getDays(currentYear, currentMonth);
             
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
-                if (oldCard && oldCard.individuals !== newCard.individuals && today > 1 && today < days) {
-                    // تغيير عدد الأفراد في منتصف الشهر
+                if (oldCard && oldCard.individuals !== newCard.individuals) {
                     const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
-                    const newTotalDailyBread = cardsList.reduce((sum, c, i) => {
-                        if (i === cardIdx) return sum + (c.dailyBreadOverride || newDefaultBread);
-                        return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
-                    }, 0);
                     
-                    if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                    if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                    // تحديث الحصة اليومية تلقائياً
+                    if (newCard.dailyBreadOverride !== null) {
+                        if (newCard.dailyBreadOverride > newDefaultBread) {
+                            newCard.dailyBreadOverride = newDefaultBread;
+                        }
+                    }
                     
-                    // إزالة تغييرات سابقة لنفس اليوم
-                    breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
-                    
-                    breadOverrides[oldSub.id][key].push({
-                        day: today,
-                        totalDailyBread: newTotalDailyBread,
-                        reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
-                    });
-                    
-                    breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+                    // تنظيف breadOverrides لأن الحساب من أول الشهر
+                    if (breadOverrides[oldSub.id] && breadOverrides[oldSub.id][key]) {
+                        delete breadOverrides[oldSub.id][key];
+                    }
                 }
             });
             
@@ -477,18 +468,15 @@ async function editDailyBread(subId) {
             newTotalDailyBread += newBread;
             card.updatedAt = new Date().toISOString();
             
-            // ⭐ تسجيل تغيير الحصة إذا اختلفت القيمة وكان في وسط الشهر
             if (oldBread !== newBread && today > 1 && today < days) {
                 hasChanges = true;
             }
         });
         
-        // ⭐ تسجيل التغيير في breadOverrides إذا كان في منتصف الشهر
         if (hasChanges) {
             if (!breadOverrides[sub.id]) breadOverrides[sub.id] = {};
             if (!breadOverrides[sub.id][key]) breadOverrides[sub.id][key] = [];
             
-            // إزالة تغييرات سابقة لنفس اليوم
             breadOverrides[sub.id][key] = breadOverrides[sub.id][key].filter(o => o.day !== today);
             
             breadOverrides[sub.id][key].push({
