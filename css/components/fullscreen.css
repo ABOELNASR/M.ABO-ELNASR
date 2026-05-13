@@ -115,7 +115,7 @@
 .table-section.fullscreen .card-checkbox {
     width: 26px !important;
     height: 26px !important;
-    margin: 0 0 0 14px !important;
+    margin: 0 auto 0 0 !important;
 }
 
 .table-section.fullscreen .card-actions-row .action-icon-btn {
