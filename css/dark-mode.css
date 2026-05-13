@@ -118,3 +118,12 @@ body.dark-mode .table-section.fullscreen .card-cards-header {
     font-size: 0.7rem !important;
     padding: 0.4rem 0 !important;
 }
+/* ========== شاشة التحميل في الوضع الليلي ========== */
+body.dark-mode .splash-screen {
+    background: var(--bg-body);
+}
+
+body.dark-mode .splash-spinner {
+    border-color: var(--border-light);
+    border-top-color: var(--btn-light-green);
+}
