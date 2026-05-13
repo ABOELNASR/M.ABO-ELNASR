@@ -206,14 +206,17 @@
     color: #e67e22;
 }
 
+/* ⭐ أزرار الإجراءات في النص - تشيك بوكس في أقصى اليمين */
 .card-actions-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     gap: 5px;
     flex-wrap: wrap;
     padding-top: 0.4rem;
     border-top: 1px solid var(--border-light);
+    position: relative;
+    padding-left: 40px;
 }
 
 .card-actions-row .action-icon-btn {
@@ -222,7 +225,7 @@
     font-size: 1.1rem;
 }
 
-/* تشيك بوكس الكروت */
+/* ⭐ تشيك بوكس الكروت - أقصى اليمين */
 .card-checkbox {
     width: 26px !important;
     height: 26px !important;
@@ -230,6 +233,10 @@
     cursor: pointer;
     accent-color: var(--btn-light-green);
     border-radius: 8px !important;
-    margin: 0 auto 0 0 !important;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0 !important;
     flex-shrink: 0;
 }
