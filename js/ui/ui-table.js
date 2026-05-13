@@ -112,11 +112,16 @@ function renderTable() {
                     sub.cardsList.forEach((card, idx) => {
                         const bread = getDailyBreadForCard(card);
                         cardsHtml += `<div class="card-item-detail">
-                            <span class="card-number">${idx + 1}.</span>
-                            <span class="card-name-detail">📇 ${escapeHtml(card.cardName)}</span>
-                            <span class="card-individuals-detail">👥 ${card.individuals} أفراد</span>
-                            <span class="card-individuals-detail">🍞 ${bread} رغيف/يوم</span>
-                            ${card.notes ? `<span class="card-notes-detail">📝 ${escapeHtml(card.notes)}</span>` : ''}
+                            <div class="card-detail-header">📇 ${escapeHtml(card.cardName)}</div>
+                            <div class="card-detail-row">
+                                <span class="card-detail-label-inline">👥 عدد الأفراد:</span>
+                                <span class="card-detail-value-inline">${card.individuals}</span>
+                            </div>
+                            <div class="card-detail-row">
+                                <span class="card-detail-label-inline">🍞 الحصة اليومية:</span>
+                                <span class="card-detail-value-inline">${bread} رغيف/يوم</span>
+                            </div>
+                            ${card.notes ? `<div class="card-detail-row"><span class="card-detail-label-inline">📝 ملاحظة:</span><span class="card-detail-value-inline">${escapeHtml(card.notes)}</span></div>` : ''}
                         </div>`;
                     });
                     cardsHtml += '</div>';
