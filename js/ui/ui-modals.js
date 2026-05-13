@@ -154,17 +154,8 @@ function showEditSubscriberModal(sub) {
                 if (oldCard && oldCard.individuals !== newCard.individuals) {
                     const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
                     
-                    // ⭐ تحديث الحصة اليومية تلقائياً
-                    if (newCard.dailyBreadOverride !== null) {
-                        // لو الحصة المعدلة أكبر من الافتراضي الجديد، نخليها الافتراضي الجديد
-                        if (newCard.dailyBreadOverride > newDefaultBread) {
-                            newCard.dailyBreadOverride = newDefaultBread;
-                        }
-                        // لو الحصة المعدلة أقل من أو تساوي الافتراضي، نسيبها زي ما هي
-                    } else {
-                        // لو مفيش override، الحصة هتكون الافتراضية الجديدة تلقائياً
-                        // (مش محتاجين نعمل حاجة لأن getDailyBreadForCard بتحسب تلقائياً)
-                    }
+                    // ⭐ إجبار الحصة اليومية على التحديث للافتراضي الجديد
+                    newCard.dailyBreadOverride = null;
                     
                     // ⭐ تنظيف breadOverrides لأن الحساب من أول الشهر
                     const key = getKey(currentYear, currentMonth);
