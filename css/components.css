@@ -830,7 +830,7 @@ tr.row-selected td {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 1200;
+    z-index: 3000;
     background: var(--card-bg);
     color: var(--text-primary);
     padding: 0.7rem 1rem;
