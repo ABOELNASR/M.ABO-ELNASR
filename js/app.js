@@ -200,6 +200,17 @@ async function initApp() {
 
     applyPermissions();
     renderAll();
+    
+    // ⭐ إخفاء شاشة التحميل بعد تحميل البيانات
+    const splashScreen = document.getElementById('splashScreen');
+    if (splashScreen) {
+        setTimeout(() => {
+            splashScreen.classList.add('hidden');
+            setTimeout(() => {
+                splashScreen.remove();
+            }, 500);
+        }, 300);
+    }
 
     const toggleFormBtn = document.getElementById('toggleFormBtn');
     const formTitle = document.getElementById('formTitle');
