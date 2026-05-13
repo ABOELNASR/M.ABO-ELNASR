@@ -165,8 +165,12 @@ function showEditSubscriberModal(sub) {
                 }
             });
             
-            // ⭐ إضافة بطاقة جديدة - حساب من تاريخ اليوم
+            // ⭐ إضافة بطاقة جديدة - الفرد الجديد من تاريخ اليوم لآخر الشهر
             if (hasNewCard && today > 1 && today < days) {
+                const oldTotalDailyBread = (oldSub.cardsList || []).reduce((sum, c) => {
+                    return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                }, 0);
+                
                 const newTotalDailyBread = cardsList.reduce((sum, c) => {
                     return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
                 }, 0);
@@ -174,12 +178,18 @@ function showEditSubscriberModal(sub) {
                 if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
                 if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
                 
-                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                breadOverrides[oldSub.id][key] = [];
+                
+                breadOverrides[oldSub.id][key].push({
+                    day: 1,
+                    totalDailyBread: oldTotalDailyBread,
+                    reason: 'الحصة الأصلية'
+                });
                 
                 breadOverrides[oldSub.id][key].push({
                     day: today,
                     totalDailyBread: newTotalDailyBread,
-                    reason: `إضافة بطاقة جديدة (${newCardsCount} بطاقات)`
+                    reason: 'إضافة بطاقة جديدة'
                 });
                 
                 breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
