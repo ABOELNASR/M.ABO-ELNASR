@@ -1,6 +1,7 @@
 // ========== ui-fullscreen.js - وضع ملء الشاشة للجدول ==========
 
-let savedElements = [];
+let originalHTML = null;
+let fullscreenClones = {};
 
 function toggleFullscreenTable() {
     const section = document.getElementById('tableSection');
@@ -15,37 +16,37 @@ function toggleFullscreenTable() {
     section.classList.toggle('fullscreen');
     
     if (section.classList.contains('fullscreen')) {
-        // ⭐ حفظ المواقع الأصلية
-        savedElements = [];
+        // ⭐ حفظ الموقع الأصلي لكل عنصر في الـ DOM باستخدام placeholder
+        const placeholders = {};
         
-        [toolbar, cardsCountHeader, viewToggle, btn].forEach(el => {
+        [toolbar, cardsCountHeader, viewToggle].forEach(el => {
             if (el && el.parentElement) {
-                savedElements.push({
-                    el: el,
-                    parent: el.parentElement,
-                    nextSibling: el.nextElementSibling
-                });
+                const placeholder = document.createElement('div');
+                placeholder.setAttribute('data-placeholder', el.id);
+                placeholder.style.display = 'none';
+                el.parentElement.insertBefore(placeholder, el);
+                placeholders[el.id] = placeholder;
             }
         });
+        
+        // حفظ في الـ section
+        section._placeholders = placeholders;
         
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
         disableBodyScroll();
         
-        // ⭐ نقل العناصر جوه الـ section فوق الجدول بالترتيب:
-        // 1. أزرار التبديل 2. toolbar 3. عدد البطاقات 4. الجدول
-        
+        // نقل العناصر جوه الـ section بالترتيب
         const tableWrapper = document.getElementById('tableWrapper');
-        const cardsContainer = document.getElementById('cardsViewContainer');
-        const referenceNode = tableWrapper || cardsContainer || section.firstChild;
+        const referenceNode = tableWrapper || section.firstChild;
         
         if (cardsCountHeader) section.insertBefore(cardsCountHeader, referenceNode);
         if (toolbar) section.insertBefore(toolbar, cardsCountHeader || referenceNode);
         if (viewToggle) section.insertBefore(viewToggle, toolbar || cardsCountHeader || referenceNode);
         
-        // ⭐ زر الخروج - fixed فوق على اليمين
+        // زر الخروج
         document.body.appendChild(btn);
-        btn.style.cssText = 'position:fixed;top:10px;right:10px;left:auto;z-index:1600;';
+        btn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:1600;';
         
     } else {
         btn.innerHTML = '🖥️';
@@ -54,27 +55,24 @@ function toggleFullscreenTable() {
         
         btn.style.cssText = '';
         
-        // ⭐ إرجاع كل عنصر لمكانه الأصلي بالترتيب الصحيح
-        // من فوق لتحت: viewToggle → toolbar → cardsCountHeader → btn
-        savedElements.forEach(saved => {
-            if (saved.parent && saved.el && saved.el.parentElement !== saved.parent) {
-                try {
-                    if (saved.nextSibling && saved.nextSibling.parentElement === saved.parent) {
-                        saved.parent.insertBefore(saved.el, saved.nextSibling);
-                    } else {
-                        saved.parent.appendChild(saved.el);
-                    }
-                } catch (e) {
-                    saved.parent.appendChild(saved.el);
+        // ⭐ إرجاع العناصر لأماكنها الأصلية باستخدام placeholders
+        const placeholders = section._placeholders || {};
+        
+        [viewToggle, toolbar, cardsCountHeader].forEach(el => {
+            if (el) {
+                const placeholder = placeholders[el.id];
+                if (placeholder && placeholder.parentElement) {
+                    placeholder.parentElement.insertBefore(el, placeholder);
+                    placeholder.remove();
                 }
             }
         });
         
-        // تأكيد رجوع الزر للحاوية الأصلية
+        // رجوع الزر
         if (btnContainer && btn.parentElement !== btnContainer) {
             btnContainer.appendChild(btn);
         }
         
-        savedElements = [];
+        delete section._placeholders;
     }
 }
