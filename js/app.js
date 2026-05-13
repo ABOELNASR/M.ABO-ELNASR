@@ -279,12 +279,19 @@ if (formTitle && addSubscriberCard) {
         if (typeof renderAll === 'function') renderAll();
     });
 
-    safeSetOnclick('clearSearchBtn', () => {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) searchInput.value = '';
-        currentSearch = '';
-        if (typeof renderAll === 'function') renderAll();
-    });
+    // ⭐ تعديل: زر مسح البحث - mousedown عشان يمسح من أول مرة
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                currentSearch = '';
+                if (typeof renderAll === 'function') renderAll();
+            }
+        });
+    }
 
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
