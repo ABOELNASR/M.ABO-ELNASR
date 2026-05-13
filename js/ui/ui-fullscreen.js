@@ -13,46 +13,27 @@ function toggleFullscreenTable() {
     section.classList.toggle('fullscreen');
     
     if (section.classList.contains('fullscreen')) {
-        // ⭐ حفظ المكان الأصلي للعناصر قبل النقل
-        btn._originalParent = btn.parentElement;
-        btn._originalNextSibling = btn.parentElement.nextElementSibling;
+        // ⭐ تخزين العناصر الأصلية قبل أي تغيير
+        const originalElements = {
+            toolbar: { element: toolbar, parent: toolbar.parentElement, next: toolbar.nextElementSibling },
+            viewToggle: { element: viewToggle, parent: viewToggle.parentElement, next: viewToggle.nextElementSibling },
+            cardsCountHeader: { element: cardsCountHeader, parent: cardsCountHeader.parentElement, next: cardsCountHeader.nextElementSibling },
+            btn: { element: btn, parent: btn.parentElement, next: btn.parentElement.nextElementSibling }
+        };
         
-        toolbar._originalParent = toolbar.parentElement;
-        toolbar._originalNextSibling = toolbar.nextElementSibling;
-        
-        cardsCountHeader._originalParent = cardsCountHeader.parentElement;
-        cardsCountHeader._originalNextSibling = cardsCountHeader.nextElementSibling;
-        
-        if (viewToggle) {
-            viewToggle._originalParent = viewToggle.parentElement;
-            viewToggle._originalNextSibling = viewToggle.nextElementSibling;
-        }
+        // تخزين في الـ section لاستخدامها لاحقاً
+        section._originalElements = originalElements;
         
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
         disableBodyScroll();
         
-        // ⭐ نقل العناصر جوه الـ table-section بالترتيب
-        const tableWrapper = document.getElementById('tableWrapper');
-        const cardsContainer = document.getElementById('cardsViewContainer');
+        // نقل العناصر جوه الـ section
+        section.insertBefore(toolbar, section.firstChild);
+        section.insertBefore(cardsCountHeader, toolbar);
+        section.insertBefore(viewToggle, cardsCountHeader);
+        section.insertBefore(btn, viewToggle);
         
-        if (tableWrapper) {
-            // نقل أزرار تبديل العرض أولاً
-            if (viewToggle) {
-                section.insertBefore(viewToggle, tableWrapper);
-            }
-            // نقل عداد البطاقات
-            if (cardsCountHeader) {
-                section.insertBefore(cardsCountHeader, tableWrapper);
-            }
-            // نقل شريط الأدوات (البحث والفلاتر)
-            if (toolbar) {
-                section.insertBefore(toolbar, tableWrapper);
-            }
-        }
-        
-        // نقل الزر جوه الـ section
-        section.insertBefore(btn, section.firstChild);
         btn.style.position = 'absolute';
         btn.style.top = '0.5rem';
         btn.style.right = '0.5rem';
@@ -64,55 +45,53 @@ function toggleFullscreenTable() {
         btn.title = 'تكبير الجدول';
         enableBodyScroll();
         
-        // ⭐ إرجاع كل العناصر لأماكنها الأصلية بالظبط
-        if (btn._originalParent) {
-            btn._originalParent.appendChild(btn);
-        } else if (btnContainer) {
-            btnContainer.appendChild(btn);
-        }
         btn.style.position = '';
         btn.style.top = '';
         btn.style.right = '';
         btn.style.left = '';
         btn.style.zIndex = '';
         
-        // إرجاع toolbar لمكانه الأصلي
-        if (toolbar._originalParent) {
-            if (toolbar._originalNextSibling) {
-                toolbar._originalParent.insertBefore(toolbar, toolbar._originalNextSibling);
+        // ⭐ إرجاع كل العناصر لأماكنها الأصلية بالترتيب العكسي
+        const original = section._originalElements;
+        
+        if (original && original.toolbar && original.toolbar.parent) {
+            if (original.toolbar.next) {
+                original.toolbar.parent.insertBefore(toolbar, original.toolbar.next);
             } else {
-                toolbar._originalParent.appendChild(toolbar);
+                original.toolbar.parent.appendChild(toolbar);
             }
         }
         
-        // إرجاع cardsCountHeader لمكانه الأصلي
-        if (cardsCountHeader._originalParent) {
-            if (cardsCountHeader._originalNextSibling) {
-                cardsCountHeader._originalParent.insertBefore(cardsCountHeader, cardsCountHeader._originalNextSibling);
+        if (original && original.viewToggle && original.viewToggle.parent) {
+            if (original.viewToggle.next) {
+                original.viewToggle.parent.insertBefore(viewToggle, original.viewToggle.next);
             } else {
-                cardsCountHeader._originalParent.appendChild(cardsCountHeader);
+                original.viewToggle.parent.appendChild(viewToggle);
             }
         }
         
-        // إرجاع viewToggle لمكانه الأصلي
-        if (viewToggle && viewToggle._originalParent) {
-            if (viewToggle._originalNextSibling) {
-                viewToggle._originalParent.insertBefore(viewToggle, viewToggle._originalNextSibling);
+        if (original && original.cardsCountHeader && original.cardsCountHeader.parent) {
+            if (original.cardsCountHeader.next) {
+                original.cardsCountHeader.parent.insertBefore(cardsCountHeader, original.cardsCountHeader.next);
             } else {
-                viewToggle._originalParent.appendChild(viewToggle);
+                original.cardsCountHeader.parent.appendChild(cardsCountHeader);
             }
         }
         
-        // تنظيف المتغيرات المؤقتة
-        delete btn._originalParent;
-        delete btn._originalNextSibling;
-        delete toolbar._originalParent;
-        delete toolbar._originalNextSibling;
-        delete cardsCountHeader._originalParent;
-        delete cardsCountHeader._originalNextSibling;
-        if (viewToggle) {
-            delete viewToggle._originalParent;
-            delete viewToggle._originalNextSibling;
+        if (original && original.btn && original.btn.parent) {
+            if (original.btn.next) {
+                original.btn.parent.insertBefore(btnContainer || btn, original.btn.next);
+            } else {
+                original.btn.parent.appendChild(btnContainer || btn);
+            }
         }
+        
+        // لو الزر مش في الحاوية، رجعه للحاوية
+        if (btnContainer && btn.parentElement !== btnContainer) {
+            btnContainer.appendChild(btn);
+        }
+        
+        // تنظيف
+        delete section._originalElements;
     }
 }
