@@ -38,8 +38,9 @@ function renderTempCards() {
                 subscriberName = editingSub ? editingSub.name : 'مشترك';
             }
             
+            // ⭐ ملاحظة إلزامية فقط للمشتركين الموجودين حالياً
             if (editId !== null) {
-                const note = prompt(`🗑️ حذف البطاقة "${cardName}"\nالرجاء كتابة سبب الحذف (ملاحظة إلزامية):`);
+                const note = prompt(`🗑️ حذف البطاقة "${cardName}" من المشترك "${subscriberName}"\nالرجاء كتابة سبب الحذف (ملاحظة إلزامية):`);
                 if (note === null) {
                     showToast('تم إلغاء الحذف', true);
                     return;
@@ -55,10 +56,10 @@ function renderTempCards() {
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
                 showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
             } else {
+                // ⭐ إضافة جديدة - بدون ملاحظة إلزامية
                 tempCardsList.splice(idx, 1);
                 renderTempCards();
                 updateDuplicateWarnings();
-                logDeletedCard(cardName, individuals, subscriberName, 'حذف أثناء الإضافة');
                 showToast(`🗑️ تم حذف البطاقة.`);
             }
         });
