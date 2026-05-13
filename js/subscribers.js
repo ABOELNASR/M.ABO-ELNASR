@@ -196,16 +196,10 @@ async function addOrUpdate() {
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
                 if (oldCard && oldCard.individuals !== newCard.individuals) {
-                    const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
+                    // ⭐ إجبار الحصة اليومية على التحديث للافتراضي الجديد
+                    newCard.dailyBreadOverride = null;
                     
-                    // تحديث الحصة اليومية تلقائياً
-                    if (newCard.dailyBreadOverride !== null) {
-                        if (newCard.dailyBreadOverride > newDefaultBread) {
-                            newCard.dailyBreadOverride = newDefaultBread;
-                        }
-                    }
-                    
-                    // تنظيف breadOverrides لأن الحساب من أول الشهر
+                    // ⭐ تنظيف breadOverrides لأن الحساب من أول الشهر
                     if (breadOverrides[oldSub.id] && breadOverrides[oldSub.id][key]) {
                         delete breadOverrides[oldSub.id][key];
                     }
