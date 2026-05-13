@@ -977,7 +977,7 @@ tr.row-selected td {
     bottom: 0;
     z-index: 1500;
     background: var(--bg-container);
-    padding: 0.5rem;
+    padding: 3rem 0.5rem 0.5rem 0.5rem;
     display: flex;
     flex-direction: column;
     border-radius: 0;
