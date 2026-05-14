@@ -5,24 +5,6 @@ firebase.initializeApp(FIREBASE_CONFIG);
 
 const messaging = firebase.messaging();
 
-// تحديث الساعة والتاريخ
-function updateDateTime() {
-    const now = new Date();
-    let hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'م' : 'ص';
-    hours = hours % 12 || 12;
-    const timeStr = `${hours}:${minutes}:${seconds} ${ampm}`;
-    
-    const clockElement = document.getElementById('liveClock');
-    if (clockElement) clockElement.innerText = timeStr;
-    
-    const dateElement = document.getElementById('currentDateDisplay');
-    if (dateElement) {
-        dateElement.innerText = `${now.getDate()} ${MONTHS_AR[now.getMonth()]} ${now.getFullYear()}`;
-    }
-}
 setInterval(updateDateTime, 1000);
 
 function safeAddEventListener(id, event, handler) {
@@ -71,30 +53,6 @@ async function setupPushNotifications() {
     } catch (err) {
         console.error('⚠️ فشل إعداد الإشعارات:', err);
     }
-}
-
-// ========== إشعار داخلي مع رمز الجرس ==========
-function showBellNotification(title, body) {
-    let coloredBody = body
-        .replace(/✓/g, '<span class="bell-mark-green">✓</span>')
-        .replace(/✗/g, '<span class="bell-mark-red">✗</span>');
-
-    const notif = document.createElement('div');
-    notif.className = 'bell-notification';
-    notif.innerHTML = `
-        <span class="bell-icon">🔔</span>
-        <div class="bell-content">
-            <span class="bell-title">${title}</span>
-            <span class="bell-body">${coloredBody}</span>
-        </div>
-    `;
-    document.body.appendChild(notif);
-    
-    setTimeout(() => notif.classList.add('show'), 100);
-    setTimeout(() => {
-        notif.classList.remove('show');
-        setTimeout(() => notif.remove(), 300);
-    }, 4000);
 }
 
 // ========== إعادة ترتيب month-picker للوضع الأفقي ==========
@@ -150,7 +108,7 @@ function organizeMonthPickerForLandscape() {
 // ========== إعدادات المزامنة الفورية ==========
 function setupRealTimeSync() {
     setupAutoSync();
-    startAutoRefresh(30);
+    startAutoRefresh(60);
     
     window.addEventListener('storage', (event) => {
         if (event.key === STORAGE_DATA) {
@@ -205,6 +163,7 @@ async function initApp() {
     } catch (e) {
         console.warn('تعذر تحميل البيانات من السحابة، استخدام المحلية');
         loadLocalData();
+        renderAll();
     }
 
     const statsSection = document.getElementById('statsSection');
@@ -217,7 +176,7 @@ async function initApp() {
     if (cardsCountHeader) cardsCountHeader.style.display = 'block';
 
     applyPermissions();
-    renderAll();
+    // renderAll محذوف من هنا لأنه متنادي جوه loadData أو loadLocalData
     
     setupRealTimeSync();
     
