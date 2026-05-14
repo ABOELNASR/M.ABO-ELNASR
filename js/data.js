@@ -61,11 +61,12 @@ async function saveDataToCloud() {
     formData.append('data', JSON.stringify(payload));
 
     try {
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
             method: 'POST',
-            body: formData,
-            mode: 'no-cors'
+            body: formData
         });
+        const result = await response.json();
+        console.log('💾 استجابة الحفظ:', JSON.stringify(result));
         return true;
     } catch (e) {
         console.error('❌ فشل الحفظ السحابي:', e);
@@ -112,14 +113,9 @@ async function loadData() {
         return;
     }
 
-    // ⭐ تحميل من LocalStorage أولاً - المصدر الأساسي
-    loadLocalData();
-    renderAll();
-    
-    // ⭐ مزامنة مع السحابة في الخلفية
     if (navigator.onLine) {
         try {
-            document.getElementById('syncStatus').innerHTML = '⏳ جاري المزامنة...';
+            document.getElementById('syncStatus').innerHTML = '⏳ جاري التحميل...';
             const data = await loadDataFromCloud();
             
             subscribers = (data.subscribers || []).map(s => migrateSubscriber(s)).filter(s => s !== null);
@@ -148,13 +144,19 @@ async function loadData() {
             document.getElementById('syncStatus').innerHTML = '🟢 متزامن';
             saveLocalData();
             renderAll();
+            showToast('✅ تم تحميل البيانات من السحابة');
+            return;
         } catch (e) {
             console.warn('فشل التحميل من السحابة:', e);
-            document.getElementById('syncStatus').innerHTML = '⚠️ سحابة غير متصلة';
+            document.getElementById('syncStatus').innerHTML = '⚠️ سحابة غير متصلة (محلي)';
+            showToast(`⚠️ فشل الاتصال بالسحابة: ${e.message}`, true);
         }
     } else {
         document.getElementById('syncStatus').innerHTML = '⚠️ غير متصل (محلي)';
     }
+    
+    loadLocalData();
+    renderAll();
 }
 
 async function testConnection() {
