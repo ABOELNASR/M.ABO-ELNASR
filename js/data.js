@@ -67,7 +67,8 @@ async function saveDataToCloud() {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
-            body: formData
+            body: formData,
+            mode: 'no-cors'
         });
 
         const result = await response.json();
