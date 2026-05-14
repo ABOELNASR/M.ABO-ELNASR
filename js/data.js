@@ -65,11 +65,16 @@ async function saveDataToCloud() {
     formData.append('data', JSON.stringify(payload));
 
     try {
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
             method: 'POST',
-            body: formData,
-            mode: 'no-cors'
+            body: formData
         });
+
+        const result = await response.json();
+        console.log('💾 استجابة الحفظ:', JSON.stringify(result));
+        if (!response.ok || result.error) {
+            throw new Error(result.error || `HTTP ${response.status}`);
+        }
         return true;
     } catch (e) {
         console.error('❌ فشل الحفظ السحابي:', e);
@@ -327,8 +332,7 @@ async function savePushSubscription(subscription) {
         formData.append('data', JSON.stringify(subscription));
         await fetch(API_URL, {
             method: 'POST',
-            body: formData,
-            mode: 'no-cors'
+            body: formData
         });
         console.log('✅ تم حفظ رمز الاشتراك في الخادم');
     } catch (e) {
