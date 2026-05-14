@@ -1,7 +1,5 @@
 // ========== ui-permissions.js - الصلاحيات وشاشة تسجيل الدخول ==========
 
-// ========== تطبيق الصلاحيات - التوزيع الجديد 2-1-2 ==========
-
 function applyPermissions() {
     const statsSection = document.getElementById('statsSection');
     if (statsSection) statsSection.style.display = 'grid';
@@ -30,6 +28,7 @@ function applyPermissions() {
             dropdownContent.innerHTML += '<button id="backupDownloadBtn">💾 نسخ احتياطي (تحميل)</button>';
             dropdownContent.innerHTML += '<button id="restoreBackupBtn">🔄 استعادة نسخة احتياطية</button>';
             dropdownContent.innerHTML += '<button id="activityLogBtn">📜 سجل العمليات</button>';
+            dropdownContent.innerHTML += '<button id="manualSyncBtn">🔄 مزامنة فورية</button>';
             
             document.getElementById('exportSubscribersBtn').onclick = exportSubscribersToExcel;
             document.getElementById('exportReportsBtn').onclick = exportReportsToExcel;
@@ -39,6 +38,9 @@ function applyPermissions() {
             document.getElementById('backupDownloadBtn').onclick = backupDownload;
             document.getElementById('restoreBackupBtn').onclick = showRestoreBackupModal;
             document.getElementById('activityLogBtn').onclick = showActivityLog;
+            document.getElementById('manualSyncBtn').onclick = async () => {
+                await manualSync();
+            };
         } else if (currentUser && currentUser.role === ROLES.WRITE) {
             dropdownContent.innerHTML += '<button id="systemNotesBtn">📝 الملاحظات العامة</button>';
             dropdownContent.innerHTML += '<button id="activityLogBtn">📜 سجل العمليات</button>';
@@ -138,8 +140,6 @@ function applyPermissions() {
         actionsContainer.appendChild(row2);
     }
 }
-
-// ========== شاشة تسجيل الدخول ==========
 
 function showLoginScreen() {
     disableBodyScroll();
