@@ -113,27 +113,19 @@ async function loadData() {
         return;
     }
 
+    // ⭐ تحميل من LocalStorage أولاً
+    loadLocalData();
+    renderAll();
+    
     if (navigator.onLine) {
         try {
-            document.getElementById('syncStatus').innerHTML = '⏳ جاري التحميل...';
+            document.getElementById('syncStatus').innerHTML = '⏳ جاري المزامنة...';
             const data = await loadDataFromCloud();
             
             subscribers = (data.subscribers || []).map(s => migrateSubscriber(s)).filter(s => s !== null);
             monthlyPayments = data.monthlyPayments || {};
             paymentDates = data.paymentDates || {};
             breadOverrides = data.breadOverrides || {};
-            
-            if (data.users && Array.isArray(data.users) && data.users.length) {
-                usersList = data.users.map(u => ({
-                    username: u.username,
-                    password: u.password,
-                    role: u.role || ROLES.READ,
-                    email: u.email || '',
-                    createdAt: u.createdAt || new Date().toISOString(),
-                    updatedAt: u.updatedAt || new Date().toISOString()
-                }));
-                saveUsersToLocal();
-            }
             
             if (data.systemNotes) systemNotes = data.systemNotes;
             if (data.activityLog) {
