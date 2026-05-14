@@ -1,4 +1,4 @@
-// ========== subscribers.js - عمليات المشتركين مع مزامنة فورية ==========
+// ========== subscribers.js - عمليات المشتركين مع مزامنة فورية =========
 
 function renderTempCards() {
     const container = document.getElementById('cardsListContainer');
