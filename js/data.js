@@ -231,8 +231,10 @@ function setupAutoSync() {
 
 let autoRefreshInterval = null;
 let isRefreshing = false;
+let failedRefreshAttempts = 0;
+const MAX_FAILED_ATTEMPTS = 3;
 
-function startAutoRefresh(intervalSeconds = 30) {
+function startAutoRefresh(intervalSeconds = 60) {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
     autoRefreshInterval = setInterval(async () => {
@@ -243,6 +245,7 @@ function startAutoRefresh(intervalSeconds = 30) {
                 const newData = await loadDataFromCloud();
                 
                 if (newData && newData.subscribers) {
+                    failedRefreshAttempts = 0;
                     let hasChanges = false;
                     
                     if (newData.subscribers.length !== subscribers.length) {
@@ -285,7 +288,18 @@ function startAutoRefresh(intervalSeconds = 30) {
                     }
                 }
             } catch (e) {
-                console.warn('فشل التحديث الدوري:', e);
+                failedRefreshAttempts++;
+                console.warn(`فشل التحديث الدوري (${failedRefreshAttempts}/${MAX_FAILED_ATTEMPTS}):`, e.message);
+                
+                if (failedRefreshAttempts >= MAX_FAILED_ATTEMPTS) {
+                    console.warn('توقف التحديث الدوري مؤقتاً بعد 3 محاولات فاشلة');
+                    stopAutoRefresh();
+                    setTimeout(() => {
+                        console.log('🔄 إعادة تشغيل التحديث الدوري...');
+                        startAutoRefresh(120);
+                        failedRefreshAttempts = 0;
+                    }, 120000);
+                }
             } finally {
                 isRefreshing = false;
             }
@@ -372,10 +386,10 @@ async function loadData(forceLocal = false) {
     }
 
     loadLocalData();
+    renderAll();
     
     if (forceLocal || !navigator.onLine) {
         updateSyncStatusUI(navigator.onLine ? 'failed' : 'offline');
-        renderAll();
         return;
     }
 
@@ -414,6 +428,7 @@ async function loadData(forceLocal = false) {
                 }
                 
                 saveLocalData();
+                renderAll();
                 showToast(`✅ تم تحديث البيانات من السحابة`);
             }
             
@@ -426,8 +441,6 @@ async function loadData(forceLocal = false) {
         updateSyncStatusUI('failed');
         showToast(`⚠️ فشل الاتصال بالسحابة، عرض البيانات المحلية`, true);
     }
-    
-    renderAll();
 }
 
 // ⭐ مزامنة يدوية محسنة
