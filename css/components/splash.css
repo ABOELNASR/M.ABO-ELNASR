@@ -1,0 +1,126 @@
+/* ========== شاشة التحميل (Splash Screen) ========== */
+.splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-body);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.splash-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.splash-logo {
+    display: none;
+}
+
+.splash-spinner-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.splash-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    position: absolute;
+    z-index: 2;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.splash-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 5px solid var(--border-light);
+    border-top-color: var(--btn-light-green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1;
+}
+
+.splash-text {
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+}
+
+.splash-subtext {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+@keyframes splashPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* ========== شاشة تسجيل الدخول ========== */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.login-box {
+    background: var(--card-bg);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 350px;
+    text-align: center;
+    color: var(--text-primary);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.login-box input {
+    width: 100%;
+    margin: 0.5rem 0;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-container);
+    color: var(--text-primary);
+}
+
+.remember-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.remember-wrapper label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
