@@ -1,4 +1,4 @@
-// ========== helpers-misc.js - دوال متنوعة =========
+// ========== helpers-misc.js - دوال متنوعة ==========
 
 async function askForNote(actionName) {
     return new Promise((resolve) => {
