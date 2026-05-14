@@ -1,4 +1,4 @@
-// ========== app.js - تهيئة التطبيق وربط الأحداث الرئيسية ==========
+// ========== app.js - تهيئة التطبيق وربط الأحداث الرئيسية مع مزامنة فورية ==========
 
 // Initialize Firebase
 firebase.initializeApp(FIREBASE_CONFIG);
@@ -69,9 +69,8 @@ async function setupPushNotifications() {
     }
 }
 
-// ========== إشعار داخلي مع رمز الجرس (يدعم HTML) ==========
+// ========== إشعار داخلي مع رمز الجرس ==========
 function showBellNotification(title, body) {
-    // تلوين العلامات
     let coloredBody = body
         .replace(/✓/g, '<span class="bell-mark-green">✓</span>')
         .replace(/✗/g, '<span class="bell-mark-red">✗</span>');
@@ -94,29 +93,24 @@ function showBellNotification(title, body) {
     }, 4000);
 }
 
-// ========== إعادة ترتيب month-picker للوضع الأفقي في الموبايل ==========
+// ========== إعادة ترتيب month-picker للوضع الأفقي ==========
 function organizeMonthPickerForLandscape() {
     const monthPicker = document.querySelector('.month-picker');
     if (!monthPicker) return;
     
-    // التحقق من أننا في الوضع الأفقي للموبايل
     const isLandscapeMobile = window.innerWidth <= 900 && window.matchMedia('(orientation: landscape)').matches;
     
     if (!isLandscapeMobile) {
-        // إعادة الترتيب الطبيعي إذا مش في الوضع الأفقي
         const rowOne = monthPicker.querySelector('.row-one');
         const rowTwo = monthPicker.querySelector('.row-two');
         if (rowOne || rowTwo) {
-            // استخراج العناصر من الصفوف
             const monthControl = rowOne ? rowOne.querySelector('.month-control') : null;
             const daysInfo = rowOne ? rowOne.querySelector('.days-info') : null;
             const dateTimeInfo = rowOne ? rowOne.querySelector('.datetime-info') : null;
             const actionsContainer = rowTwo ? rowTwo.querySelector('#actionsContainer') : null;
             
-            // تفريغ monthPicker
             monthPicker.innerHTML = '';
             
-            // إعادة إضافة العناصر مباشرة
             if (monthControl) monthPicker.appendChild(monthControl);
             if (daysInfo) monthPicker.appendChild(daysInfo);
             if (dateTimeInfo) monthPicker.appendChild(dateTimeInfo);
@@ -125,7 +119,6 @@ function organizeMonthPickerForLandscape() {
         return;
     }
     
-    // تجنب إعادة الترتيب إذا كان قد تم بالفعل
     if (monthPicker.querySelector('.row-one') && monthPicker.querySelector('.row-two')) return;
     
     const monthControl = monthPicker.querySelector('.month-control');
@@ -135,22 +128,43 @@ function organizeMonthPickerForLandscape() {
     
     if (!monthControl || !daysInfo || !dateTimeInfo || !actionsContainer) return;
     
-    // إنشاء السطر الأول
     const rowOne = document.createElement('div');
     rowOne.className = 'row-one';
     rowOne.appendChild(monthControl);
     rowOne.appendChild(daysInfo);
     rowOne.appendChild(dateTimeInfo);
     
-    // إنشاء السطر الثاني
     const rowTwo = document.createElement('div');
     rowTwo.className = 'row-two';
     rowTwo.appendChild(actionsContainer);
     
-    // إعادة ترتيب monthPicker
     monthPicker.innerHTML = '';
     monthPicker.appendChild(rowOne);
     monthPicker.appendChild(rowTwo);
+}
+
+// ========== إعدادات المزامنة الفورية ==========
+function setupRealTimeSync() {
+    setupAutoSync();
+    startAutoRefresh(30);
+    
+    window.addEventListener('storage', (event) => {
+        if (event.key === STORAGE_DATA) {
+            console.log('📦 تم اكتشاف تغيير في localStorage من تبويب آخر');
+            loadLocalData();
+            renderAll();
+            showBellNotification('تحديث البيانات', 'تم تحديث البيانات من تبويب آخر');
+        }
+    });
+    
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && navigator.onLine) {
+            console.log('👁️ الصفحة أصبحت مرئية - تحديث البيانات');
+            loadDataFromCloudAndMerge().then(() => renderAll());
+        }
+    });
+    
+    console.log('✅ تم إعداد نظام المزامنة الفورية');
 }
 
 // ========== تهيئة التطبيق بالكامل ==========
@@ -201,7 +215,9 @@ async function initApp() {
     applyPermissions();
     renderAll();
     
-    // ⭐ إخفاء شاشة التحميل بعد تحميل البيانات
+    // ⭐ إعداد المزامنة الفورية
+    setupRealTimeSync();
+    
     const splashScreen = document.getElementById('splashScreen');
     if (splashScreen) {
         setTimeout(() => {
@@ -217,25 +233,25 @@ async function initApp() {
     const addSubscriberCard = document.getElementById('addSubscriberCard');
 
     if (toggleFormBtn && addSubscriberCard) {
-    toggleFormBtn.onclick = (e) => {
-        e.stopPropagation();
-        addSubscriberCard.classList.toggle('form-collapsed');
-        const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
-        toggleFormBtn.innerText = isCollapsed ? '▼' : '▲';
-        toggleFormBtn.title = isCollapsed ? 'فتح النموذج' : 'طي النموذج';
-    };
-}
-if (formTitle && addSubscriberCard) {
-    formTitle.onclick = (e) => {
-        e.stopPropagation();
-        addSubscriberCard.classList.toggle('form-collapsed');
-        const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
-        if (toggleFormBtn) {
+        toggleFormBtn.onclick = (e) => {
+            e.stopPropagation();
+            addSubscriberCard.classList.toggle('form-collapsed');
+            const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
             toggleFormBtn.innerText = isCollapsed ? '▼' : '▲';
             toggleFormBtn.title = isCollapsed ? 'فتح النموذج' : 'طي النموذج';
-        }
-    };
-}
+        };
+    }
+    if (formTitle && addSubscriberCard) {
+        formTitle.onclick = (e) => {
+            e.stopPropagation();
+            addSubscriberCard.classList.toggle('form-collapsed');
+            const isCollapsed = addSubscriberCard.classList.contains('form-collapsed');
+            if (toggleFormBtn) {
+                toggleFormBtn.innerText = isCollapsed ? '▼' : '▲';
+                toggleFormBtn.title = isCollapsed ? 'فتح النموذج' : 'طي النموذج';
+            }
+        };
+    }
 
     const addCardBtn = document.getElementById('addCardBtn');
     const subNameInput = document.getElementById('subName');
@@ -270,7 +286,6 @@ if (formTitle && addSubscriberCard) {
         });
     }
 
-    // ⭐ تعديل: مسح الفلتر يستخدم renderAll بدل renderTable
     safeSetOnclick('clearFilterBtn', () => {
         currentFilter = 'all';
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -279,7 +294,6 @@ if (formTitle && addSubscriberCard) {
         if (typeof renderAll === 'function') renderAll();
     });
 
-    // ⭐ تعديل: زر مسح البحث - mousedown عشان يمسح من أول مرة
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     if (clearSearchBtn) {
         clearSearchBtn.addEventListener('mousedown', (e) => {
@@ -301,7 +315,6 @@ if (formTitle && addSubscriberCard) {
         };
     }
 
-    // ⭐ تعديل: أزرار الفلتر تستخدم renderAll بدل renderTable
     document.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => {
         document.querySelectorAll('.filter-btn').forEach(f => f.classList.remove('active'));
         b.classList.add('active');
@@ -321,15 +334,12 @@ if (formTitle && addSubscriberCard) {
     updateDateTime();
     if (typeof updateDuplicateWarnings === 'function') updateDuplicateWarnings();
 
-    // ترتيب month-picker للوضع الأفقي
     organizeMonthPickerForLandscape();
     
-    // مراقبة تغيير حجم الشاشة أو الاتجاه
     window.addEventListener('resize', () => {
         organizeMonthPickerForLandscape();
     });
     
-    // مراقبة تغيير الاتجاه
     window.matchMedia('(orientation: landscape)').addEventListener('change', () => {
         organizeMonthPickerForLandscape();
     });
