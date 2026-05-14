@@ -50,6 +50,10 @@ async function setupPushNotifications() {
             if (event.data && event.data.type === 'SHOW_TOAST') {
                 showBellNotification(event.data.title, event.data.body);
             }
+            if (event.data && event.data.type === 'FORCE_REFRESH') {
+                console.log('🔄 أمر بالتحديث من SW');
+                manualSync();
+            }
         });
 
         const permission = await Notification.requestPermission();
@@ -160,7 +164,7 @@ function setupRealTimeSync() {
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && navigator.onLine) {
             console.log('👁️ الصفحة أصبحت مرئية - تحديث البيانات');
-            loadDataFromCloudAndMerge().then(() => renderAll());
+            manualSync();
         }
     });
     
@@ -215,7 +219,6 @@ async function initApp() {
     applyPermissions();
     renderAll();
     
-    // ⭐ إعداد المزامنة الفورية
     setupRealTimeSync();
     
     const splashScreen = document.getElementById('splashScreen');
