@@ -41,16 +41,11 @@ async function requestPushNotification(title, body) {
         formData.append('action', 'sendPush');
         formData.append('data', JSON.stringify({ title, body }));
 
-        const response = await fetch(API_URL, {
+        await fetch(API_URL, {
             method: 'POST',
             body: formData,
             mode: 'no-cors'
         });
-        const result = await response.json();
-        console.log('📬 استجابة الخادم للإشعار:', JSON.stringify(result, null, 2));
-        if (result.error) {
-            console.error('❌ خطأ من الخادم:', result.error);
-        }
     } catch (e) {
         console.error('فشل طلب الإشعار عبر الخادم:', e);
     }
