@@ -106,7 +106,6 @@ async function saveDataToCloud() {
     }
 }
 
-// ⭐ دالة الحفظ مع مزامنة فورية (الأساسية)
 async function saveData() {
     saveLocalData();
     saveUsersToLocal();
@@ -131,7 +130,6 @@ async function saveData() {
     }
 }
 
-// ⭐ دالة مزامنة فورية مع انتظار النتيجة
 async function saveDataAndWait() {
     saveLocalData();
     saveUsersToLocal();
@@ -154,7 +152,6 @@ async function saveDataAndWait() {
     return false;
 }
 
-// تحديث حالة المزامنة في الواجهة
 function updateSyncStatusUI(status) {
     const syncStatus = document.getElementById('syncStatus');
     if (!syncStatus) return;
@@ -193,7 +190,6 @@ function updateSyncStatusUI(status) {
     syncStatus.style.opacity = '1';
 }
 
-// ⭐ مزامنة جميع الإجراءات المعلقة
 async function syncPendingActions() {
     if (!navigator.onLine) return false;
     if (!syncNeeded && !localStorage.getItem('pending_sync')) return false;
@@ -215,12 +211,12 @@ async function syncPendingActions() {
     }
 }
 
-// ⭐ مراقبة الاتصال ومزامنة تلقائية
 function setupAutoSync() {
     window.addEventListener('online', async () => {
         console.log('🌐 استعادة الاتصال - بدء المزامنة');
         showToast('📡 تم استعادة الاتصال، جاري المزامنة...');
         await syncPendingActions();
+        await manualSync();
         if (typeof renderAll === 'function') renderAll();
     });
     
@@ -231,20 +227,67 @@ function setupAutoSync() {
     });
 }
 
-// مزامنة دورية كل 30 ثانية
+// ========== مزامنة دورية محسنة ==========
+
 let autoRefreshInterval = null;
+let isRefreshing = false;
 
 function startAutoRefresh(intervalSeconds = 30) {
     if (autoRefreshInterval) clearInterval(autoRefreshInterval);
     
     autoRefreshInterval = setInterval(async () => {
-        if (navigator.onLine && document.visibilityState === 'visible') {
+        if (navigator.onLine && document.visibilityState === 'visible' && !isRefreshing) {
             console.log('🔄 تحديث دوري للبيانات...');
+            isRefreshing = true;
             try {
-                await loadDataFromCloudAndMerge();
-                if (typeof renderAll === 'function') renderAll();
-            } catch(e) {
+                const newData = await loadDataFromCloud();
+                
+                if (newData && newData.subscribers) {
+                    let hasChanges = false;
+                    
+                    if (newData.subscribers.length !== subscribers.length) {
+                        hasChanges = true;
+                    } else {
+                        for (const cloudSub of newData.subscribers) {
+                            const localSub = subscribers.find(s => s.id === cloudSub.id);
+                            if (!localSub || new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
+                                hasChanges = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (hasChanges) {
+                        console.log('📦 تم اكتشاف تغييرات، جاري تحديث الواجهة...');
+                        
+                        subscribers = newData.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
+                        monthlyPayments = newData.monthlyPayments || {};
+                        paymentDates = newData.paymentDates || {};
+                        breadOverrides = newData.breadOverrides || {};
+                        
+                        if (newData.users && Array.isArray(newData.users) && newData.users.length) {
+                            usersList = newData.users;
+                            saveUsersToLocal();
+                        }
+                        
+                        if (newData.systemNotes) systemNotes = newData.systemNotes;
+                        if (newData.activityLog) {
+                            activityLog = newData.activityLog;
+                            saveActivityLogToLocal();
+                        }
+                        
+                        saveLocalData();
+                        
+                        if (typeof renderAll === 'function') renderAll();
+                        
+                        showBellNotification('تحديث البيانات', 'تم تحديث البيانات من الخادم');
+                        showToast('📡 تم تحديث البيانات من السحابة');
+                    }
+                }
+            } catch (e) {
                 console.warn('فشل التحديث الدوري:', e);
+            } finally {
+                isRefreshing = false;
             }
         }
     }, intervalSeconds * 1000);
@@ -257,7 +300,6 @@ function stopAutoRefresh() {
     }
 }
 
-// تحميل البيانات من السحابة ودمجها مع المحلية
 async function loadDataFromCloudAndMerge() {
     if (!navigator.onLine) return false;
     
@@ -266,29 +308,46 @@ async function loadDataFromCloudAndMerge() {
         
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
+            let hasChanges = false;
             
-            const localMap = new Map(subscribers.map(s => [s.id, s]));
-            const cloudMap = new Map(cloudSubscribers.map(s => [s.id, s]));
-            
-            for (const [id, cloudSub] of cloudMap) {
-                const localSub = localMap.get(id);
-                if (!localSub || new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
-                    localMap.set(id, cloudSub);
+            if (cloudSubscribers.length !== subscribers.length) {
+                hasChanges = true;
+            } else {
+                for (const cloudSub of cloudSubscribers) {
+                    const localSub = subscribers.find(s => s.id === cloudSub.id);
+                    if (!localSub || new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
+                        hasChanges = true;
+                        break;
+                    }
                 }
             }
             
-            subscribers = Array.from(localMap.values());
-            monthlyPayments = { ...monthlyPayments, ...(data.monthlyPayments || {}) };
-            paymentDates = { ...paymentDates, ...(data.paymentDates || {}) };
-            breadOverrides = { ...breadOverrides, ...(data.breadOverrides || {}) };
-            
-            saveLocalData();
-            return true;
+            if (hasChanges) {
+                subscribers = cloudSubscribers;
+                monthlyPayments = data.monthlyPayments || {};
+                paymentDates = data.paymentDates || {};
+                breadOverrides = data.breadOverrides || {};
+                
+                if (data.users && Array.isArray(data.users) && data.users.length) {
+                    usersList = data.users;
+                    saveUsersToLocal();
+                }
+                
+                if (data.systemNotes) systemNotes = data.systemNotes;
+                if (data.activityLog) {
+                    activityLog = data.activityLog;
+                    saveActivityLogToLocal();
+                }
+                
+                saveLocalData();
+                return true;
+            }
         }
+        return false;
     } catch (e) {
         console.warn('فشل دمج البيانات:', e);
+        return false;
     }
-    return false;
 }
 
 async function loadDataFromCloud() {
@@ -371,7 +430,7 @@ async function loadData(forceLocal = false) {
     renderAll();
 }
 
-// دالة مزامنة يدوية
+// ⭐ مزامنة يدوية محسنة
 async function manualSync() {
     if (!navigator.onLine) {
         showToast('❌ لا يوجد اتصال بالإنترنت', true);
@@ -383,8 +442,53 @@ async function manualSync() {
     
     try {
         await saveDataToCloud();
-        await loadDataFromCloudAndMerge();
-        renderAll();
+        console.log('✅ تم حفظ البيانات محلياً -> سحابة');
+        
+        const newData = await loadDataFromCloud();
+        
+        if (newData && newData.subscribers) {
+            let changesCount = 0;
+            
+            for (const cloudSub of newData.subscribers) {
+                const localSub = subscribers.find(s => s.id === cloudSub.id);
+                if (!localSub) {
+                    subscribers.push(cloudSub);
+                    changesCount++;
+                } else if (new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
+                    const index = subscribers.findIndex(s => s.id === cloudSub.id);
+                    subscribers[index] = cloudSub;
+                    changesCount++;
+                }
+            }
+            
+            monthlyPayments = { ...monthlyPayments, ...(newData.monthlyPayments || {}) };
+            paymentDates = { ...paymentDates, ...(newData.paymentDates || {}) };
+            breadOverrides = { ...breadOverrides, ...(newData.breadOverrides || {}) };
+            
+            if (newData.users && Array.isArray(newData.users) && newData.users.length) {
+                usersList = newData.users;
+                saveUsersToLocal();
+            }
+            
+            if (newData.systemNotes) systemNotes = newData.systemNotes;
+            if (newData.activityLog) {
+                activityLog = newData.activityLog;
+                saveActivityLogToLocal();
+            }
+            
+            saveLocalData();
+            renderAll();
+            
+            if (changesCount > 0) {
+                showToast(`✅ تمت المزامنة بنجاح (${changesCount} تغيير)`);
+            } else {
+                showToast('✅ تمت المزامنة - لا توجد تغييرات جديدة');
+            }
+            
+            updateSyncStatusUI('success');
+            return true;
+        }
+        
         updateSyncStatusUI('success');
         showToast('✅ تمت المزامنة بنجاح');
         return true;
