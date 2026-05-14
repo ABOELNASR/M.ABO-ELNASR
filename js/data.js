@@ -65,8 +65,14 @@ async function saveDataToCloud() {
             const response = await fetch(`${API_URL}?data=${encodeURIComponent(dataStr)}`, {
                 method: 'GET'
             });
-            const result = await response.json();
-            console.log('💾 استجابة الحفظ:', JSON.stringify(result));
+            if (response.ok) {
+                try {
+                    const result = await response.json();
+                    console.log('💾 استجابة الحفظ:', JSON.stringify(result));
+                } catch(e) {
+                    // الـ response مش JSON، عادي
+                }
+            }
             return true;
         }
         
