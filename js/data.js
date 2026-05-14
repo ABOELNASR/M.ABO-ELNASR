@@ -36,7 +36,7 @@ function saveLocalData() {
     saveActivityLogToLocal();
 }
 
-// حفظ البيانات على Google Apps Script باستخدام FormData لتجاوز CORS
+// حفظ البيانات على Google Apps Script باستخدام FormData
 async function saveDataToCloud() {
     const cleanSubscribers = subscribers.map(s => sanitizeSubscriber(s));
     
@@ -61,12 +61,11 @@ async function saveDataToCloud() {
     formData.append('data', JSON.stringify(payload));
 
     try {
-        const response = await fetch(API_URL, {
+        await fetch(API_URL, {
             method: 'POST',
-            body: formData
+            body: formData,
+            mode: 'no-cors'
         });
-        const result = await response.json();
-        console.log('💾 استجابة الحفظ:', JSON.stringify(result));
         return true;
     } catch (e) {
         console.error('❌ فشل الحفظ السحابي:', e);
@@ -113,9 +112,14 @@ async function loadData() {
         return;
     }
 
+    // ⭐ تحميل من LocalStorage أولاً - المصدر الأساسي
+    loadLocalData();
+    renderAll();
+    
+    // ⭐ مزامنة مع السحابة في الخلفية
     if (navigator.onLine) {
         try {
-            document.getElementById('syncStatus').innerHTML = '⏳ جاري التحميل...';
+            document.getElementById('syncStatus').innerHTML = '⏳ جاري المزامنة...';
             const data = await loadDataFromCloud();
             
             subscribers = (data.subscribers || []).map(s => migrateSubscriber(s)).filter(s => s !== null);
@@ -144,19 +148,13 @@ async function loadData() {
             document.getElementById('syncStatus').innerHTML = '🟢 متزامن';
             saveLocalData();
             renderAll();
-            showToast('✅ تم تحميل البيانات من السحابة');
-            return;
         } catch (e) {
             console.warn('فشل التحميل من السحابة:', e);
-            document.getElementById('syncStatus').innerHTML = '⚠️ سحابة غير متصلة (محلي)';
-            showToast(`⚠️ فشل الاتصال بالسحابة: ${e.message}`, true);
+            document.getElementById('syncStatus').innerHTML = '⚠️ سحابة غير متصلة';
         }
     } else {
         document.getElementById('syncStatus').innerHTML = '⚠️ غير متصل (محلي)';
     }
-    
-    loadLocalData();
-    renderAll();
 }
 
 async function testConnection() {
