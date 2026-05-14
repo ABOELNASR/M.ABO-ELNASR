@@ -114,7 +114,6 @@ function cancelEdit() {
     updateDuplicateWarnings();
 }
 
-// ⭐ تعديل: إضافة أو تحديث مشترك مع مزامنة فورية
 async function addOrUpdate() {
     if (!hasAddEditSubscriber()) {
         showToast('لا صلاحية', true);
@@ -248,14 +247,12 @@ async function addOrUpdate() {
         requestPushNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
     }
     
-    // ⭐ مزامنة فورية وانتظار النتيجة
     await saveDataAndWait();
     
     cancelEdit();
     renderAll();
 }
 
-// ⭐ تعديل: حذف مشترك مع مزامنة فورية
 async function deleteSub(id) {
     if (!hasFullEditDelete()) {
         showToast('لا صلاحية', true);
@@ -290,7 +287,6 @@ async function deleteSub(id) {
     addActivityLog('حذف مشترك', `تم حذف المشترك ${sub.name} (الملاحظة: ${note})`);
     requestPushNotification('المخبز', `تم حذف المشترك • ${sub.name} ✗`);
     
-    // ⭐ مزامنة فورية
     await saveDataAndWait();
     renderAll();
 }
@@ -313,7 +309,6 @@ function editSub(id) {
     }
 }
 
-// ⭐ تعديل: تعديل المدفوعات مع مزامنة فورية
 async function editPayment(subId) {
     if (!hasPaymentActions()) {
         showToast('لا صلاحية', true);
@@ -348,12 +343,10 @@ async function editPayment(subId) {
     addActivityLog('تعديل مبلغ مدفوع', `تم تعديل المدفوع للمشترك ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
     requestPushNotification('المخبز', `تم تعديل مدفوعات • ${sub.name} ✓`);
     
-    // ⭐ مزامنة فورية
     await saveDataAndWait();
     renderAll();
 }
 
-// ⭐ تعديل: تفعيل الدفع الكامل مع مزامنة فورية
 async function toggleFullPayment(subId, wantPaid) {
     if (!hasPaymentActions()) {
         showToast('لا صلاحية', true);
@@ -395,7 +388,6 @@ async function toggleFullPayment(subId, wantPaid) {
     }
 }
 
-// ⭐ تعديل: تعديل الحصة اليومية مع مزامنة فورية
 async function editDailyBread(subId) {
     if (!hasPaymentActions()) {
         showToast('لا صلاحية', true);
@@ -492,7 +484,6 @@ async function editDailyBread(subId) {
         addActivityLog('تعديل الحصة اليومية', `تم تعديل حصة المشترك ${sub.name}`);
         requestPushNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
         
-        // ⭐ مزامنة فورية
         await saveDataAndWait();
         renderAll();
         modal.remove();
