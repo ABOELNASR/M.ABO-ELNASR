@@ -63,4 +63,3 @@ let activityLog = [];
 let deletedCardsLog = [];
 let viewMode = 'table';
 let breadOverrides = {};
-let availableCards = [];
