@@ -34,9 +34,12 @@ function saveLocalData() {
     saveActivityLogToLocal();
 }
 
-// حفظ البيانات على Google Apps Script باستخدام GET
+// حفظ البيانات على Google Apps Script
 async function saveDataToCloud() {
     const cleanSubscribers = subscribers.map(s => sanitizeSubscriber(s));
+    
+    // ⭐ تقليل حجم activityLog - آخر 10 بس
+    const recentActivityLog = (activityLog || []).slice(0, 10);
     
     const payload = {
         subscribers: cleanSubscribers,
@@ -51,18 +54,31 @@ async function saveDataToCloud() {
             updatedAt: u.updatedAt
         })),
         systemNotes: systemNotes,
-        activityLog: activityLog
+        activityLog: recentActivityLog
     };
 
     try {
-        const response = await fetch(`${API_URL}?data=${encodeURIComponent(JSON.stringify(payload))}`, {
-            method: 'GET'
-        });
-        const result = await response.json();
-        console.log('💾 استجابة الحفظ:', JSON.stringify(result));
-        if (!response.ok || result.error) {
-            throw new Error(result.error || `HTTP ${response.status}`);
+        const dataStr = JSON.stringify(payload);
+        
+        // ⭐ لو البيانات صغيرة، استخدم GET
+        if (dataStr.length < 1500) {
+            const response = await fetch(`${API_URL}?data=${encodeURIComponent(dataStr)}`, {
+                method: 'GET'
+            });
+            const result = await response.json();
+            console.log('💾 استجابة الحفظ:', JSON.stringify(result));
+            return true;
         }
+        
+        // ⭐ لو البيانات كبيرة، استخدم POST مع FormData
+        const formData = new FormData();
+        formData.append('data', dataStr);
+        
+        await fetch(API_URL, {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors'
+        });
         return true;
     } catch (e) {
         console.error('❌ فشل الحفظ السحابي:', e);
