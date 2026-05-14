@@ -43,7 +43,8 @@ async function requestPushNotification(title, body) {
 
         const response = await fetch(API_URL, {
             method: 'POST',
-            body: formData
+            body: formData,
+            mode: 'no-cors'
         });
         const result = await response.json();
         console.log('📬 استجابة الخادم للإشعار:', JSON.stringify(result, null, 2));
