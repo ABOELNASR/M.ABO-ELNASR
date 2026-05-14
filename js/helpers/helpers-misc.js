@@ -45,10 +45,12 @@ async function requestPushNotification(title, body) {
             method: 'POST',
             body: formData
         });
-        const result = await response.json();
-        console.log('📬 استجابة الخادم للإشعار:', JSON.stringify(result));
-        if (result.error) {
-            console.error('❌ خطأ من الخادم:', result.error);
+        
+        try {
+            const result = await response.json();
+            console.log('📬 استجابة الخادم للإشعار:', JSON.stringify(result));
+        } catch(e) {
+            // الـ response مش JSON - عادي
         }
     } catch (e) {
         console.error('فشل طلب الإشعار عبر الخادم:', e);
