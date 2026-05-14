@@ -62,7 +62,6 @@ async function saveDataToCloud() {
     formData.append('data', JSON.stringify(payload));
 
     try {
-    try {
         await fetch(API_URL, {
             method: 'POST',
             body: formData,
