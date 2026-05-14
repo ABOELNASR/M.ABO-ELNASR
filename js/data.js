@@ -34,7 +34,7 @@ function saveLocalData() {
     saveActivityLogToLocal();
 }
 
-// حفظ البيانات على Google Apps Script باستخدام FormData لتجاوز CORS
+// حفظ البيانات على Google Apps Script باستخدام GET
 async function saveDataToCloud() {
     const cleanSubscribers = subscribers.map(s => sanitizeSubscriber(s));
     
@@ -54,18 +54,12 @@ async function saveDataToCloud() {
         activityLog: activityLog
     };
 
-    // استخدام FormData لإرسال البيانات كـ multipart/form-data
-    const formData = new FormData();
-    formData.append('data', JSON.stringify(payload));
-
     try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            body: formData
+        const response = await fetch(`${API_URL}?data=${encodeURIComponent(JSON.stringify(payload))}`, {
+            method: 'GET'
         });
-
         const result = await response.json();
-        console.log('💾 استجابة الحفظ:', JSON.stringify(result));   // ← تغيير: عرض نتيجة الحفظ
+        console.log('💾 استجابة الحفظ:', JSON.stringify(result));
         if (!response.ok || result.error) {
             throw new Error(result.error || `HTTP ${response.status}`);
         }
