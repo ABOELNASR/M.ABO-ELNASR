@@ -1,6 +1,4 @@
-// ========== subscribers.js - عمليات المشتركين والبطاقات ==========
-
-// ========== إدارة البطاقات المؤقتة (نموذج الإضافة/التعديل) ==========
+// ========== subscribers.js - عمليات المشتركين مع مزامنة فورية ==========
 
 function renderTempCards() {
     const container = document.getElementById('cardsListContainer');
@@ -38,7 +36,6 @@ function renderTempCards() {
                 subscriberName = editingSub ? editingSub.name : 'مشترك';
             }
             
-            // ⭐ ملاحظة إلزامية فقط للمشتركين الموجودين حالياً
             if (editId !== null) {
                 const note = prompt(`🗑️ حذف البطاقة "${cardName}" من المشترك "${subscriberName}"\nالرجاء كتابة سبب الحذف (ملاحظة إلزامية):`);
                 if (note === null) {
@@ -56,7 +53,6 @@ function renderTempCards() {
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
                 showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
             } else {
-                // ⭐ إضافة جديدة - بدون ملاحظة إلزامية
                 tempCardsList.splice(idx, 1);
                 renderTempCards();
                 updateDuplicateWarnings();
@@ -109,8 +105,6 @@ function loadCardsForEdit(sub) {
     renderTempCards();
 }
 
-// ========== عمليات المشتركين الأساسية ==========
-
 function cancelEdit() {
     editId = null;
     document.getElementById('subName').value = '';
@@ -120,6 +114,7 @@ function cancelEdit() {
     updateDuplicateWarnings();
 }
 
+// ⭐ تعديل: إضافة أو تحديث مشترك مع مزامنة فورية
 async function addOrUpdate() {
     if (!hasAddEditSubscriber()) {
         showToast('لا صلاحية', true);
@@ -155,7 +150,7 @@ async function addOrUpdate() {
         }
     }
     if (duplicateCardName) {
-        showToast(`❌ اسم البطاقة "${duplicateCardName}" مكرر (موجود لدى مشترك آخر أو مكرر في القائمة).`, true);
+        showToast(`❌ اسم البطاقة "${duplicateCardName}" مكرر`, true);
         return;
     }
     
@@ -190,7 +185,6 @@ async function addOrUpdate() {
         if (idx !== -1) {
             const oldSub = subscribers[idx];
             
-            // ⭐ التحقق من تغيير عدد الأفراد وتحديث الحصة اليومية تلقائياً
             const key = getKey(currentYear, currentMonth);
             const today = new Date().getDate();
             const days = getDays(currentYear, currentMonth);
@@ -198,7 +192,6 @@ async function addOrUpdate() {
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
                 if (oldCard && oldCard.individuals !== newCard.individuals && today > 1 && today < days) {
-                    // تغيير عدد الأفراد في منتصف الشهر
                     const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
                     const newTotalDailyBread = cardsList.reduce((sum, c, i) => {
                         if (i === cardIdx) return sum + (c.dailyBreadOverride || newDefaultBread);
@@ -208,7 +201,6 @@ async function addOrUpdate() {
                     if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
                     if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
                     
-                    // إزالة تغييرات سابقة لنفس اليوم
                     breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
                     
                     breadOverrides[oldSub.id][key].push({
@@ -230,14 +222,12 @@ async function addOrUpdate() {
                 oldCards: oldSub.cardsList ? oldSub.cardsList.length : 0,
                 newCards: cardsList.length
             };
-            const updatedHistory = [...(oldSub.history || []), historyEntry];
             subscribers[idx] = {
                 ...oldSub,
                 name,
                 cardsList: cardsList,
                 updatedAt: now,
-                history: updatedHistory,
-                lastEditNote: 'بدون ملاحظة'
+                history: [...(oldSub.history || []), historyEntry]
             };
             addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
         }
@@ -245,7 +235,7 @@ async function addOrUpdate() {
         requestPushNotification('المخبز', `تم تعديل المشترك • ${name} ✓`);
     } else {
         const newId = Date.now() + Math.floor(Math.random() * 10000);
-        const newSubscriber = {
+        subscribers.push({
             id: newId,
             name: name,
             balance: 0,
@@ -253,18 +243,19 @@ async function addOrUpdate() {
             createdAt: now,
             updatedAt: now,
             history: []
-        };
-        subscribers.push(newSubscriber);
-        const totalInd = getTotalIndividuals({ cardsList });
-        addActivityLog('إضافة مشترك', `تم إضافة مشترك جديد: ${name} مع ${cardsList.length} بطاقات (إجمالي الأفراد ${totalInd})`);
+        });
+        addActivityLog('إضافة مشترك', `تم إضافة مشترك جديد: ${name}`);
         requestPushNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
     }
     
-    await saveData();
+    // ⭐ مزامنة فورية وانتظار النتيجة
+    await saveDataAndWait();
+    
     cancelEdit();
     renderAll();
 }
 
+// ⭐ تعديل: حذف مشترك مع مزامنة فورية
 async function deleteSub(id) {
     if (!hasFullEditDelete()) {
         showToast('لا صلاحية', true);
@@ -298,7 +289,9 @@ async function deleteSub(id) {
     
     addActivityLog('حذف مشترك', `تم حذف المشترك ${sub.name} (الملاحظة: ${note})`);
     requestPushNotification('المخبز', `تم حذف المشترك • ${sub.name} ✗`);
-    await saveData();
+    
+    // ⭐ مزامنة فورية
+    await saveDataAndWait();
     renderAll();
 }
 
@@ -320,8 +313,7 @@ function editSub(id) {
     }
 }
 
-// ========== عمليات المدفوعات ==========
-
+// ⭐ تعديل: تعديل المدفوعات مع مزامنة فورية
 async function editPayment(subId) {
     if (!hasPaymentActions()) {
         showToast('لا صلاحية', true);
@@ -355,10 +347,13 @@ async function editPayment(subId) {
     
     addActivityLog('تعديل مبلغ مدفوع', `تم تعديل المدفوع للمشترك ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
     requestPushNotification('المخبز', `تم تعديل مدفوعات • ${sub.name} ✓`);
-    await saveData();
+    
+    // ⭐ مزامنة فورية
+    await saveDataAndWait();
     renderAll();
 }
 
+// ⭐ تعديل: تفعيل الدفع الكامل مع مزامنة فورية
 async function toggleFullPayment(subId, wantPaid) {
     if (!hasPaymentActions()) {
         showToast('لا صلاحية', true);
@@ -383,9 +378,8 @@ async function toggleFullPayment(subId, wantPaid) {
             paymentDates[subId][key] = new Date().toISOString().slice(0, 10);
             addActivityLog('تسديد كامل', `تم تسديد كامل مبلغ الاشتراك للمشترك ${sub.name}`);
             requestPushNotification('المخبز', `تم تسديد كامل الاشتراك • ${sub.name} • بقيمة ${formatNumber(totalValue)} ج.م ✓`);
-            await saveData();
-            renderAll();
-        } else {
+            
+            await saveDataAndWait();
             renderAll();
         }
     } else if (!wantPaid && getPaid(subId) > 0) {
@@ -394,16 +388,14 @@ async function toggleFullPayment(subId, wantPaid) {
             if (paymentDates[subId]) delete paymentDates[subId][key];
             addActivityLog('إلغاء مدفوعات', `تم إلغاء جميع دفعات الشهر للمشترك ${sub.name}`);
             requestPushNotification('المخبز', `تم إلغاء مدفوعات • ${sub.name} ✗`);
-            await saveData();
-            renderAll();
-        } else {
+            
+            await saveDataAndWait();
             renderAll();
         }
     }
 }
 
-// ========== تعديل الحصة اليومية ==========
-
+// ⭐ تعديل: تعديل الحصة اليومية مع مزامنة فورية
 async function editDailyBread(subId) {
     if (!hasPaymentActions()) {
         showToast('لا صلاحية', true);
@@ -467,9 +459,7 @@ async function editDailyBread(subId) {
             } else {
                 let num = parseInt(val);
                 if (isNaN(num) || num < 0) num = 0;
-                if (num > defaultDaily) {
-                    num = defaultDaily;
-                }
+                if (num > defaultDaily) num = defaultDaily;
                 newBread = num;
                 card.dailyBreadOverride = num;
             }
@@ -477,18 +467,15 @@ async function editDailyBread(subId) {
             newTotalDailyBread += newBread;
             card.updatedAt = new Date().toISOString();
             
-            // ⭐ تسجيل تغيير الحصة إذا اختلفت القيمة وكان في وسط الشهر
             if (oldBread !== newBread && today > 1 && today < days) {
                 hasChanges = true;
             }
         });
         
-        // ⭐ تسجيل التغيير في breadOverrides إذا كان في منتصف الشهر
         if (hasChanges) {
             if (!breadOverrides[sub.id]) breadOverrides[sub.id] = {};
             if (!breadOverrides[sub.id][key]) breadOverrides[sub.id][key] = [];
             
-            // إزالة تغييرات سابقة لنفس اليوم
             breadOverrides[sub.id][key] = breadOverrides[sub.id][key].filter(o => o.day !== today);
             
             breadOverrides[sub.id][key].push({
@@ -504,7 +491,9 @@ async function editDailyBread(subId) {
         
         addActivityLog('تعديل الحصة اليومية', `تم تعديل حصة المشترك ${sub.name}`);
         requestPushNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
-        await saveData();
+        
+        // ⭐ مزامنة فورية
+        await saveDataAndWait();
         renderAll();
         modal.remove();
         enableBodyScroll();
