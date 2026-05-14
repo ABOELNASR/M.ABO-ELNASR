@@ -1,4 +1,4 @@
-// ========== data.js - إدارة البيانات المحلية والسحابية مع مزامنة فورية =========
+// ========== data.js - إدارة البيانات المحلية والسحابية مع مزامنة فورية ==========
 
 // تحميل البيانات من LocalStorage بشكل آمن
 function loadLocalData() {
@@ -108,24 +108,16 @@ async function saveDataToCloud() {
 
 // ⭐ دالة الحفظ مع مزامنة فورية (الأساسية)
 async function saveData() {
-    // 1. حفظ محلي فوري
     saveLocalData();
     saveUsersToLocal();
-    
-    // 2. تحديث حالة المزامنة في الواجهة
     updateSyncStatusUI('saving');
     
-    // 3. مزامنة سحابية فورية في الخلفية
     if (navigator.onLine && window.location.protocol !== 'file:') {
         try {
             await saveDataToCloud();
             updateSyncStatusUI('success');
             syncNeeded = false;
             localStorage.removeItem('pending_sync');
-            
-            // 4. إرسال إشعار للمستخدمين الآخرين (اختياري)
-            // notifyOtherUsers();
-            
         } catch (e) {
             console.warn('⚠️ فشل الحفظ السحابي:', e);
             updateSyncStatusUI('failed');
@@ -239,7 +231,7 @@ function setupAutoSync() {
     });
 }
 
-// مزامنة دورية كل 30 ثانية (للتحديث من المستخدمين الآخرين)
+// مزامنة دورية كل 30 ثانية
 let autoRefreshInterval = null;
 
 function startAutoRefresh(intervalSeconds = 30) {
@@ -275,11 +267,9 @@ async function loadDataFromCloudAndMerge() {
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
             
-            // دمج البيانات - الاحتفاظ بأحدث نسخة
             const localMap = new Map(subscribers.map(s => [s.id, s]));
             const cloudMap = new Map(cloudSubscribers.map(s => [s.id, s]));
             
-            // تحديث المشتركين الموجودين من السحابة إذا كانت أحدث
             for (const [id, cloudSub] of cloudMap) {
                 const localSub = localMap.get(id);
                 if (!localSub || new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
@@ -337,7 +327,6 @@ async function loadData(forceLocal = false) {
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
             
-            // مقارنة الطوابع الزمنية
             const localLatest = subscribers.reduce((max, s) => {
                 const date = new Date(s.updatedAt || 0);
                 return date > max ? date : max;
@@ -403,15 +392,6 @@ async function manualSync() {
         updateSyncStatusUI('failed');
         showToast(`❌ فشلت المزامنة: ${e.message}`, true);
         return false;
-    }
-}
-
-// إرسال إشعار للمستخدمين الآخرين (اختياري)
-async function notifyOtherUsers() {
-    try {
-        await requestPushNotification('المخبز', '📝 تم تحديث البيانات في النظام');
-    } catch(e) {
-        console.log('فشل إرسال الإشعار للمستخدمين الآخرين');
     }
 }
 
