@@ -193,48 +193,56 @@ async function addOrUpdate() {
             let cardsAdded = cardsList.length > oldCardsCount;
             let cardsDeleted = cardsList.length < oldCardsCount;
             let addedCard = null;
+            let addedCardBread = 0;
             
-            // ⭐ تحديث الحصة اليومية تلقائياً لجميع البطاقات
-            cardsList.forEach(card => {
-                card.dailyBreadOverride = null;
-            });
+            // ⭐ تحديد البطاقة الجديدة لو فيه إضافة
+            if (cardsAdded) {
+                addedCard = cardsList[cardsList.length - 1];
+                addedCardBread = addedCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
+            }
             
             // ⭐ حساب الحصة اليومية الجديدة
             const newTotalDailyBread = cardsList.reduce((sum, c) => {
                 return sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
             }, 0);
             
-            const oldTotalIndividuals = oldSub.cardsList ? oldSub.cardsList.reduce((sum, c) => sum + c.individuals, 0) : 0;
-            const newTotalIndividuals = cardsList.reduce((sum, c) => sum + c.individuals, 0);
+            const oldTotalDailyBread = oldSub.cardsList 
+                ? oldSub.cardsList.reduce((sum, c) => sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON), 0)
+                : 0;
             
-            // ⭐ التحقق من تغيير عدد الأفراد أو إضافة بطاقة
+            // ⭐ التحقق من تغيير عدد الأفراد في بطاقة موجودة
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
                 if (oldCard && oldCard.individuals !== newCard.individuals) {
                     individualsChanged = true;
                 }
-                if (!oldCard) {
-                    addedCard = newCard;
-                }
             });
             
-            // ⭐ حالة 1: إضافة بطاقة جديدة = تقسيم الحساب لفترتين
+            // ⭐ إضافة breadOverride: إضافة بطاقة جديدة = تقسيم الحساب لفترتين
             if (cardsAdded && addedCard && today > 1 && today < days) {
                 if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
                 if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
                 
-                // مسح التجاوزات السابقة لنفس اليوم
+                // ⭐ الحصة القديمة (قبل إضافة البطاقة)
+                const oldDailyBread = oldTotalDailyBread;
+                
+                // ⭐ الحصة الجديدة (بعد إضافة البطاقة)
+                const newDailyBread = newTotalDailyBread;
+                
+                // ⭐ الفترة 1: من أول الشهر → يوم الإضافة (الحصة القديمة)
+                // ⭐ الفترة 2: من يوم الإضافة → آخر الشهر (الحصة الجديدة)
                 breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
                 
                 breadOverrides[oldSub.id][key].push({
                     day: today,
-                    totalDailyBread: newTotalDailyBread,
-                    reason: `إضافة بطاقة "${addedCard.cardName}" (${addedCard.individuals} أفراد)`
+                    totalDailyBread: newDailyBread,
+                    oldDailyBread: oldDailyBread,
+                    reason: `إضافة بطاقة "${addedCard.cardName}" (${addedCard.individuals} أفراد) - الحصة القديمة: ${oldDailyBread} → الجديدة: ${newDailyBread}`
                 });
                 
                 breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
             }
-            // ⭐ حالة 2: زيادة أفراد بطاقة موجودة = الشهر كله بالسعر الجديد (بدون breadOverride)
+            // ⭐ إضافة breadOverride: زيادة أفراد بطاقة موجودة = الشهر كله بالسعر الجديد
             else if (individualsChanged && !cardsAdded && today > 1 && today < days) {
                 if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
                 if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
@@ -244,7 +252,8 @@ async function addOrUpdate() {
                 breadOverrides[oldSub.id][key].push({
                     day: today,
                     totalDailyBread: newTotalDailyBread,
-                    reason: `تعديل عدد الأفراد من ${oldTotalIndividuals} إلى ${newTotalIndividuals}`
+                    oldDailyBread: oldTotalDailyBread,
+                    reason: `تعديل عدد الأفراد - الحصة القديمة: ${oldTotalDailyBread} → الجديدة: ${newTotalDailyBread}`
                 });
                 
                 breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
