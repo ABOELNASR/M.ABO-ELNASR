@@ -169,7 +169,7 @@ async function addOrUpdate() {
     const cardsList = tempCardsList.map(card => ({
         cardName: String(card.cardName || '').trim(),
         individuals: parseInt(card.individuals) || 1,
-        dailyBreadOverride: card.dailyBreadOverride || null,
+        dailyBreadOverride: null,
         createdAt: card.createdAt || now,
         updatedAt: now,
         history: Array.isArray(card.history) ? card.history : [],
@@ -191,39 +191,64 @@ async function addOrUpdate() {
             let nameChanged = (oldSub.name !== name);
             let individualsChanged = false;
             let cardsAdded = cardsList.length > oldCardsCount;
-            let cardsDeleted = false;
+            let cardsDeleted = cardsList.length < oldCardsCount;
+            let addedCard = null;
             
+            // ⭐ تحديث الحصة اليومية تلقائياً لجميع البطاقات
+            cardsList.forEach(card => {
+                card.dailyBreadOverride = null;
+            });
+            
+            // ⭐ حساب الحصة اليومية الجديدة
+            const newTotalDailyBread = cardsList.reduce((sum, c) => {
+                return sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+            }, 0);
+            
+            const oldTotalIndividuals = oldSub.cardsList ? oldSub.cardsList.reduce((sum, c) => sum + c.individuals, 0) : 0;
+            const newTotalIndividuals = cardsList.reduce((sum, c) => sum + c.individuals, 0);
+            
+            // ⭐ التحقق من تغيير عدد الأفراد أو إضافة بطاقة
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
-                if (!oldCard) return;
-                if (oldCard.individuals !== newCard.individuals) {
+                if (oldCard && oldCard.individuals !== newCard.individuals) {
                     individualsChanged = true;
-                    const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
-                    if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
-                        newCard.dailyBreadOverride = newDefaultBread;
-                    }
-                    
-                    if (today > 1 && today < days) {
-                        const newTotalDailyBread = cardsList.reduce((sum, c, i) => {
-                            if (i === cardIdx) return sum + (c.dailyBreadOverride || newDefaultBread);
-                            return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
-                        }, 0);
-                        
-                        if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                        if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
-                        
-                        breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
-                        
-                        breadOverrides[oldSub.id][key].push({
-                            day: today,
-                            totalDailyBread: newTotalDailyBread,
-                            reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
-                        });
-                        
-                        breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
-                    }
+                }
+                if (!oldCard) {
+                    addedCard = newCard;
                 }
             });
+            
+            // ⭐ حالة 1: إضافة بطاقة جديدة = تقسيم الحساب لفترتين
+            if (cardsAdded && addedCard && today > 1 && today < days) {
+                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                
+                // مسح التجاوزات السابقة لنفس اليوم
+                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                
+                breadOverrides[oldSub.id][key].push({
+                    day: today,
+                    totalDailyBread: newTotalDailyBread,
+                    reason: `إضافة بطاقة "${addedCard.cardName}" (${addedCard.individuals} أفراد)`
+                });
+                
+                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+            }
+            // ⭐ حالة 2: زيادة أفراد بطاقة موجودة = الشهر كله بالسعر الجديد (بدون breadOverride)
+            else if (individualsChanged && !cardsAdded && today > 1 && today < days) {
+                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                
+                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                
+                breadOverrides[oldSub.id][key].push({
+                    day: today,
+                    totalDailyBread: newTotalDailyBread,
+                    reason: `تعديل عدد الأفراد من ${oldTotalIndividuals} إلى ${newTotalIndividuals}`
+                });
+                
+                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+            }
             
             const historyEntry = {
                 action: 'تعديل المشترك',
@@ -245,10 +270,10 @@ async function addOrUpdate() {
             
             // ⭐ تحديد نص الإشعار التفصيلي
             let notificationBody;
-            if (cardsAdded) {
-                // إضافة بطاقة جديدة
-                const addedCard = cardsList[cardsList.length - 1];
+            if (cardsAdded && addedCard) {
                 notificationBody = `📇 تم إضافة البطاقة "${addedCard.cardName}" للمشترك "${name}"`;
+            } else if (cardsDeleted) {
+                notificationBody = `📇 تم تعديل بطاقات المشترك "${name}"`;
             } else if (individualsChanged && !nameChanged) {
                 notificationBody = `👥 تم تعديل عدد أفراد المشترك "${name}"`;
             } else if (nameChanged && !individualsChanged) {
