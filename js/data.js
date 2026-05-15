@@ -93,7 +93,6 @@ async function saveDataToCloudForce() {
             timestamp: new Date().toISOString()
         };
 
-        // ⭐ إرسال البيانات كـ JSON مباشر في جسم الطلب
         const response = await fetch(API_URL, {
             method: 'POST',
             body: JSON.stringify(payload)
@@ -101,10 +100,8 @@ async function saveDataToCloudForce() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        const result = await response.json();
-        console.log('☁️☁️ رفع فوري ناجح:', result);
+        console.log('☁️☁️ رفع فوري ناجح');
         
-        // ⭐⭐ تأكيد الرفع: اسحب من السحابة وتأكد إن البيانات وصلت
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         try {
@@ -319,7 +316,6 @@ async function loadData(forceLocal = false) {
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
             
-            // ⭐ استبدال كامل من السحابة
             subscribers = cloudSubscribers;
             monthlyPayments = data.monthlyPayments || {};
             paymentDates = data.paymentDates || {};
