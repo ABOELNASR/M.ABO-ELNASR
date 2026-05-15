@@ -155,9 +155,11 @@ function renderCards() {
                 <div class="card-cards-header">👤 ${escapeHtml(sub.name)}</div>
                 ${cardsListHtml || '<div style="text-align:center;color:var(--text-secondary);">لا توجد بطاقات</div>'}
             </div>
-            <div class="card-actions-row" style="position: relative;">
-                ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid card-checkbox" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} title="خالص" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%);">` : ''}
-                <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; width: 100%;">
+            <div class="card-actions-row" style="display: flex; align-items: center; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                    ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} title="خالص" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--btn-light-green);">` : ''}
+                </div>
+                <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; flex: 1;">
                     ${showEditDelete ? `<button class="action-icon-btn edit-btn" data-id="${sub.id}" title="تعديل">✏️</button>` : ''}
                     ${showEditDelete ? `<button class="action-icon-btn delete-btn" data-id="${sub.id}" title="حذف">🗑️</button>` : ''}
                     ${showPaymentActions ? `<button class="action-icon-btn edit-payment-btn" data-id="${sub.id}" title="مدفوع">💰</button>` : ''}
