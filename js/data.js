@@ -1,5 +1,9 @@
 // ========== data.js - إدارة البيانات (السحابة هي الأساس) ==========
 
+// ========== آلية القفل لمنع التداخل ==========
+let isSavingToCloud = false;
+let pendingSaveToCloud = false;
+
 // ========== تحميل البيانات المحلية (للقراءة السريعة فقط) ==========
 function loadLocalData() {
     const stored = localStorage.getItem(STORAGE_DATA);
@@ -54,32 +58,39 @@ function saveLocalData() {
     }
 }
 
-// ========== رفع فوري للسحابة (الأساس) ==========
-async function saveDataToCloud() {
-    const cleanSubscribers = subscribers.map(s => sanitizeSubscriber(s));
+// ========== رفع فوري إجباري للسحابة ==========
+async function saveDataToCloudForce() {
+    if (isSavingToCloud) {
+        pendingSaveToCloud = true;
+        console.log('⏳ رفع سابق لسه شغال، الانتظار...');
+        return false;
+    }
     
-    const recentActivityLog = (activityLog || []).slice(0, 50);
+    isSavingToCloud = true;
     
-    const payload = {
-        subscribers: cleanSubscribers,
-        monthlyPayments: monthlyPayments,
-        paymentDates: paymentDates,
-        breadOverrides: breadOverrides,
-        users: usersList.map(u => ({
-            username: u.username,
-            password: u.password,
-            role: u.role,
-            email: u.email,
-            createdAt: u.createdAt,
-            updatedAt: u.updatedAt
-        })),
-        systemNotes: systemNotes,
-        activityLog: recentActivityLog,
-        version: APP_VERSION,
-        timestamp: new Date().toISOString()
-    };
-
     try {
+        const cleanSubscribers = subscribers.map(s => sanitizeSubscriber(s));
+        const recentActivityLog = (activityLog || []).slice(0, 50);
+        
+        const payload = {
+            subscribers: cleanSubscribers,
+            monthlyPayments: monthlyPayments,
+            paymentDates: paymentDates,
+            breadOverrides: breadOverrides,
+            users: usersList.map(u => ({
+                username: u.username,
+                password: u.password,
+                role: u.role,
+                email: u.email,
+                createdAt: u.createdAt,
+                updatedAt: u.updatedAt
+            })),
+            systemNotes: systemNotes,
+            activityLog: recentActivityLog,
+            version: APP_VERSION,
+            timestamp: new Date().toISOString()
+        };
+
         const dataStr = JSON.stringify(payload);
         const formData = new FormData();
         formData.append('data', dataStr);
@@ -89,21 +100,43 @@ async function saveDataToCloud() {
             body: formData
         });
         
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
         try {
             const result = await response.json();
-            console.log('☁️ حفظ سحابي ناجح:', result);
+            console.log('☁️☁️ رفع فوري ناجح:', result);
         } catch(e) {
-            console.log('☁️ حفظ سحابي ناجح (استجابة غير JSON)');
+            console.log('☁️☁️ رفع فوري ناجح');
         }
         
+        updateSyncStatusUI('success');
         return true;
     } catch (e) {
-        console.error('❌ فشل الحفظ السحابي:', e);
+        console.error('❌ فشل الرفع الفوري:', e);
+        updateSyncStatusUI('failed');
         throw e;
+    } finally {
+        isSavingToCloud = false;
+        
+        if (pendingSaveToCloud) {
+            pendingSaveToCloud = false;
+            console.log('🔄 تنفيذ الرفع المعلق...');
+            setTimeout(() => saveDataToCloudForce(), 500);
+        }
     }
 }
 
-// ========== حفظ مزدوج (سحابة + محلي احتياطي) ==========
+// ========== رفع عادي (بدون إجباري) ==========
+async function saveDataToCloud() {
+    if (isSavingToCloud) {
+        console.log('⏳ الرفع مؤجل لأن فيه رفع شغال حالياً');
+        pendingSaveToCloud = true;
+        return true;
+    }
+    return await saveDataToCloudForce();
+}
+
+// ========== حفظ مزدوج (سحابة فوراً + محلي احتياطي) ==========
 async function saveData() {
     saveLocalData();
     saveUsersToLocal();
@@ -111,8 +144,7 @@ async function saveData() {
     
     if (navigator.onLine && window.location.protocol !== 'file:') {
         try {
-            await saveDataToCloud();
-            updateSyncStatusUI('success');
+            await saveDataToCloudForce();
             syncNeeded = false;
             localStorage.removeItem('pending_sync');
         } catch (e) {
@@ -128,7 +160,7 @@ async function saveData() {
     }
 }
 
-// ========== حفظ وانتظار التأكيد ==========
+// ========== حفظ وانتظار التأكيد (إجباري) ==========
 async function saveDataAndWait() {
     saveLocalData();
     saveUsersToLocal();
@@ -136,8 +168,7 @@ async function saveDataAndWait() {
     
     if (navigator.onLine && window.location.protocol !== 'file:') {
         try {
-            await saveDataToCloud();
-            updateSyncStatusUI('success');
+            await saveDataToCloudForce();
             syncNeeded = false;
             localStorage.removeItem('pending_sync');
             return true;
@@ -199,7 +230,7 @@ async function syncPendingActions() {
     updateSyncStatusUI('syncing');
     
     try {
-        await saveDataToCloud();
+        await saveDataToCloudForce();
         updateSyncStatusUI('success');
         syncNeeded = false;
         localStorage.removeItem('pending_sync');
@@ -243,7 +274,6 @@ async function loadDataFromCloud() {
 
 // ========== التحميل الرئيسي (السحابة هي الأساس) ==========
 async function loadData(forceLocal = false) {
-    // لو فاتح من ملف محلي
     if (window.location.protocol === 'file:') {
         showToast('⚠️ التطبيق يعمل من ملف محلي', true);
         updateSyncStatusUI('no_connection');
@@ -252,7 +282,6 @@ async function loadData(forceLocal = false) {
         return;
     }
 
-    // لو مفيش إنترنت
     if (forceLocal || !navigator.onLine) {
         loadLocalData();
         renderAll();
@@ -260,17 +289,14 @@ async function loadData(forceLocal = false) {
         return;
     }
 
-    // ⭐ السحابة هي الأساس
     updateSyncStatusUI('syncing');
     
     try {
         const data = await loadDataFromCloud();
         
-        // لو السحابة رجعت بيانات صالحة
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
             
-            // ⭐ استبدال البيانات المحلية بالكامل بالسحابة
             subscribers = cloudSubscribers;
             monthlyPayments = data.monthlyPayments || {};
             paymentDates = data.paymentDates || {};
@@ -287,7 +313,6 @@ async function loadData(forceLocal = false) {
                 saveActivityLogToLocal();
             }
             
-            // حفظ نسخة محلية من بيانات السحابة
             saveLocalData();
             
             updateSyncStatusUI('success');
@@ -297,7 +322,6 @@ async function loadData(forceLocal = false) {
                 showToast(`☁️ تم تحميل البيانات من السحابة (${subscribers.length} مشترك)`);
             }
         } else {
-            // لو السحابة فاضية، نبدأ من الصفر
             console.log('☁️ السحابة فارغة، بدء بقائمة فارغة');
             subscribers = [];
             monthlyPayments = {};
@@ -309,7 +333,6 @@ async function loadData(forceLocal = false) {
     } catch (e) {
         console.warn('❌ فشل تحميل البيانات من السحابة:', e.message);
         
-        // ⭐ استخدام النسخة المحلية كحل أخير
         loadLocalData();
         updateSyncStatusUI('failed');
         
@@ -334,10 +357,8 @@ async function manualSync() {
     updateSyncStatusUI('syncing');
     
     try {
-        // رفع أي تغييرات معلقة أولاً
-        await saveDataToCloud();
+        await saveDataToCloudForce();
         
-        // تحميل أحدث بيانات من السحابة
         const data = await loadDataFromCloud();
         
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
@@ -374,6 +395,102 @@ async function manualSync() {
         updateSyncStatusUI('failed');
         showToast(`❌ فشل التحميل: ${e.message}`, true);
         return false;
+    }
+}
+
+// ========== مزامنة دورية (تحترم القفل) ==========
+let autoRefreshInterval = null;
+let isRefreshing = false;
+let failedRefreshAttempts = 0;
+const MAX_FAILED_ATTEMPTS = 3;
+
+function startAutoRefresh(intervalSeconds = 120) {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    
+    autoRefreshInterval = setInterval(async () => {
+        // ⭐ لو فيه رفع شغال، أجل التحديث
+        if (isSavingToCloud) {
+            console.log('⏳ تأجيل التحديث الدوري لأن فيه رفع شغال...');
+            return;
+        }
+        
+        if (navigator.onLine && document.visibilityState === 'visible' && !isRefreshing) {
+            console.log('🔄 تحديث دوري للبيانات...');
+            isRefreshing = true;
+            try {
+                const newData = await loadDataFromCloud();
+                
+                if (newData && newData.subscribers && Array.isArray(newData.subscribers)) {
+                    failedRefreshAttempts = 0;
+                    const cloudSubscribers = newData.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
+                    
+                    let hasChanges = false;
+                    
+                    if (cloudSubscribers.length !== subscribers.length) {
+                        hasChanges = true;
+                    } else {
+                        for (const cloudSub of cloudSubscribers) {
+                            const localSub = subscribers.find(s => s.id === cloudSub.id);
+                            if (!localSub || new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
+                                hasChanges = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (hasChanges) {
+                        console.log('📦 تم اكتشاف تغييرات من السحابة، جاري تحديث الواجهة...');
+                        
+                        subscribers = cloudSubscribers;
+                        monthlyPayments = newData.monthlyPayments || {};
+                        paymentDates = newData.paymentDates || {};
+                        breadOverrides = newData.breadOverrides || {};
+                        
+                        if (newData.users && Array.isArray(newData.users) && newData.users.length) {
+                            usersList = newData.users;
+                            saveUsersToLocal();
+                        }
+                        
+                        if (newData.systemNotes !== undefined) systemNotes = newData.systemNotes;
+                        if (newData.activityLog) {
+                            activityLog = newData.activityLog;
+                            saveActivityLogToLocal();
+                        }
+                        
+                        saveLocalData();
+                        
+                        if (typeof renderAll === 'function') renderAll();
+                        
+                        showBellNotification('تحديث البيانات', 'تم تحديث البيانات من السحابة');
+                        console.log('☁️ تم تحديث البيانات من السحابة:', subscribers.length, 'مشترك');
+                    } else {
+                        console.log('✅ لا توجد تغييرات جديدة في السحابة');
+                    }
+                }
+            } catch (e) {
+                failedRefreshAttempts++;
+                console.warn(`فشل التحديث الدوري (${failedRefreshAttempts}/${MAX_FAILED_ATTEMPTS}):`, e.message);
+                
+                if (failedRefreshAttempts >= MAX_FAILED_ATTEMPTS) {
+                    console.warn('توقف التحديث الدوري مؤقتاً بعد 3 محاولات فاشلة');
+                    stopAutoRefresh();
+                    setTimeout(() => {
+                        console.log('🔄 إعادة تشغيل التحديث الدوري...');
+                        startAutoRefresh(120);
+                        failedRefreshAttempts = 0;
+                    }, 120000);
+                }
+            } finally {
+                isRefreshing = false;
+            }
+        }
+    }, intervalSeconds * 1000);
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
     }
 }
 
