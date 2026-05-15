@@ -39,17 +39,15 @@ function subValue(sub) {
     const days = getDays(currentYear, currentMonth);
     const key = getKey(currentYear, currentMonth);
     
-    // التحقق من وجود تغييرات في الحصة خلال الشهر
     const overrides = breadOverrides[sub.id]?.[key];
     
     if (overrides && overrides.length > 0) {
-        // ترتيب التغييرات حسب اليوم
         const sortedOverrides = [...overrides].sort((a, b) => a.day - b.day);
         
-        // حساب القيمة بناءً على فترات مختلفة من الشهر
         let totalValue = 0;
         let lastDay = 1;
-        let lastDailyBread = getDefaultDailyBread(sub); // الحصة الافتراضية أول الشهر
+        // ⭐ الحصة القديمة قبل أول تغيير
+        let lastDailyBread = sortedOverrides[0].oldDailyBread || getDefaultDailyBread(sub);
         
         for (const override of sortedOverrides) {
             const changeDay = override.day;
@@ -59,13 +57,6 @@ function subValue(sub) {
             if (changeDay > lastDay) {
                 const periodDays = changeDay - lastDay;
                 totalValue += lastDailyBread * periodDays * BREAD_PRICE_PER_LOAF;
-                
-                // حساب فرق النقاط عن الحصة الافتراضية
-                const defaultBread = getDefaultDailyBread(sub);
-                const breadDiff = defaultBread - lastDailyBread;
-                if (breadDiff > 0) {
-                    totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
-                }
             }
             
             lastDay = changeDay;
@@ -76,18 +67,12 @@ function subValue(sub) {
         if (lastDay <= days) {
             const periodDays = days - lastDay + 1;
             totalValue += lastDailyBread * periodDays * BREAD_PRICE_PER_LOAF;
-            
-            const defaultBread = getDefaultDailyBread(sub);
-            const breadDiff = defaultBread - lastDailyBread;
-            if (breadDiff > 0) {
-                totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
-            }
         }
         
         return Math.max(0, totalValue);
     }
     
-    // لو مفيش تغييرات، الحساب العادي
+    // لو مفيش تغييرات، الحساب العادي مع فرق النقاط
     const modifiedValue = getDailyBread(sub) * days * BREAD_PRICE_PER_LOAF;
     const breadDiff = getBreadDifference(sub);
     const credit = breadDiff * days * CREDIT_PRICE_PER_LOAF;
