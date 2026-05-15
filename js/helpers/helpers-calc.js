@@ -46,7 +46,6 @@ function subValue(sub) {
         
         let totalValue = 0;
         let lastDay = 1;
-        // ⭐ الحصة القديمة قبل أول تغيير
         let lastDailyBread = sortedOverrides[0].oldDailyBread || getDefaultDailyBread(sub);
         
         for (const override of sortedOverrides) {
@@ -57,6 +56,15 @@ function subValue(sub) {
             if (changeDay > lastDay) {
                 const periodDays = changeDay - lastDay;
                 totalValue += lastDailyBread * periodDays * BREAD_PRICE_PER_LOAF;
+                
+                // ⭐ فرق النقاط يطبق فقط عند تعديل الحصة يدوياً
+                if (override.reason === 'تعديل الحصة اليومية') {
+                    const defaultBread = getDefaultDailyBread(sub);
+                    const breadDiff = defaultBread - lastDailyBread;
+                    if (breadDiff > 0) {
+                        totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
+                    }
+                }
             }
             
             lastDay = changeDay;
@@ -67,16 +75,23 @@ function subValue(sub) {
         if (lastDay <= days) {
             const periodDays = days - lastDay + 1;
             totalValue += lastDailyBread * periodDays * BREAD_PRICE_PER_LOAF;
+            
+            // ⭐ فرق النقاط للفترة الأخيرة
+            const lastOverride = sortedOverrides[sortedOverrides.length - 1];
+            if (lastOverride.reason === 'تعديل الحصة اليومية') {
+                const defaultBread = getDefaultDailyBread(sub);
+                const breadDiff = defaultBread - lastDailyBread;
+                if (breadDiff > 0) {
+                    totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
+                }
+            }
         }
         
         return Math.max(0, totalValue);
     }
     
-    // لو مفيش تغييرات، الحساب العادي مع فرق النقاط
-    const modifiedValue = getDailyBread(sub) * days * BREAD_PRICE_PER_LOAF;
-    const breadDiff = getBreadDifference(sub);
-    const credit = breadDiff * days * CREDIT_PRICE_PER_LOAF;
-    return modifiedValue - credit;
+    // ⭐ لو مفيش تغييرات: الحساب المباشر بدون فرق نقاط
+    return getDailyBread(sub) * days * BREAD_PRICE_PER_LOAF;
 }
 
 function getCreditAmount(sub) {
