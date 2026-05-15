@@ -190,25 +190,33 @@ async function addOrUpdate() {
             
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
-                if (oldCard && oldCard.individuals !== newCard.individuals && today > 1 && today < days) {
+                if (oldCard && oldCard.individuals !== newCard.individuals) {
+                    // ⭐ تحديث الحصة اليومية تلقائياً
                     const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
-                    const newTotalDailyBread = cardsList.reduce((sum, c, i) => {
-                        if (i === cardIdx) return sum + (c.dailyBreadOverride || newDefaultBread);
-                        return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
-                    }, 0);
+                    if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
+                        newCard.dailyBreadOverride = newDefaultBread;
+                    }
                     
-                    if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                    if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
-                    
-                    breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
-                    
-                    breadOverrides[oldSub.id][key].push({
-                        day: today,
-                        totalDailyBread: newTotalDailyBread,
-                        reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
-                    });
-                    
-                    breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+                    // ⭐ تسجيل التغيير في breadOverrides
+                    if (today > 1 && today < days) {
+                        const newTotalDailyBread = cardsList.reduce((sum, c, i) => {
+                            if (i === cardIdx) return sum + (c.dailyBreadOverride || newDefaultBread);
+                            return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                        }, 0);
+                        
+                        if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                        if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                        
+                        breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                        
+                        breadOverrides[oldSub.id][key].push({
+                            day: today,
+                            totalDailyBread: newTotalDailyBread,
+                            reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
+                        });
+                        
+                        breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+                    }
                 }
             });
             
