@@ -1,6 +1,6 @@
-// ========== data.js - إدارة البيانات المحلية والسحابية مع مزامنة فورية ==========
+// ========== data.js - إدارة البيانات (السحابة هي الأساس) ==========
 
-// تحميل البيانات من LocalStorage بشكل آمن
+// ========== تحميل البيانات المحلية (للقراءة السريعة فقط) ==========
 function loadLocalData() {
     const stored = localStorage.getItem(STORAGE_DATA);
     if (stored) {
@@ -11,27 +11,23 @@ function loadLocalData() {
             paymentDates = d.paymentDates || {};
             breadOverrides = d.breadOverrides || {};
             
-            console.log('✅ تم تحميل البيانات المحلية بنجاح. عدد المشتركين:', subscribers.length);
+            console.log('✅ تم تحميل البيانات المحلية. عدد المشتركين:', subscribers.length);
         } catch (e) {
             console.error('خطأ في قراءة البيانات المحلية:', e);
-            if (subscribers.length === 0) {
-                subscribers = [];
-                monthlyPayments = {};
-                paymentDates = {};
-                breadOverrides = {};
-            }
+            subscribers = [];
+            monthlyPayments = {};
+            paymentDates = {};
+            breadOverrides = {};
         }
     } else {
-        console.log('لا توجد بيانات محلية مخزنة، بدء بقائمة فارغة');
+        console.log('لا توجد بيانات محلية، بدء بقائمة فارغة');
         subscribers = [];
         monthlyPayments = {};
         paymentDates = {};
         breadOverrides = {};
     }
     
-    subscribers.forEach(s => { 
-        if (!s.cardsList) s.cardsList = []; 
-    });
+    subscribers.forEach(s => { if (!s.cardsList) s.cardsList = []; });
     
     const notes = localStorage.getItem(STORAGE_SYSTEM_NOTES);
     if (notes) systemNotes = notes;
@@ -39,6 +35,7 @@ function loadLocalData() {
     loadActivityLogFromLocal();
 }
 
+// ========== حفظ محلي (نسخة احتياطية فقط) ==========
 function saveLocalData() {
     try {
         const dataToStore = {
@@ -51,13 +48,13 @@ function saveLocalData() {
         localStorage.setItem(STORAGE_DATA, JSON.stringify(dataToStore));
         localStorage.setItem(STORAGE_SYSTEM_NOTES, systemNotes);
         saveActivityLogToLocal();
-        console.log('✅ تم حفظ البيانات محلياً');
+        console.log('✅ تم حفظ نسخة محلية احتياطية');
     } catch (e) {
-        console.error('خطأ في حفظ البيانات المحلية:', e);
+        console.error('خطأ في الحفظ المحلي:', e);
     }
 }
 
-// حفظ البيانات على Google Apps Script
+// ========== رفع فوري للسحابة (الأساس) ==========
 async function saveDataToCloud() {
     const cleanSubscribers = subscribers.map(s => sanitizeSubscriber(s));
     
@@ -94,9 +91,9 @@ async function saveDataToCloud() {
         
         try {
             const result = await response.json();
-            console.log('💾 استجابة الحفظ:', result);
+            console.log('☁️ حفظ سحابي ناجح:', result);
         } catch(e) {
-            console.log('تم الحفظ بنجاح');
+            console.log('☁️ حفظ سحابي ناجح (استجابة غير JSON)');
         }
         
         return true;
@@ -106,6 +103,7 @@ async function saveDataToCloud() {
     }
 }
 
+// ========== حفظ مزدوج (سحابة + محلي احتياطي) ==========
 async function saveData() {
     saveLocalData();
     saveUsersToLocal();
@@ -118,7 +116,7 @@ async function saveData() {
             syncNeeded = false;
             localStorage.removeItem('pending_sync');
         } catch (e) {
-            console.warn('⚠️ فشل الحفظ السحابي:', e);
+            console.warn('⚠️ فشل الحفظ السحابي، تم الاحتفاظ بنسخة محلية:', e);
             updateSyncStatusUI('failed');
             syncNeeded = true;
             localStorage.setItem('pending_sync', 'true');
@@ -130,6 +128,7 @@ async function saveData() {
     }
 }
 
+// ========== حفظ وانتظار التأكيد ==========
 async function saveDataAndWait() {
     saveLocalData();
     saveUsersToLocal();
@@ -152,26 +151,27 @@ async function saveDataAndWait() {
     return false;
 }
 
+// ========== تحديث واجهة المزامنة ==========
 function updateSyncStatusUI(status) {
     const syncStatus = document.getElementById('syncStatus');
     if (!syncStatus) return;
     
     switch(status) {
         case 'saving':
-            syncStatus.innerHTML = '⏳ جاري الحفظ...';
+            syncStatus.innerHTML = '⏳ جاري الرفع للسحابة...';
             syncStatus.style.color = '#ff9800';
             break;
         case 'success':
-            syncStatus.innerHTML = '🟢 متزامن';
+            syncStatus.innerHTML = '☁️ متزامن مع السحابة';
             syncStatus.style.color = '#4caf50';
             setTimeout(() => {
-                if (syncStatus.innerHTML === '🟢 متزامن') {
+                if (syncStatus.innerHTML === '☁️ متزامن مع السحابة') {
                     syncStatus.style.opacity = '0.7';
                 }
             }, 2000);
             break;
         case 'failed':
-            syncStatus.innerHTML = '⚠️ حفظ محلي فقط';
+            syncStatus.innerHTML = '⚠️ فشل الرفع - النسخة المحلية محفوظة';
             syncStatus.style.color = '#ef5350';
             break;
         case 'offline':
@@ -183,18 +183,19 @@ function updateSyncStatusUI(status) {
             syncStatus.style.color = '#ef5350';
             break;
         case 'syncing':
-            syncStatus.innerHTML = '🔄 مزامنة...';
+            syncStatus.innerHTML = '🔄 جاري التحميل من السحابة...';
             syncStatus.style.color = '#2196f3';
             break;
     }
     syncStatus.style.opacity = '1';
 }
 
+// ========== مزامنة الإجراءات المعلقة ==========
 async function syncPendingActions() {
     if (!navigator.onLine) return false;
     if (!syncNeeded && !localStorage.getItem('pending_sync')) return false;
     
-    console.log('🔄 مزامنة الإجراءات المعلقة...');
+    console.log('🔄 رفع الإجراءات المعلقة إلى السحابة...');
     updateSyncStatusUI('syncing');
     
     try {
@@ -202,21 +203,21 @@ async function syncPendingActions() {
         updateSyncStatusUI('success');
         syncNeeded = false;
         localStorage.removeItem('pending_sync');
-        showToast('✅ تمت مزامنة جميع الإجراءات مع السحابة');
+        showToast('✅ تم رفع جميع الإجراءات إلى السحابة');
         return true;
     } catch (e) {
-        console.warn('فشلت مزامنة الإجراءات المعلقة:', e);
+        console.warn('فشل رفع الإجراءات المعلقة:', e);
         updateSyncStatusUI('failed');
         return false;
     }
 }
 
+// ========== إعدادات المزامنة التلقائية ==========
 function setupAutoSync() {
     window.addEventListener('online', async () => {
-        console.log('🌐 استعادة الاتصال - بدء المزامنة');
-        showToast('📡 تم استعادة الاتصال، جاري المزامنة...');
+        console.log('🌐 استعادة الاتصال - رفع البيانات للسحابة');
+        showToast('📡 تم استعادة الاتصال، جاري رفع البيانات...');
         await syncPendingActions();
-        await manualSync();
         if (typeof renderAll === 'function') renderAll();
     });
     
@@ -227,143 +228,7 @@ function setupAutoSync() {
     });
 }
 
-// ========== مزامنة دورية محسنة ==========
-
-let autoRefreshInterval = null;
-let isRefreshing = false;
-let failedRefreshAttempts = 0;
-const MAX_FAILED_ATTEMPTS = 3;
-
-function startAutoRefresh(intervalSeconds = 60) {
-    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-    
-    autoRefreshInterval = setInterval(async () => {
-        if (navigator.onLine && document.visibilityState === 'visible' && !isRefreshing) {
-            console.log('🔄 تحديث دوري للبيانات...');
-            isRefreshing = true;
-            try {
-                const newData = await loadDataFromCloud();
-                
-                if (newData && newData.subscribers) {
-                    failedRefreshAttempts = 0;
-                    let hasChanges = false;
-                    
-                    if (newData.subscribers.length !== subscribers.length) {
-                        hasChanges = true;
-                    } else {
-                        for (const cloudSub of newData.subscribers) {
-                            const localSub = subscribers.find(s => s.id === cloudSub.id);
-                            if (!localSub || new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
-                                hasChanges = true;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (hasChanges) {
-                        console.log('📦 تم اكتشاف تغييرات، جاري تحديث الواجهة...');
-                        
-                        subscribers = newData.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
-                        monthlyPayments = newData.monthlyPayments || {};
-                        paymentDates = newData.paymentDates || {};
-                        breadOverrides = newData.breadOverrides || {};
-                        
-                        if (newData.users && Array.isArray(newData.users) && newData.users.length) {
-                            usersList = newData.users;
-                            saveUsersToLocal();
-                        }
-                        
-                        if (newData.systemNotes) systemNotes = newData.systemNotes;
-                        if (newData.activityLog) {
-                            activityLog = newData.activityLog;
-                            saveActivityLogToLocal();
-                        }
-                        
-                        saveLocalData();
-                        
-                        if (typeof renderAll === 'function') renderAll();
-                        
-                        showBellNotification('تحديث البيانات', 'تم تحديث البيانات من الخادم');
-                        showToast('📡 تم تحديث البيانات من السحابة');
-                    }
-                }
-            } catch (e) {
-                failedRefreshAttempts++;
-                console.warn(`فشل التحديث الدوري (${failedRefreshAttempts}/${MAX_FAILED_ATTEMPTS}):`, e.message);
-                
-                if (failedRefreshAttempts >= MAX_FAILED_ATTEMPTS) {
-                    console.warn('توقف التحديث الدوري مؤقتاً بعد 3 محاولات فاشلة');
-                    stopAutoRefresh();
-                    setTimeout(() => {
-                        console.log('🔄 إعادة تشغيل التحديث الدوري...');
-                        startAutoRefresh(120);
-                        failedRefreshAttempts = 0;
-                    }, 120000);
-                }
-            } finally {
-                isRefreshing = false;
-            }
-        }
-    }, intervalSeconds * 1000);
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
-        autoRefreshInterval = null;
-    }
-}
-
-async function loadDataFromCloudAndMerge() {
-    if (!navigator.onLine) return false;
-    
-    try {
-        const data = await loadDataFromCloud();
-        
-        if (data && data.subscribers && Array.isArray(data.subscribers)) {
-            const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
-            let hasChanges = false;
-            
-            if (cloudSubscribers.length !== subscribers.length) {
-                hasChanges = true;
-            } else {
-                for (const cloudSub of cloudSubscribers) {
-                    const localSub = subscribers.find(s => s.id === cloudSub.id);
-                    if (!localSub || new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
-                        hasChanges = true;
-                        break;
-                    }
-                }
-            }
-            
-            if (hasChanges) {
-                subscribers = cloudSubscribers;
-                monthlyPayments = data.monthlyPayments || {};
-                paymentDates = data.paymentDates || {};
-                breadOverrides = data.breadOverrides || {};
-                
-                if (data.users && Array.isArray(data.users) && data.users.length) {
-                    usersList = data.users;
-                    saveUsersToLocal();
-                }
-                
-                if (data.systemNotes) systemNotes = data.systemNotes;
-                if (data.activityLog) {
-                    activityLog = data.activityLog;
-                    saveActivityLogToLocal();
-                }
-                
-                saveLocalData();
-                return true;
-            }
-        }
-        return false;
-    } catch (e) {
-        console.warn('فشل دمج البيانات:', e);
-        return false;
-    }
-}
-
+// ========== تحميل البيانات من السحابة ==========
 async function loadDataFromCloud() {
     try {
         const response = await fetch(`${API_URL}?action=load&t=${Date.now()}`);
@@ -376,7 +241,9 @@ async function loadDataFromCloud() {
     }
 }
 
+// ========== التحميل الرئيسي (السحابة هي الأساس) ==========
 async function loadData(forceLocal = false) {
+    // لو فاتح من ملف محلي
     if (window.location.protocol === 'file:') {
         showToast('⚠️ التطبيق يعمل من ملف محلي', true);
         updateSyncStatusUI('no_connection');
@@ -385,133 +252,132 @@ async function loadData(forceLocal = false) {
         return;
     }
 
-    loadLocalData();
-    renderAll();
-    
+    // لو مفيش إنترنت
     if (forceLocal || !navigator.onLine) {
-        updateSyncStatusUI(navigator.onLine ? 'failed' : 'offline');
+        loadLocalData();
+        renderAll();
+        updateSyncStatusUI('offline');
         return;
     }
 
+    // ⭐ السحابة هي الأساس
+    updateSyncStatusUI('syncing');
+    
     try {
-        updateSyncStatusUI('syncing');
         const data = await loadDataFromCloud();
         
+        // لو السحابة رجعت بيانات صالحة
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
             
-            const localLatest = subscribers.reduce((max, s) => {
-                const date = new Date(s.updatedAt || 0);
-                return date > max ? date : max;
-            }, new Date(0));
+            // ⭐ استبدال البيانات المحلية بالكامل بالسحابة
+            subscribers = cloudSubscribers;
+            monthlyPayments = data.monthlyPayments || {};
+            paymentDates = data.paymentDates || {};
+            breadOverrides = data.breadOverrides || {};
             
-            const cloudLatest = cloudSubscribers.reduce((max, s) => {
-                const date = new Date(s.updatedAt || 0);
-                return date > max ? date : max;
-            }, new Date(0));
-            
-            if (cloudLatest > localLatest || subscribers.length === 0) {
-                subscribers = cloudSubscribers;
-                monthlyPayments = data.monthlyPayments || {};
-                paymentDates = data.paymentDates || {};
-                breadOverrides = data.breadOverrides || {};
-                
-                if (data.users && Array.isArray(data.users) && data.users.length) {
-                    usersList = data.users;
-                    saveUsersToLocal();
-                }
-                
-                if (data.systemNotes) systemNotes = data.systemNotes;
-                if (data.activityLog) {
-                    activityLog = data.activityLog;
-                    saveActivityLogToLocal();
-                }
-                
-                saveLocalData();
-                renderAll();
-                showToast(`✅ تم تحديث البيانات من السحابة`);
+            if (data.users && Array.isArray(data.users) && data.users.length) {
+                usersList = data.users;
+                saveUsersToLocal();
             }
             
+            if (data.systemNotes !== undefined) systemNotes = data.systemNotes;
+            if (data.activityLog) {
+                activityLog = data.activityLog;
+                saveActivityLogToLocal();
+            }
+            
+            // حفظ نسخة محلية من بيانات السحابة
+            saveLocalData();
+            
             updateSyncStatusUI('success');
+            console.log(`☁️ تم تحميل ${subscribers.length} مشترك من السحابة`);
+            
+            if (subscribers.length > 0) {
+                showToast(`☁️ تم تحميل البيانات من السحابة (${subscribers.length} مشترك)`);
+            }
         } else {
-            throw new Error('بيانات غير صالحة');
+            // لو السحابة فاضية، نبدأ من الصفر
+            console.log('☁️ السحابة فارغة، بدء بقائمة فارغة');
+            subscribers = [];
+            monthlyPayments = {};
+            paymentDates = {};
+            breadOverrides = {};
+            saveLocalData();
+            updateSyncStatusUI('success');
         }
     } catch (e) {
-        console.warn('فشل التحميل من السحابة:', e);
+        console.warn('❌ فشل تحميل البيانات من السحابة:', e.message);
+        
+        // ⭐ استخدام النسخة المحلية كحل أخير
+        loadLocalData();
         updateSyncStatusUI('failed');
-        showToast(`⚠️ فشل الاتصال بالسحابة، عرض البيانات المحلية`, true);
+        
+        if (subscribers.length > 0) {
+            showToast(`⚠️ تعذر الاتصال بالسحابة. عرض ${subscribers.length} مشترك من النسخة المحلية`, true);
+        } else {
+            showToast('❌ تعذر الاتصال بالسحابة ولا توجد نسخة محلية', true);
+        }
     }
+    
+    renderAll();
 }
 
-// ⭐ مزامنة يدوية محسنة
+// ========== مزامنة يدوية (تحديث من السحابة) ==========
 async function manualSync() {
     if (!navigator.onLine) {
         showToast('❌ لا يوجد اتصال بالإنترنت', true);
         return false;
     }
     
-    showToast('⏳ جاري المزامنة الفورية...');
+    showToast('🔄 جاري تحميل البيانات من السحابة...');
     updateSyncStatusUI('syncing');
     
     try {
+        // رفع أي تغييرات معلقة أولاً
         await saveDataToCloud();
-        console.log('✅ تم حفظ البيانات محلياً -> سحابة');
         
-        const newData = await loadDataFromCloud();
+        // تحميل أحدث بيانات من السحابة
+        const data = await loadDataFromCloud();
         
-        if (newData && newData.subscribers) {
-            let changesCount = 0;
+        if (data && data.subscribers && Array.isArray(data.subscribers)) {
+            const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
             
-            for (const cloudSub of newData.subscribers) {
-                const localSub = subscribers.find(s => s.id === cloudSub.id);
-                if (!localSub) {
-                    subscribers.push(cloudSub);
-                    changesCount++;
-                } else if (new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
-                    const index = subscribers.findIndex(s => s.id === cloudSub.id);
-                    subscribers[index] = cloudSub;
-                    changesCount++;
-                }
-            }
+            subscribers = cloudSubscribers;
+            monthlyPayments = data.monthlyPayments || {};
+            paymentDates = data.paymentDates || {};
+            breadOverrides = data.breadOverrides || {};
             
-            monthlyPayments = { ...monthlyPayments, ...(newData.monthlyPayments || {}) };
-            paymentDates = { ...paymentDates, ...(newData.paymentDates || {}) };
-            breadOverrides = { ...breadOverrides, ...(newData.breadOverrides || {}) };
-            
-            if (newData.users && Array.isArray(newData.users) && newData.users.length) {
-                usersList = newData.users;
+            if (data.users && Array.isArray(data.users) && data.users.length) {
+                usersList = data.users;
                 saveUsersToLocal();
             }
             
-            if (newData.systemNotes) systemNotes = newData.systemNotes;
-            if (newData.activityLog) {
-                activityLog = newData.activityLog;
+            if (data.systemNotes !== undefined) systemNotes = data.systemNotes;
+            if (data.activityLog) {
+                activityLog = data.activityLog;
                 saveActivityLogToLocal();
             }
             
             saveLocalData();
             renderAll();
             
-            if (changesCount > 0) {
-                showToast(`✅ تمت المزامنة بنجاح (${changesCount} تغيير)`);
-            } else {
-                showToast('✅ تمت المزامنة - لا توجد تغييرات جديدة');
-            }
-            
+            showToast(`☁️ تم تحميل ${subscribers.length} مشترك من السحابة`);
             updateSyncStatusUI('success');
             return true;
         }
         
         updateSyncStatusUI('success');
-        showToast('✅ تمت المزامنة بنجاح');
+        showToast('✅ لا توجد تغييرات');
         return true;
     } catch (e) {
         updateSyncStatusUI('failed');
-        showToast(`❌ فشلت المزامنة: ${e.message}`, true);
+        showToast(`❌ فشل التحميل: ${e.message}`, true);
         return false;
     }
 }
 
+// ========== تنقية البيانات ==========
 function sanitizeSubscriber(sub) {
     const clean = {
         id: sub.id,
@@ -538,6 +404,7 @@ function sanitizeSubscriber(sub) {
     return clean;
 }
 
+// ========== ترحيل البيانات القديمة ==========
 function migrateSubscriber(sub) {
     if (!sub) return null;
     if (!sub.id) {
@@ -580,6 +447,7 @@ function migrateSubscriber(sub) {
     return sub;
 }
 
+// ========== إدارة المستخدمين ==========
 function initUsers() {
     const localUsers = localStorage.getItem(STORAGE_USERS);
     if (localUsers) {
@@ -611,6 +479,7 @@ async function loadUsersFromCloud() {
     }
 }
 
+// ========== سجل العمليات ==========
 function addActivityLog(action, details) {
     const entry = {
         timestamp: new Date().toISOString(),
@@ -638,6 +507,7 @@ function loadActivityLogFromLocal() {
     }
 }
 
+// ========== حفظ اشتراك Push ==========
 async function savePushSubscription(subscription) {
     if (!subscription || !subscription.token) return;
     try {
