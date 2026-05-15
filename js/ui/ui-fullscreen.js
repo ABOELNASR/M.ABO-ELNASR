@@ -1,8 +1,5 @@
 // ========== ui-fullscreen.js - وضع ملء الشاشة للجدول ==========
 
-// مصفوفة لتخزين العناصر اللي هتتنقل وبياناتها الأصلية
-let savedElements = [];
-
 function toggleFullscreenTable() {
     const section = document.getElementById('tableSection');
     const btn = document.getElementById('toggleFullscreenBtn');
@@ -13,78 +10,62 @@ function toggleFullscreenTable() {
     
     if (!section || !btn) return;
     
-    section.classList.toggle('fullscreen');
+    const isEntering = !section.classList.contains('fullscreen');
     
-    if (section.classList.contains('fullscreen')) {
-        // ⭐ حفظ المواقع الأصلية للعناصر اللي هتنتقل
-        savedElements = [];
+    if (isEntering) {
+        // ⭐ دخول وضع ملء الشاشة
+        section.classList.add('fullscreen');
         
-        const elementsToMove = [
-            { el: toolbar, id: 'toolbar' },
-            { el: cardsCountHeader, id: 'cardsCountHeader' },
-            { el: viewToggle, id: 'viewToggle' }
-        ];
+        // إنشاء شريط علوي للأدوات
+        const topBar = document.createElement('div');
+        topBar.id = 'fullscreenTopBar';
+        topBar.style.cssText = 'position:sticky;top:0;z-index:1501;background:var(--bg-container);padding:8px;border-radius:12px;margin-bottom:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;';
         
-        elementsToMove.forEach(item => {
-            if (item.el) {
-                savedElements.push({
-                    el: item.el,
-                    parent: item.el.parentElement,
-                    nextSibling: item.el.nextElementSibling
-                });
-            }
-        });
+        // نقل الأدوات للشريط العلوي (فوق الجدول)
+        if (toolbar) topBar.appendChild(toolbar);
+        if (cardsCountHeader) topBar.appendChild(cardsCountHeader);
+        if (viewToggle) topBar.appendChild(viewToggle);
         
-        // حفظ مكان الزر
-        if (btn.parentElement) {
-            savedElements.push({
-                el: btn,
-                parent: btn.parentElement,
-                nextSibling: btn.nextElementSibling
-            });
-        }
+        // حط الشريط العلوي فوق الجدول
+        section.insertBefore(topBar, section.firstChild);
+        
+        // نقل زر الإغلاق
+        section.appendChild(btn);
         
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
+        btn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:1600;';
+        
         disableBodyScroll();
         
-        // نقل العناصر جوه الـ section بالترتيب المطلوب
-        if (toolbar) section.appendChild(toolbar);
-        if (cardsCountHeader) section.appendChild(cardsCountHeader);
-        if (viewToggle) section.appendChild(viewToggle);
-        section.appendChild(btn);
-        
-        btn.style.position = 'fixed';
-        btn.style.top = '10px';
-        btn.style.right = '10px';
-        btn.style.zIndex = '1600';
-        
     } else {
-        btn.innerHTML = '🖥️';
-        btn.title = 'تكبير الجدول';
-        enableBodyScroll();
+        // ⭐ خروج من وضع ملء الشاشة
+        section.classList.remove('fullscreen');
         
-        btn.style.position = '';
-        btn.style.top = '';
-        btn.style.right = '';
-        btn.style.zIndex = '';
-        
-        // ⭐ إرجاع كل العناصر لأماكنها الأصلية
-        savedElements.forEach(saved => {
-            if (saved.parent && saved.el) {
-                if (saved.nextSibling && saved.nextSibling.parentElement === saved.parent) {
-                    saved.parent.insertBefore(saved.el, saved.nextSibling);
-                } else {
-                    saved.parent.appendChild(saved.el);
-                }
+        // إرجاع الأدوات لأماكنها الأصلية
+        const topBar = document.getElementById('fullscreenTopBar');
+        if (topBar) {
+            if (toolbar && btnContainer && btnContainer.parentElement) {
+                btnContainer.parentElement.insertBefore(toolbar, btnContainer);
             }
-        });
+            if (cardsCountHeader && btnContainer && btnContainer.parentElement) {
+                btnContainer.parentElement.insertBefore(cardsCountHeader, btnContainer);
+            }
+            if (viewToggle && btnContainer && btnContainer.parentElement) {
+                btnContainer.parentElement.insertBefore(viewToggle, btnContainer);
+            }
+            topBar.remove();
+        }
         
-        // لو الزر رجع لغير مكانه، رجعه للحاوية
+        // إرجاع الزر لمكانه
         if (btnContainer && btn.parentElement !== btnContainer) {
             btnContainer.appendChild(btn);
         }
         
-        savedElements = [];
+        btn.innerHTML = '🖥️';
+        btn.title = 'تكبير الجدول';
+        btn.style.cssText = '';
+        
+        enableBodyScroll();
     }
 }
