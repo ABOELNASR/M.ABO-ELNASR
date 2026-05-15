@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbwV3q2UhfCjUOs3P8iSdf2r4NmKzualKb8P6TQ5T-FfOqQKOEXNzvzUQVo_C2OEpC1nrA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxra8Zk-A76fPzPvXcWbnSFo1SD41oQzmZeJcosTsmYqOpXVugAVMK16gQoeSVWwiHE3w/exec';
 
 const VAPID_PUBLIC_KEY = 'BFVFu7GzLkcwF-hCA5yVO7T5H49FpMp9hUyeBaF3QjtG-BaDxstIYU-rs8w8S2B6-rdEvBlbYsOQhoNqa7lpl3o';
 
