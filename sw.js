@@ -80,16 +80,15 @@ self.addEventListener('push', event => {
     icon: './icons/launchericon-192x192.png',
     badge: './icons/launchericon-72x72.png',
     vibrate: [200, 100, 200],
-    tag: 'bakery-' + Date.now(),
+    tag: 'bakery-group',
     renotify: true,
-    requireInteraction: false,
     data: {
       url: './',
       timestamp: Date.now()
     }
   };
 
-  // ⭐ إظهار إشعار المتصفح (البنر) - كل إشعار بجانب الآخر
+  // ⭐ إظهار إشعار المتصفح - كل الإشعارات في مجموعة واحدة
   event.waitUntil(
     self.registration.showNotification(title, options)
   );
@@ -121,7 +120,6 @@ self.addEventListener('notificationclick', (event) => {
 self.addEventListener('fetch', event => {
   const requestUrl = new URL(event.request.url);
   
-  // تخطي طلبات Google Scripts و Firebase و APIs الخارجية
   if (requestUrl.href.includes('script.google.com') || 
       requestUrl.href.includes('firebase') ||
       requestUrl.href.includes('googleapis') ||
@@ -129,7 +127,6 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // تخطي طلبات POST
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
@@ -167,5 +164,4 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// تسجيل أن SW جاهز
 console.log('✅ Service Worker loaded and ready');
