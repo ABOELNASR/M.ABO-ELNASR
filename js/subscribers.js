@@ -51,12 +51,12 @@ function renderTempCards() {
                 updateDuplicateWarnings();
                 logDeletedCard(cardName, individuals, subscriberName, note);
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
-                showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
+                showToast(`🗑️ تم حذف البطاقة "${cardName}" للمشترك "${subscriberName}"`);
             } else {
                 tempCardsList.splice(idx, 1);
                 renderTempCards();
                 updateDuplicateWarnings();
-                showToast(`🗑️ تم حذف البطاقة.`);
+                showToast(`🗑️ تم حذف البطاقة "${cardName}"`);
             }
         });
     });
@@ -253,14 +253,12 @@ async function addOrUpdate() {
         addActivityLog('إضافة مشترك', `تم إضافة مشترك جديد: ${name}`);
     }
     
-    // ⭐ حفظ فوري مع تأكيد في الخلفية
     saveLocalData();
     saveUsersToLocal();
     
     if (navigator.onLine && window.location.protocol !== 'file:') {
         saveDataToCloudForce().then(() => {
             console.log('☁️ تم رفع وتأكيد التغييرات في السحابة بنجاح');
-            // ⭐ أرسل الإشعار بعد تأكيد الرفع
             requestPushNotification('المخبز', `تم ${isEdit ? 'تعديل' : 'إضافة'} المشترك • ${name} ✓`);
         }).catch(e => {
             console.warn('⚠️ فشل الرفع والتأكيد، سيتم الرفع لاحقاً:', e);
@@ -311,7 +309,6 @@ async function deleteSub(id) {
     
     addActivityLog('حذف مشترك', `تم حذف المشترك ${sub.name} (الملاحظة: ${note})`);
     
-    // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
     saveLocalData();
     saveUsersToLocal();
     
@@ -385,7 +382,6 @@ async function editPayment(subId) {
     
     addActivityLog('تعديل مبلغ مدفوع', `تم تعديل المدفوع للمشترك ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
     
-    // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
     saveLocalData();
     saveUsersToLocal();
     
@@ -432,7 +428,6 @@ async function toggleFullPayment(subId, wantPaid) {
             paymentDates[subId][key] = new Date().toISOString().slice(0, 10);
             addActivityLog('تسديد كامل', `تم تسديد كامل مبلغ الاشتراك للمشترك ${sub.name}`);
             
-            // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
             saveLocalData();
             saveUsersToLocal();
             
@@ -460,7 +455,6 @@ async function toggleFullPayment(subId, wantPaid) {
             if (paymentDates[subId]) delete paymentDates[subId][key];
             addActivityLog('إلغاء مدفوعات', `تم إلغاء جميع دفعات الشهر للمشترك ${sub.name}`);
             
-            // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
             saveLocalData();
             saveUsersToLocal();
             
@@ -580,7 +574,6 @@ async function editDailyBread(subId) {
         
         addActivityLog('تعديل الحصة اليومية', `تم تعديل حصة المشترك ${sub.name}`);
         
-        // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
         saveLocalData();
         saveUsersToLocal();
         
