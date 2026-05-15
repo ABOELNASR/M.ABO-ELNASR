@@ -80,15 +80,16 @@ self.addEventListener('push', event => {
     icon: './icons/launchericon-192x192.png',
     badge: './icons/launchericon-72x72.png',
     vibrate: [200, 100, 200],
-    tag: 'bakery-notification',
+    tag: 'bakery-' + Date.now(),
     renotify: true,
+    requireInteraction: false,
     data: {
       url: './',
       timestamp: Date.now()
     }
   };
 
-  // ⭐ إظهار إشعار المتصفح (البنر) فقط
+  // ⭐ إظهار إشعار المتصفح (البنر) - كل إشعار بجانب الآخر
   event.waitUntil(
     self.registration.showNotification(title, options)
   );
