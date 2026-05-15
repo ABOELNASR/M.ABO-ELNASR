@@ -231,7 +231,6 @@ async function addOrUpdate() {
             addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
         }
         editId = null;
-        requestPushNotification('المخبز', `تم تعديل المشترك • ${name} ✓`);
     } else {
         const newId = Date.now() + Math.floor(Math.random() * 10000);
         subscribers.push({
@@ -244,7 +243,6 @@ async function addOrUpdate() {
             history: []
         });
         addActivityLog('إضافة مشترك', `تم إضافة مشترك جديد: ${name}`);
-        requestPushNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
     }
     
     // ⭐ حفظ فوري مع تأكيد في الخلفية
@@ -252,9 +250,10 @@ async function addOrUpdate() {
     saveUsersToLocal();
     
     if (navigator.onLine && window.location.protocol !== 'file:') {
-        // ⭐ رفع للسحابة في الخلفية (هيحاول 3 مرات + تأكيد)
         saveDataToCloudForce().then(() => {
             console.log('☁️ تم رفع وتأكيد التغييرات في السحابة بنجاح');
+            // ⭐ أرسل الإشعار بعد تأكيد الرفع
+            requestPushNotification('المخبز', `تم ${isEdit ? 'تعديل' : 'إضافة'} المشترك • ${name} ✓`);
         }).catch(e => {
             console.warn('⚠️ فشل الرفع والتأكيد، سيتم الرفع لاحقاً:', e);
             syncNeeded = true;
@@ -303,15 +302,15 @@ async function deleteSub(id) {
     delete paymentDates[id];
     
     addActivityLog('حذف مشترك', `تم حذف المشترك ${sub.name} (الملاحظة: ${note})`);
-    requestPushNotification('المخبز', `تم حذف المشترك • ${sub.name} ✗`);
     
-    // ⭐ حفظ فوري مع تأكيد
+    // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
     saveLocalData();
     saveUsersToLocal();
     
     if (navigator.onLine && window.location.protocol !== 'file:') {
         saveDataToCloudForce().then(() => {
             console.log('☁️ تم رفع وتأكيد الحذف في السحابة بنجاح');
+            requestPushNotification('المخبز', `تم حذف المشترك • ${sub.name} ✗`);
         }).catch(e => {
             console.warn('⚠️ فشل رفع الحذف:', e);
             syncNeeded = true;
@@ -377,15 +376,15 @@ async function editPayment(subId) {
     paymentDates[subId][key] = new Date().toISOString().slice(0, 10);
     
     addActivityLog('تعديل مبلغ مدفوع', `تم تعديل المدفوع للمشترك ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
-    requestPushNotification('المخبز', `تم تعديل مدفوعات • ${sub.name} ✓`);
     
-    // ⭐ حفظ فوري مع تأكيد
+    // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
     saveLocalData();
     saveUsersToLocal();
     
     if (navigator.onLine && window.location.protocol !== 'file:') {
         saveDataToCloudForce().then(() => {
             console.log('☁️ تم رفع وتأكيد المدفوعات في السحابة بنجاح');
+            requestPushNotification('المخبز', `تم تعديل مدفوعات • ${sub.name} ✓`);
         }).catch(e => {
             console.warn('⚠️ فشل رفع المدفوعات:', e);
             syncNeeded = true;
@@ -424,15 +423,15 @@ async function toggleFullPayment(subId, wantPaid) {
             if (!paymentDates[subId]) paymentDates[subId] = {};
             paymentDates[subId][key] = new Date().toISOString().slice(0, 10);
             addActivityLog('تسديد كامل', `تم تسديد كامل مبلغ الاشتراك للمشترك ${sub.name}`);
-            requestPushNotification('المخبز', `تم تسديد كامل الاشتراك • ${sub.name} • بقيمة ${formatNumber(totalValue)} ج.م ✓`);
             
-            // ⭐ حفظ فوري مع تأكيد
+            // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
             saveLocalData();
             saveUsersToLocal();
             
             if (navigator.onLine && window.location.protocol !== 'file:') {
                 saveDataToCloudForce().then(() => {
                     console.log('☁️ تم رفع وتأكيد التسديد في السحابة بنجاح');
+                    requestPushNotification('المخبز', `تم تسديد كامل الاشتراك • ${sub.name} • بقيمة ${formatNumber(totalValue)} ج.م ✓`);
                 }).catch(e => {
                     console.warn('⚠️ فشل رفع التسديد:', e);
                     syncNeeded = true;
@@ -452,15 +451,15 @@ async function toggleFullPayment(subId, wantPaid) {
             if (monthlyPayments[subId]) delete monthlyPayments[subId][key];
             if (paymentDates[subId]) delete paymentDates[subId][key];
             addActivityLog('إلغاء مدفوعات', `تم إلغاء جميع دفعات الشهر للمشترك ${sub.name}`);
-            requestPushNotification('المخبز', `تم إلغاء مدفوعات • ${sub.name} ✗`);
             
-            // ⭐ حفظ فوري مع تأكيد
+            // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
             saveLocalData();
             saveUsersToLocal();
             
             if (navigator.onLine && window.location.protocol !== 'file:') {
                 saveDataToCloudForce().then(() => {
                     console.log('☁️ تم رفع وتأكيد الإلغاء في السحابة بنجاح');
+                    requestPushNotification('المخبز', `تم إلغاء مدفوعات • ${sub.name} ✗`);
                 }).catch(e => {
                     console.warn('⚠️ فشل رفع الإلغاء:', e);
                     syncNeeded = true;
@@ -572,15 +571,15 @@ async function editDailyBread(subId) {
         }
         
         addActivityLog('تعديل الحصة اليومية', `تم تعديل حصة المشترك ${sub.name}`);
-        requestPushNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
         
-        // ⭐ حفظ فوري مع تأكيد
+        // ⭐ حفظ فوري مع تأكيد - الإشعار بعد التأكيد
         saveLocalData();
         saveUsersToLocal();
         
         if (navigator.onLine && window.location.protocol !== 'file:') {
             saveDataToCloudForce().then(() => {
                 console.log('☁️ تم رفع وتأكيد تعديل الحصة في السحابة بنجاح');
+                requestPushNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
             }).catch(e => {
                 console.warn('⚠️ فشل رفع تعديل الحصة:', e);
                 syncNeeded = true;
