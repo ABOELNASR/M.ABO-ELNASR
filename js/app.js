@@ -111,7 +111,6 @@ function setupRealTimeSync() {
             console.log('📦 تم اكتشاف تغيير في localStorage من تبويب آخر');
             loadLocalData();
             renderAll();
-            showBellNotification('تحديث البيانات', 'تم تحديث البيانات من تبويب آخر');
         }
     });
     
