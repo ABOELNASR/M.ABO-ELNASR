@@ -109,7 +109,7 @@ function showEditSubscriberModal(sub) {
                 updateDuplicateWarnings();
                 logDeletedCard(cardName, individuals, subscriberName, note);
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
-                showToast(`🗑️ تم حذف البطاقة "${cardName}" للمشترك "${subscriberName}"`);
+                showBellNotification('المخبز', `🗑️ تم حذف البطاقة "${cardName}" للمشترك "${subscriberName}"`);
             });
         });
     };
@@ -137,6 +137,7 @@ function showEditSubscriberModal(sub) {
         const idx = subscribers.findIndex(s => s.id == sub.id);
         if (idx !== -1) {
             const oldSub = subscribers[idx];
+            const oldCardsCount = oldSub.cardsList ? oldSub.cardsList.length : 0;
             
             const key = getKey(currentYear, currentMonth);
             const today = new Date().getDate();
@@ -152,9 +153,16 @@ function showEditSubscriberModal(sub) {
                 notes: String(card.notes || '')
             }));
             
+            // ⭐ تتبع التغييرات للإشعار التفصيلي
+            let nameChanged = (oldSub.name !== name);
+            let individualsChanged = false;
+            let cardsAdded = cardsList.length > oldCardsCount;
+            
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
-                if (oldCard && oldCard.individuals !== newCard.individuals) {
+                if (!oldCard) return;
+                if (oldCard.individuals !== newCard.individuals) {
+                    individualsChanged = true;
                     const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
                     if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
                         newCard.dailyBreadOverride = newDefaultBread;
@@ -184,12 +192,28 @@ function showEditSubscriberModal(sub) {
             subscribers[idx].name = name;
             subscribers[idx].cardsList = cardsList;
             subscribers[idx].updatedAt = new Date().toISOString();
+            
+            addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
+            await saveData();
+            closeModal();
+            
+            // ⭐ تحديد نص الإشعار التفصيلي
+            let notificationBody;
+            if (cardsAdded) {
+                const addedCard = cardsList[cardsList.length - 1];
+                notificationBody = `📇 تم إضافة البطاقة "${addedCard.cardName}" للمشترك "${name}"`;
+            } else if (individualsChanged && !nameChanged) {
+                notificationBody = `👥 تم تعديل عدد أفراد المشترك "${name}"`;
+            } else if (nameChanged && !individualsChanged) {
+                notificationBody = `✏️ تم تعديل اسم المشترك إلى "${name}"`;
+            } else if (nameChanged && individualsChanged) {
+                notificationBody = `✏️ تم تعديل المشترك "${name}"`;
+            } else {
+                notificationBody = `✏️ تم تعديل المشترك "${name}"`;
+            }
+            
+            requestPushNotification('المخبز', notificationBody + ' ✓');
         }
-        
-        addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
-        await saveData();
-        closeModal();
-        requestPushNotification('المخبز', `تم تعديل المشترك • ${name} ✓`);
     };
 }
 
