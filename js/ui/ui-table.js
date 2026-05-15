@@ -4,6 +4,7 @@
 
 function renderTable() {
     console.log('renderTable called, expandedRowId:', expandedRowId);
+    
     let filtered = subscribers.filter(s => subscriberMatchesSearch(s, currentSearch));
     if (currentFilter === 'paid') filtered = filtered.filter(s => isFullyPaid(s.id));
     if (currentFilter === 'unpaid') filtered = filtered.filter(s => !isFullyPaid(s.id));
@@ -18,6 +19,7 @@ function renderTable() {
     if (!isNaN(englishNumber) && englishNumber.toString() === searchTerm) targetNumber = englishNumber;
     else if (!isNaN(arabicNumber)) targetNumber = arabicNumber;
 
+    // عرض البطاقات مباشرة عند البحث برقم الأفراد
     if (targetNumber !== null) {
         let cardsHtml = '';
         let totalMatchingCards = 0;
@@ -26,14 +28,18 @@ function renderTable() {
                 sub.cardsList.forEach(card => {
                     if (card.individuals === targetNumber) {
                         totalMatchingCards++;
-                        cardsHtml += `<tr><td colspan="9" style="text-align:right; padding:12px;">
-                            <div style="display:flex; align-items:center; gap:15px;">
-                                <span style="font-weight:bold; color:var(--btn-light-green);">📇 ${escapeHtml(card.cardName)}</span>
-                                <span>👤 ${escapeHtml(sub.name)}</span>
-                                <span>👥 ${card.individuals} أفراد</span>
-                                <button class="btn btn-sm btn-info expand-sub-btn" data-id="${sub.id}">🔽 عرض المشترك</button>
-                            </div>
-                        </td></tr>`;
+                        cardsHtml += `
+                        <tr>
+                            <td colspan="9" style="text-align:right; padding:12px;">
+                                <div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap;">
+                                    <span style="font-weight:bold; color:var(--btn-light-green);">📇 ${escapeHtml(card.cardName)}</span>
+                                    <span>👤 ${escapeHtml(sub.name)}</span>
+                                    <span>👥 ${card.individuals} أفراد</span>
+                                    <span>🍞 ${getDailyBreadForCard(card)} رغيف/يوم</span>
+                                    <button class="btn btn-sm btn-info expand-sub-btn" data-id="${sub.id}">🔽 عرض المشترك</button>
+                                </div>
+                            </td>
+                        </tr>`;
                     }
                 });
             }
@@ -85,7 +91,8 @@ function renderTable() {
             remainingDisplay = `${formatNumber(rem)} ج.م`;
         }
 
-        rowsHtml += `<tr class="${rowClass}" data-id="${sub.id}">
+        rowsHtml += `
+        <tr class="${rowClass}" data-id="${sub.id}">
             <td><strong>${escapeHtml(sub.name)}</strong></td>
             <td>${sub.cardsList ? sub.cardsList.length : 0}</td>
             <td>${totalInd}</td>
@@ -101,6 +108,7 @@ function renderTable() {
     tbody.innerHTML = rowsHtml;
     console.log('Rows built. expandedRowId:', expandedRowId);
 
+    // إضافة صف التفاصيل إذا كان هناك صف مفتوح
     if (expandedRowId !== null) {
         const targetRow = tbody.querySelector(`tr[data-id="${expandedRowId}"]`);
         if (targetRow) {
@@ -111,7 +119,8 @@ function renderTable() {
                     cardsHtml = '<div class="cards-vertical-list">';
                     sub.cardsList.forEach((card, idx) => {
                         const bread = getDailyBreadForCard(card);
-                        cardsHtml += `<div class="card-item-detail">
+                        cardsHtml += `
+                        <div class="card-item-detail">
                             <div class="card-detail-header">📇 ${escapeHtml(card.cardName)}</div>
                             <div class="card-detail-row">
                                 <span class="card-detail-label-inline">👥 عدد الأفراد:</span>
@@ -121,12 +130,16 @@ function renderTable() {
                                 <span class="card-detail-label-inline">🍞 الحصة اليومية:</span>
                                 <span class="card-detail-value-inline">${bread} رغيف/يوم</span>
                             </div>
+                            <div class="card-detail-row">
+                                <span class="card-detail-label-inline">📅 تاريخ الإنشاء:</span>
+                                <span class="card-detail-value-inline">${formatDateArabic(card.createdAt)}</span>
+                            </div>
                             ${card.notes ? `<div class="card-detail-row"><span class="card-detail-label-inline">📝 ملاحظة:</span><span class="card-detail-value-inline">${escapeHtml(card.notes)}</span></div>` : ''}
                         </div>`;
                     });
                     cardsHtml += '</div>';
                 } else {
-                    cardsHtml = 'لا توجد بطاقات';
+                    cardsHtml = '<div style="text-align:center; padding:1rem;">لا توجد بطاقات</div>';
                 }
                 const detailRow = document.createElement('tr');
                 detailRow.className = 'cards-detail-row';
@@ -146,18 +159,32 @@ function attachTableEvents() {
     const tbody = document.getElementById('tableBody');
     if (!tbody) return;
 
+    // إضافة حدث النقر على الصفوف
     tbody.querySelectorAll('tr[data-id]').forEach(row => {
         row.removeEventListener('click', handleRowClick);
         row.addEventListener('click', handleRowClick);
     });
 
-    document.querySelectorAll('.edit-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editSub(parseInt(b.dataset.id)); });
-    document.querySelectorAll('.delete-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); deleteSub(parseInt(b.dataset.id)); });
-    document.querySelectorAll('.edit-payment-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editPayment(parseInt(b.dataset.id)); });
-    document.querySelectorAll('.edit-bread-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editDailyBread(parseInt(b.dataset.id)); });
+    // أزرار التعديل والحذف
+    document.querySelectorAll('.edit-btn').forEach(b => {
+        b.onclick = (e) => { e.stopPropagation(); editSub(parseInt(b.dataset.id)); };
+    });
+    document.querySelectorAll('.delete-btn').forEach(b => {
+        b.onclick = (e) => { e.stopPropagation(); deleteSub(parseInt(b.dataset.id)); };
+    });
+    document.querySelectorAll('.edit-payment-btn').forEach(b => {
+        b.onclick = (e) => { e.stopPropagation(); editPayment(parseInt(b.dataset.id)); };
+    });
+    document.querySelectorAll('.edit-bread-btn').forEach(b => {
+        b.onclick = (e) => { e.stopPropagation(); editDailyBread(parseInt(b.dataset.id)); };
+    });
+    
+    // تشيك بوكس الدفع
     document.querySelectorAll('.checkbox-paid').forEach(cb => {
         cb.onchange = (e) => { e.stopPropagation(); toggleFullPayment(parseInt(cb.dataset.id), cb.checked); };
     });
+    
+    // زر عرض المشترك (من نتائج البحث بالعدد)
     document.querySelectorAll('.expand-sub-btn').forEach(btn => {
         btn.onclick = () => {
             const id = parseInt(btn.dataset.id);
@@ -171,17 +198,67 @@ function attachTableEvents() {
     });
 }
 
+// ========== معالجة النقر على صف الجدول ==========
+
 function handleRowClick(e) {
+    // تجاهل النقر على الأزرار أو التشيك بوكس
     if (e.target.closest('button') || e.target.closest('.checkbox-paid')) return;
+    
     const row = e.currentTarget;
     const id = parseInt(row.dataset.id);
     e.stopPropagation();
+    
     if (currentSelectedRowId === id) {
+        // إغلاق التفاصيل إذا كان نفس الصف
         expandedRowId = null;
         currentSelectedRowId = null;
     } else {
+        // فتح تفاصيل الصف الجديد
         currentSelectedRowId = id;
         expandedRowId = id;
     }
     renderTable();
 }
+
+// ========== تصدير الجدول إلى CSV ==========
+
+function exportTableToCSV() {
+    const headers = ['اسم المشترك', 'عدد البطاقات', 'إجمالي الأفراد', 'الحصة اليومية', 'قيمة الاشتراك', 'المدفوع', 'المتبقي', 'خالص'];
+    
+    const rows = subscribers.map(sub => {
+        const total = subValue(sub);
+        const paid = getPaid(sub.id);
+        const rem = total - paid;
+        return [
+            sub.name,
+            sub.cardsList ? sub.cardsList.length : 0,
+            getTotalIndividuals(sub),
+            getDailyBread(sub),
+            total.toFixed(2),
+            paid.toFixed(2),
+            rem.toFixed(2),
+            rem <= 0 ? 'نعم' : 'لا'
+        ];
+    });
+    
+    const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `subscribers_${formatDateTimeForFilename(new Date())}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showSuccessToast('✅ تم تصدير الجدول إلى CSV');
+}
+
+// تصدير الدوال للنطاق العام
+if (typeof window !== 'undefined') {
+    window.renderTable = renderTable;
+    window.attachTableEvents = attachTableEvents;
+    window.handleRowClick = handleRowClick;
+    window.exportTableToCSV = exportTableToCSV;
+}
+
+console.log('✅ ui-table.js loaded');
