@@ -49,6 +49,41 @@
             user-select: text;
             -webkit-user-select: text;
         }
+
+                .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: rgba(76, 175, 80, 0.08);
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        
+        .sync-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        
+        .sync-dot.green {
+            background: #4caf50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+        }
+        
+        .sync-dot.red {
+            background: #ef5350;
+            box-shadow: 0 0 8px rgba(239, 83, 80, 0.6);
+        }
+        
+        .sync-dot.yellow {
+            background: #ff9800;
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
+        }
     </style>
 </head>
 <body oncontextmenu="return false">
