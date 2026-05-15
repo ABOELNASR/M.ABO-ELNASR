@@ -17,15 +17,16 @@ function renderCards() {
     if (!isNaN(englishNumber) && englishNumber.toString() === searchTerm) targetNumber = englishNumber;
     else if (!isNaN(arabicNumber)) targetNumber = arabicNumber;
 
+    // عرض البطاقات مباشرة عند البحث برقم الأفراد
     if (targetNumber !== null) {
-        let cardsHtml = '';
+        let cardsHtml = '<div class="cards-view-grid">';
         filtered.forEach(sub => {
             if (sub.cardsList) {
                 sub.cardsList.forEach(card => {
                     if (card.individuals === targetNumber) {
                         const bread = getDailyBreadForCard(card);
                         cardsHtml += `
-                        <div class="subscriber-card row-paid" style="border-right-color: var(--btn-info);">
+                        <div class="subscriber-card" style="border-right-color: var(--btn-info);">
                             <div class="card-header">
                                 <span class="card-title">📇 ${escapeHtml(card.cardName)}</span>
                                 <span style="font-size:0.7rem; color: var(--text-secondary);">👤 ${escapeHtml(sub.name)}</span>
@@ -44,12 +45,17 @@ function renderCards() {
                                     <div class="card-detail-value" data-fit-text style="font-size:0.7rem;">${escapeHtml(sub.name)}</div>
                                 </div>
                             </div>
+                            <div class="card-actions-row" style="margin-top:0.5rem;">
+                                <button class="action-icon-btn expand-sub-btn" data-id="${sub.id}" title="عرض المشترك">🔍</button>
+                            </div>
                         </div>`;
                     }
                 });
             }
         });
+        cardsHtml += '</div>';
         container.innerHTML = cardsHtml || '<div style="text-align:center; padding:2rem; color: var(--text-secondary);">لا توجد بطاقات بهذا العدد</div>';
+        bindExpandButtons();
         applyFitTextToCards();
         return;
     }
@@ -91,6 +97,7 @@ function renderCards() {
             remainingText = `${formatNumber(rem)} ج.م`;
         }
 
+        // بناء قائمة البطاقات
         let cardsListHtml = '';
         if (sub.cardsList && sub.cardsList.length) {
             cardsListHtml = '<div class="card-cards-list">';
@@ -117,7 +124,7 @@ function renderCards() {
         <div class="subscriber-card ${cardClass}" data-id="${sub.id}">
             <div class="card-tabs">
                 <button class="card-tab active" data-tab="info">📋 معلومات</button>
-                <button class="card-tab" data-tab="cards">📇 البطاقات</button>
+                <button class="card-tab" data-tab="cards">📇 البطاقات (${sub.cardsList ? sub.cardsList.length : 0})</button>
             </div>
             <div class="card-tab-content active" data-content="info">
                 <div class="card-header">
@@ -155,15 +162,16 @@ function renderCards() {
                 <div class="card-cards-header">👤 ${escapeHtml(sub.name)}</div>
                 ${cardsListHtml || '<div style="text-align:center;color:var(--text-secondary);">لا توجد بطاقات</div>'}
             </div>
-            <div class="card-actions-row" style="display: flex; align-items: center; gap: 8px;">
+            <div class="card-actions-row" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 4px;">
-                    ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} title="خالص" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--btn-light-green);">` : ''}
+                    ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid" data-id="${sub.id}" ${checked} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--btn-light-green);">` : ''}
+                    <span style="font-size:0.65rem; color:var(--text-secondary);">خالص</span>
                 </div>
                 <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; flex: 1;">
                     ${showEditDelete ? `<button class="action-icon-btn edit-btn" data-id="${sub.id}" title="تعديل">✏️</button>` : ''}
                     ${showEditDelete ? `<button class="action-icon-btn delete-btn" data-id="${sub.id}" title="حذف">🗑️</button>` : ''}
-                    ${showPaymentActions ? `<button class="action-icon-btn edit-payment-btn" data-id="${sub.id}" title="مدفوع">💰</button>` : ''}
-                    ${showPaymentActions ? `<button class="action-icon-btn edit-bread-btn" data-id="${sub.id}" title="حصة">🍞</button>` : ''}
+                    ${showPaymentActions ? `<button class="action-icon-btn edit-payment-btn" data-id="${sub.id}" title="تعديل المدفوع">💰</button>` : ''}
+                    ${showPaymentActions ? `<button class="action-icon-btn edit-bread-btn" data-id="${sub.id}" title="تعديل الحصة">🍞</button>` : ''}
                     ${!showEditDelete && !showPaymentActions ? '<span style="padding:6px; opacity:0.6;">🔒</span>' : ''}
                 </div>
             </div>
@@ -175,6 +183,7 @@ function renderCards() {
 
     bindCardEvents();
     bindCardTabs();
+    bindExpandButtons();
     applyFitTextToCards();
 }
 
@@ -201,12 +210,39 @@ function bindCardTabs() {
 // ========== ربط أحداث الكروت ==========
 
 function bindCardEvents() {
-    document.querySelectorAll('.subscriber-card .edit-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editSub(parseInt(b.dataset.id)); });
-    document.querySelectorAll('.subscriber-card .delete-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); deleteSub(parseInt(b.dataset.id)); });
-    document.querySelectorAll('.subscriber-card .edit-payment-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editPayment(parseInt(b.dataset.id)); });
-    document.querySelectorAll('.subscriber-card .edit-bread-btn').forEach(b => b.onclick = (e) => { e.stopPropagation(); editDailyBread(parseInt(b.dataset.id)); });
+    document.querySelectorAll('.subscriber-card .edit-btn').forEach(b => {
+        b.onclick = (e) => { e.stopPropagation(); editSub(parseInt(b.dataset.id)); };
+    });
+    document.querySelectorAll('.subscriber-card .delete-btn').forEach(b => {
+        b.onclick = (e) => { e.stopPropagation(); deleteSub(parseInt(b.dataset.id)); };
+    });
+    document.querySelectorAll('.subscriber-card .edit-payment-btn').forEach(b => {
+        b.onclick = (e) => { e.stopPropagation(); editPayment(parseInt(b.dataset.id)); };
+    });
+    document.querySelectorAll('.subscriber-card .edit-bread-btn').forEach(b => {
+        b.onclick = (e) => { e.stopPropagation(); editDailyBread(parseInt(b.dataset.id)); };
+    });
     document.querySelectorAll('.subscriber-card .checkbox-paid').forEach(cb => {
         cb.onchange = (e) => { e.stopPropagation(); toggleFullPayment(parseInt(cb.dataset.id), cb.checked); };
+    });
+}
+
+// ========== ربط أزرار عرض المشترك ==========
+
+function bindExpandButtons() {
+    document.querySelectorAll('.expand-sub-btn').forEach(btn => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            const id = parseInt(btn.dataset.id);
+            currentSelectedRowId = id;
+            expandedRowId = id;
+            currentSearch = '';
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            // التبديل إلى عرض الجدول لإظهار التفاصيل
+            if (typeof toggleView === 'function') toggleView('table');
+            else renderAll();
+        };
     });
 }
 
@@ -217,3 +253,64 @@ function applyFitTextToCards() {
         fitTextToContainer(el, 0.85, 0.55);
     });
 }
+
+// ========== تصدير الكروت إلى PDF (طباعة) ==========
+
+function printCardsView() {
+    const originalViewMode = viewMode;
+    const originalTitle = document.title;
+    
+    // التبديل إلى عرض الكروت مؤقتاً
+    if (viewMode !== 'cards') {
+        toggleView('cards');
+    }
+    
+    // إضافة بعض الأنماط للطباعة
+    const style = document.createElement('style');
+    style.textContent = `
+        @media print {
+            .top-controls, .toolbar, .view-toggle, .month-picker, 
+            .form-card, .stats-grid, .footer-note, .scroll-to-top-btn,
+            .admin-dropdown, .dark-mode-toggle, #fullscreenBtnContainer {
+                display: none !important;
+            }
+            .cards-view-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+            .subscriber-card {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                border: 1px solid #ddd !important;
+            }
+            body {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.title = 'تقرير المشتركين';
+    window.print();
+    
+    // العودة للحالة الأصلية
+    document.title = originalTitle;
+    document.head.removeChild(style);
+    if (originalViewMode !== 'cards') {
+        toggleView(originalViewMode);
+    }
+}
+
+// تصدير الدوال للنطاق العام
+if (typeof window !== 'undefined') {
+    window.renderCards = renderCards;
+    window.bindCardTabs = bindCardTabs;
+    window.bindCardEvents = bindCardEvents;
+    window.bindExpandButtons = bindExpandButtons;
+    window.applyFitTextToCards = applyFitTextToCards;
+    window.printCardsView = printCardsView;
+}
+
+console.log('✅ ui-cards.js loaded');
