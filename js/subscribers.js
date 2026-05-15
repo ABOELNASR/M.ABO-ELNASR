@@ -247,16 +247,16 @@ async function addOrUpdate() {
                 if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
                 if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
                 
-                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                // ⭐ مسح أي overrides سابقة
+                breadOverrides[oldSub.id][key] = [];
                 
+                // ⭐ الشهر كله بالسعر الجديد (oldDailyBread = newTotalDailyBread)
                 breadOverrides[oldSub.id][key].push({
                     day: today,
                     totalDailyBread: newTotalDailyBread,
-                    oldDailyBread: oldTotalDailyBread,
-                    reason: `تعديل عدد الأفراد - الحصة القديمة: ${oldTotalDailyBread} → الجديدة: ${newTotalDailyBread}`
+                    oldDailyBread: newTotalDailyBread,
+                    reason: `تعديل عدد الأفراد - الحصة الجديدة: ${newTotalDailyBread}`
                 });
-                
-                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
             }
             
             const historyEntry = {
