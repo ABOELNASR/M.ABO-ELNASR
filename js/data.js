@@ -59,7 +59,7 @@ function saveLocalData() {
     }
 }
 
-// ========== رفع فوري إجباري للسحابة ==========
+// ========== رفع فوري إجباري للسحابة مع تأكيد ==========
 async function saveDataToCloudForce() {
     if (isSavingToCloud) {
         pendingSaveToCloud = true;
@@ -103,19 +103,45 @@ async function saveDataToCloudForce() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        try {
-            const result = await response.json();
-            console.log('☁️☁️ رفع فوري ناجح:', result);
-        } catch(e) {
-            console.log('☁️☁️ رفع فوري ناجح');
+        console.log('☁️☁️ رفع فوري ناجح');
+        
+        // ⭐⭐ تأكيد الرفع: اسحب من السحابة وتأكد إن البيانات وصلت
+        let confirmed = false;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // استنى ثانيتين
+            
+            try {
+                const verifyData = await loadDataFromCloud();
+                if (verifyData && verifyData.subscribers && Array.isArray(verifyData.subscribers)) {
+                    if (verifyData.subscribers.length === cleanSubscribers.length) {
+                        console.log(`✅ تم تأكيد الرفع من المحاولة ${attempt}`);
+                        confirmed = true;
+                        break;
+                    } else {
+                        console.log(`⏳ المحاولة ${attempt}: السحابة (${verifyData.subscribers.length}) ≠ المحلي (${cleanSubscribers.length})`);
+                    }
+                }
+            } catch (e) {
+                console.log(`⚠️ فشل التحقق (محاولة ${attempt}):`, e.message);
+            }
         }
         
-        updateSyncStatusUI('success');
-        lastSaveTime = Date.now(); // ⭐ سجل وقت الرفع الناجح
-        return true;
+        if (confirmed) {
+            updateSyncStatusUI('success');
+            lastSaveTime = Date.now();
+            return true;
+        } else {
+            console.warn('⚠️ تعذر تأكيد الرفع بعد 3 محاولات');
+            updateSyncStatusUI('failed');
+            syncNeeded = true;
+            localStorage.setItem('pending_sync', 'true');
+            return false;
+        }
     } catch (e) {
         console.error('❌ فشل الرفع الفوري:', e);
         updateSyncStatusUI('failed');
+        syncNeeded = true;
+        localStorage.setItem('pending_sync', 'true');
         throw e;
     } finally {
         isSavingToCloud = false;
