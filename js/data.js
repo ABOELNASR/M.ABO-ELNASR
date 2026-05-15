@@ -93,18 +93,19 @@ async function saveDataToCloudForce() {
             timestamp: new Date().toISOString()
         };
 
-        const dataStr = JSON.stringify(payload);
-        const formData = new FormData();
-        formData.append('data', dataStr);
-        
+        // ⭐ إرسال البيانات كـ JSON مباشر في جسم الطلب
         const response = await fetch(API_URL, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
         });
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        console.log('☁️☁️ رفع فوري ناجح');
+        const result = await response.json();
+        console.log('☁️☁️ رفع فوري ناجح:', result);
         
         // ⭐⭐ تأكيد الرفع: اسحب من السحابة وتأكد إن البيانات وصلت
         for (let attempt = 1; attempt <= 3; attempt++) {
