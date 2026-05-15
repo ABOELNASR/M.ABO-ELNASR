@@ -105,8 +105,8 @@ async function saveDataToCloudForce() {
         console.log('☁️☁️ رفع فوري ناجح:', result);
         
         // ⭐⭐ تأكيد الرفع: اسحب من السحابة وتأكد إن البيانات وصلت
-        for (let attempt = 1; attempt <= 3; attempt++) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+        for (let attempt = 1; attempt <= 2; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
             
             try {
                 const verifyData = await loadDataFromCloud();
@@ -129,7 +129,7 @@ async function saveDataToCloudForce() {
             lastSaveTime = Date.now();
             return true;
         } else {
-            console.warn('⚠️ تعذر تأكيد الرفع بعد 3 محاولات');
+            console.warn('⚠️ تعذر تأكيد الرفع بعد محاولتين');
             updateSyncStatusUI('failed');
             syncNeeded = true;
             localStorage.setItem('pending_sync', 'true');
