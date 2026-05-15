@@ -146,7 +146,7 @@ function showEditSubscriberModal(sub) {
             const cardsList = tempCardsList.map(card => ({
                 cardName: String(card.cardName || '').trim(),
                 individuals: parseInt(card.individuals) || 1,
-                dailyBreadOverride: card.dailyBreadOverride || null,
+                dailyBreadOverride: null,
                 createdAt: card.createdAt || new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 history: Array.isArray(card.history) ? card.history : [],
@@ -157,37 +157,59 @@ function showEditSubscriberModal(sub) {
             let nameChanged = (oldSub.name !== name);
             let individualsChanged = false;
             let cardsAdded = cardsList.length > oldCardsCount;
+            let addedCard = null;
+            
+            if (cardsAdded) {
+                addedCard = cardsList[cardsList.length - 1];
+            }
+            
+            const newTotalDailyBread = cardsList.reduce((sum, c) => {
+                return sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+            }, 0);
+            
+            const oldTotalDailyBread = oldSub.cardsList 
+                ? oldSub.cardsList.reduce((sum, c) => sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON), 0)
+                : 0;
             
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
-                if (!oldCard) return;
-                if (oldCard.individuals !== newCard.individuals) {
+                if (oldCard && oldCard.individuals !== newCard.individuals) {
                     individualsChanged = true;
-                    const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
-                    if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
-                        newCard.dailyBreadOverride = newDefaultBread;
-                    }
-                    
-                    if (today > 1 && today < days) {
-                        const newTotalDailyBread = cardsList.reduce((sum, c) => {
-                            return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
-                        }, 0);
-                        
-                        if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                        if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
-                        
-                        breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
-                        
-                        breadOverrides[oldSub.id][key].push({
-                            day: today,
-                            totalDailyBread: newTotalDailyBread,
-                            reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
-                        });
-                        
-                        breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
-                    }
                 }
             });
+            
+            // ⭐ إضافة breadOverride: إضافة بطاقة جديدة
+            if (cardsAdded && addedCard && today > 1 && today < days) {
+                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                
+                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                
+                breadOverrides[oldSub.id][key].push({
+                    day: today,
+                    totalDailyBread: newTotalDailyBread,
+                    oldDailyBread: oldTotalDailyBread,
+                    reason: `إضافة بطاقة "${addedCard.cardName}" (${addedCard.individuals} أفراد)`
+                });
+                
+                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+            }
+            // ⭐ إضافة breadOverride: زيادة أفراد بطاقة موجودة
+            else if (individualsChanged && !cardsAdded && today > 1 && today < days) {
+                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                
+                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                
+                breadOverrides[oldSub.id][key].push({
+                    day: today,
+                    totalDailyBread: newTotalDailyBread,
+                    oldDailyBread: oldTotalDailyBread,
+                    reason: `تعديل عدد الأفراد`
+                });
+                
+                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+            }
             
             subscribers[idx].name = name;
             subscribers[idx].cardsList = cardsList;
@@ -199,8 +221,7 @@ function showEditSubscriberModal(sub) {
             
             // ⭐ تحديد نص الإشعار التفصيلي
             let notificationBody;
-            if (cardsAdded) {
-                const addedCard = cardsList[cardsList.length - 1];
+            if (cardsAdded && addedCard) {
                 notificationBody = `📇 تم إضافة البطاقة "${addedCard.cardName}" للمشترك "${name}"`;
             } else if (individualsChanged && !nameChanged) {
                 notificationBody = `👥 تم تعديل عدد أفراد المشترك "${name}"`;
