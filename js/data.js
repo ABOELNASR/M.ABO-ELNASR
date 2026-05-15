@@ -3,6 +3,7 @@
 // ========== آلية القفل لمنع التداخل ==========
 let isSavingToCloud = false;
 let pendingSaveToCloud = false;
+let lastSaveTime = 0; // ⭐ وقت آخر رفع ناجح
 
 // ========== تحميل البيانات المحلية (للقراءة السريعة فقط) ==========
 function loadLocalData() {
@@ -110,6 +111,7 @@ async function saveDataToCloudForce() {
         }
         
         updateSyncStatusUI('success');
+        lastSaveTime = Date.now(); // ⭐ سجل وقت الرفع الناجح
         return true;
     } catch (e) {
         console.error('❌ فشل الرفع الفوري:', e);
@@ -398,7 +400,7 @@ async function manualSync() {
     }
 }
 
-// ========== مزامنة دورية (تحترم القفل) ==========
+// ========== مزامنة دورية (تحترم القفل وفترة الانتظار بعد الرفع) ==========
 let autoRefreshInterval = null;
 let isRefreshing = false;
 let failedRefreshAttempts = 0;
@@ -411,6 +413,13 @@ function startAutoRefresh(intervalSeconds = 120) {
         // ⭐ لو فيه رفع شغال، أجل التحديث
         if (isSavingToCloud) {
             console.log('⏳ تأجيل التحديث الدوري لأن فيه رفع شغال...');
+            return;
+        }
+        
+        // ⭐ لو آخر رفع كان من أقل من 5 ثواني، أجل التحديث
+        const timeSinceLastSave = Date.now() - lastSaveTime;
+        if (timeSinceLastSave < 5000) {
+            console.log(`⏳ تأجيل التحديث الدوري (آخر رفع منذ ${(timeSinceLastSave / 1000).toFixed(1)} ثانية)...`);
             return;
         }
         
