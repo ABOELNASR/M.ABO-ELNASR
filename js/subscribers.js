@@ -247,16 +247,16 @@ async function addOrUpdate() {
         requestPushNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
     }
     
-    // ⭐ حفظ فوري إجباري
+    // ⭐ حفظ فوري مع تأكيد في الخلفية
     saveLocalData();
     saveUsersToLocal();
     
     if (navigator.onLine && window.location.protocol !== 'file:') {
-        // ⭐ رفع للسحابة فوراً (بدون انتظار الرد عشان متأخرش الواجهة)
+        // ⭐ رفع للسحابة في الخلفية (هيحاول 3 مرات + تأكيد)
         saveDataToCloudForce().then(() => {
-            console.log('☁️ تم رفع التغييرات للسحابة بنجاح');
+            console.log('☁️ تم رفع وتأكيد التغييرات في السحابة بنجاح');
         }).catch(e => {
-            console.warn('⚠️ فشل الرفع الفوري، سيتم الرفع لاحقاً:', e);
+            console.warn('⚠️ فشل الرفع والتأكيد، سيتم الرفع لاحقاً:', e);
             syncNeeded = true;
             localStorage.setItem('pending_sync', 'true');
             updateSyncStatusUI('failed');
@@ -305,7 +305,25 @@ async function deleteSub(id) {
     addActivityLog('حذف مشترك', `تم حذف المشترك ${sub.name} (الملاحظة: ${note})`);
     requestPushNotification('المخبز', `تم حذف المشترك • ${sub.name} ✗`);
     
-    await saveDataAndWait();
+    // ⭐ حفظ فوري مع تأكيد
+    saveLocalData();
+    saveUsersToLocal();
+    
+    if (navigator.onLine && window.location.protocol !== 'file:') {
+        saveDataToCloudForce().then(() => {
+            console.log('☁️ تم رفع وتأكيد الحذف في السحابة بنجاح');
+        }).catch(e => {
+            console.warn('⚠️ فشل رفع الحذف:', e);
+            syncNeeded = true;
+            localStorage.setItem('pending_sync', 'true');
+            updateSyncStatusUI('failed');
+        });
+    } else {
+        syncNeeded = true;
+        localStorage.setItem('pending_sync', 'true');
+        updateSyncStatusUI('offline');
+    }
+    
     renderAll();
 }
 
@@ -361,7 +379,25 @@ async function editPayment(subId) {
     addActivityLog('تعديل مبلغ مدفوع', `تم تعديل المدفوع للمشترك ${sub.name} إلى ${newPaid.toFixed(2)} ج.م`);
     requestPushNotification('المخبز', `تم تعديل مدفوعات • ${sub.name} ✓`);
     
-    await saveDataAndWait();
+    // ⭐ حفظ فوري مع تأكيد
+    saveLocalData();
+    saveUsersToLocal();
+    
+    if (navigator.onLine && window.location.protocol !== 'file:') {
+        saveDataToCloudForce().then(() => {
+            console.log('☁️ تم رفع وتأكيد المدفوعات في السحابة بنجاح');
+        }).catch(e => {
+            console.warn('⚠️ فشل رفع المدفوعات:', e);
+            syncNeeded = true;
+            localStorage.setItem('pending_sync', 'true');
+            updateSyncStatusUI('failed');
+        });
+    } else {
+        syncNeeded = true;
+        localStorage.setItem('pending_sync', 'true');
+        updateSyncStatusUI('offline');
+    }
+    
     renderAll();
 }
 
@@ -390,7 +426,25 @@ async function toggleFullPayment(subId, wantPaid) {
             addActivityLog('تسديد كامل', `تم تسديد كامل مبلغ الاشتراك للمشترك ${sub.name}`);
             requestPushNotification('المخبز', `تم تسديد كامل الاشتراك • ${sub.name} • بقيمة ${formatNumber(totalValue)} ج.م ✓`);
             
-            await saveDataAndWait();
+            // ⭐ حفظ فوري مع تأكيد
+            saveLocalData();
+            saveUsersToLocal();
+            
+            if (navigator.onLine && window.location.protocol !== 'file:') {
+                saveDataToCloudForce().then(() => {
+                    console.log('☁️ تم رفع وتأكيد التسديد في السحابة بنجاح');
+                }).catch(e => {
+                    console.warn('⚠️ فشل رفع التسديد:', e);
+                    syncNeeded = true;
+                    localStorage.setItem('pending_sync', 'true');
+                    updateSyncStatusUI('failed');
+                });
+            } else {
+                syncNeeded = true;
+                localStorage.setItem('pending_sync', 'true');
+                updateSyncStatusUI('offline');
+            }
+            
             renderAll();
         }
     } else if (!wantPaid && getPaid(subId) > 0) {
@@ -400,7 +454,25 @@ async function toggleFullPayment(subId, wantPaid) {
             addActivityLog('إلغاء مدفوعات', `تم إلغاء جميع دفعات الشهر للمشترك ${sub.name}`);
             requestPushNotification('المخبز', `تم إلغاء مدفوعات • ${sub.name} ✗`);
             
-            await saveDataAndWait();
+            // ⭐ حفظ فوري مع تأكيد
+            saveLocalData();
+            saveUsersToLocal();
+            
+            if (navigator.onLine && window.location.protocol !== 'file:') {
+                saveDataToCloudForce().then(() => {
+                    console.log('☁️ تم رفع وتأكيد الإلغاء في السحابة بنجاح');
+                }).catch(e => {
+                    console.warn('⚠️ فشل رفع الإلغاء:', e);
+                    syncNeeded = true;
+                    localStorage.setItem('pending_sync', 'true');
+                    updateSyncStatusUI('failed');
+                });
+            } else {
+                syncNeeded = true;
+                localStorage.setItem('pending_sync', 'true');
+                updateSyncStatusUI('offline');
+            }
+            
             renderAll();
         }
     }
@@ -502,7 +574,25 @@ async function editDailyBread(subId) {
         addActivityLog('تعديل الحصة اليومية', `تم تعديل حصة المشترك ${sub.name}`);
         requestPushNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
         
-        await saveDataAndWait();
+        // ⭐ حفظ فوري مع تأكيد
+        saveLocalData();
+        saveUsersToLocal();
+        
+        if (navigator.onLine && window.location.protocol !== 'file:') {
+            saveDataToCloudForce().then(() => {
+                console.log('☁️ تم رفع وتأكيد تعديل الحصة في السحابة بنجاح');
+            }).catch(e => {
+                console.warn('⚠️ فشل رفع تعديل الحصة:', e);
+                syncNeeded = true;
+                localStorage.setItem('pending_sync', 'true');
+                updateSyncStatusUI('failed');
+            });
+        } else {
+            syncNeeded = true;
+            localStorage.setItem('pending_sync', 'true');
+            updateSyncStatusUI('offline');
+        }
+        
         renderAll();
         modal.remove();
         enableBodyScroll();
