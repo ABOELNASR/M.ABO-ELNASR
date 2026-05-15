@@ -347,7 +347,7 @@ async function loadData(forceLocal = false) {
             console.log(`☁️ تم تحميل ${subscribers.length} مشترك من السحابة`);
             
             if (subscribers.length > 0) {
-                showToast(`☁️ تم تحميل البيانات من السحابة (${subscribers.length} مشترك)`);
+                showToast('☁️ تم الاتصال بالسحابة');
             }
         } else {
             console.log('☁️ السحابة فارغة، بدء بقائمة فارغة');
@@ -411,7 +411,7 @@ async function manualSync() {
             saveLocalData();
             renderAll();
             
-            showToast(`☁️ تم تحميل ${subscribers.length} مشترك من السحابة`);
+            showToast('☁️ تم الاتصال بالسحابة');
             updateSyncStatusUI('success');
             return true;
         }
