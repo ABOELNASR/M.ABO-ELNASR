@@ -51,11 +51,12 @@ function renderTempCards() {
                 updateDuplicateWarnings();
                 logDeletedCard(cardName, individuals, subscriberName, note);
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
-                showBellNotification('المخبز', `🗑️ تم حذف البطاقة "${cardName}" للمشترك "${subscriberName}"`);
+                showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
             } else {
                 tempCardsList.splice(idx, 1);
                 renderTempCards();
                 updateDuplicateWarnings();
+                showToast(`🗑️ تم حذف البطاقة.`);
             }
         });
     });
@@ -169,7 +170,7 @@ async function addOrUpdate() {
     const cardsList = tempCardsList.map(card => ({
         cardName: String(card.cardName || '').trim(),
         individuals: parseInt(card.individuals) || 1,
-        dailyBreadOverride: null,
+        dailyBreadOverride: card.dailyBreadOverride || null,
         createdAt: card.createdAt || now,
         updatedAt: now,
         history: Array.isArray(card.history) ? card.history : [],
@@ -182,82 +183,40 @@ async function addOrUpdate() {
         const idx = subscribers.findIndex(s => s.id == editId);
         if (idx !== -1) {
             const oldSub = subscribers[idx];
-            const oldCardsCount = oldSub.cardsList ? oldSub.cardsList.length : 0;
+            
             const key = getKey(currentYear, currentMonth);
             const today = new Date().getDate();
             const days = getDays(currentYear, currentMonth);
             
-            // ⭐ تتبع التغييرات للإشعار التفصيلي
-            let nameChanged = (oldSub.name !== name);
-            let individualsChanged = false;
-            let cardsAdded = cardsList.length > oldCardsCount;
-            let cardsDeleted = cardsList.length < oldCardsCount;
-            let addedCard = null;
-            let addedCardBread = 0;
-            
-            // ⭐ تحديد البطاقة الجديدة لو فيه إضافة
-            if (cardsAdded) {
-                addedCard = cardsList[cardsList.length - 1];
-                addedCardBread = addedCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
-            }
-            
-            // ⭐ حساب الحصة اليومية الجديدة
-            const newTotalDailyBread = cardsList.reduce((sum, c) => {
-                return sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
-            }, 0);
-            
-            const oldTotalDailyBread = oldSub.cardsList 
-                ? oldSub.cardsList.reduce((sum, c) => sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON), 0)
-                : 0;
-            
-            // ⭐ التحقق من تغيير عدد الأفراد في بطاقة موجودة
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
                 if (oldCard && oldCard.individuals !== newCard.individuals) {
-                    individualsChanged = true;
+                    const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
+                    if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
+                        newCard.dailyBreadOverride = newDefaultBread;
+                    }
+                    
+                    if (today > 1 && today < days) {
+                        const newTotalDailyBread = cardsList.reduce((sum, c, i) => {
+                            if (i === cardIdx) return sum + (c.dailyBreadOverride || newDefaultBread);
+                            return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                        }, 0);
+                        
+                        if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                        if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                        
+                        breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                        
+                        breadOverrides[oldSub.id][key].push({
+                            day: today,
+                            totalDailyBread: newTotalDailyBread,
+                            reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
+                        });
+                        
+                        breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
+                    }
                 }
             });
-            
-            // ⭐ إضافة breadOverride: إضافة بطاقة جديدة = تقسيم الحساب لفترتين
-            if (cardsAdded && addedCard && today > 1 && today < days) {
-                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
-                
-                // ⭐ الحصة القديمة (قبل إضافة البطاقة)
-                const oldDailyBread = oldTotalDailyBread;
-                
-                // ⭐ الحصة الجديدة (بعد إضافة البطاقة)
-                const newDailyBread = newTotalDailyBread;
-                
-                // ⭐ الفترة 1: من أول الشهر → يوم الإضافة (الحصة القديمة)
-                // ⭐ الفترة 2: من يوم الإضافة → آخر الشهر (الحصة الجديدة)
-                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
-                
-                breadOverrides[oldSub.id][key].push({
-                    day: today,
-                    totalDailyBread: newDailyBread,
-                    oldDailyBread: oldDailyBread,
-                    reason: `إضافة بطاقة "${addedCard.cardName}" (${addedCard.individuals} أفراد) - الحصة القديمة: ${oldDailyBread} → الجديدة: ${newDailyBread}`
-                });
-                
-                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
-            }
-            // ⭐ إضافة breadOverride: زيادة أفراد بطاقة موجودة = الشهر كله بالسعر الجديد
-            else if (individualsChanged && !cardsAdded && today > 1 && today < days) {
-                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
-                
-                // ⭐ مسح أي overrides سابقة
-                breadOverrides[oldSub.id][key] = [];
-                
-                // ⭐ الشهر كله بالسعر الجديد (oldDailyBread = newTotalDailyBread)
-                breadOverrides[oldSub.id][key].push({
-                    day: today,
-                    totalDailyBread: newTotalDailyBread,
-                    oldDailyBread: newTotalDailyBread,
-                    reason: `تعديل عدد الأفراد - الحصة الجديدة: ${newTotalDailyBread}`
-                });
-            }
             
             const historyEntry = {
                 action: 'تعديل المشترك',
@@ -265,7 +224,7 @@ async function addOrUpdate() {
                 date: now,
                 oldName: oldSub.name,
                 newName: name,
-                oldCards: oldCardsCount,
+                oldCards: oldSub.cardsList ? oldSub.cardsList.length : 0,
                 newCards: cardsList.length
             };
             subscribers[idx] = {
@@ -276,37 +235,6 @@ async function addOrUpdate() {
                 history: [...(oldSub.history || []), historyEntry]
             };
             addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
-            
-            // ⭐ تحديد نص الإشعار التفصيلي
-            let notificationBody;
-            if (cardsAdded && addedCard) {
-                notificationBody = `📇 تم إضافة البطاقة "${addedCard.cardName}" للمشترك "${name}"`;
-            } else if (cardsDeleted) {
-                notificationBody = `📇 تم تعديل بطاقات المشترك "${name}"`;
-            } else if (individualsChanged && !nameChanged) {
-                notificationBody = `👥 تم تعديل عدد أفراد المشترك "${name}"`;
-            } else if (nameChanged && !individualsChanged) {
-                notificationBody = `✏️ تم تعديل اسم المشترك إلى "${name}"`;
-            } else if (nameChanged && individualsChanged) {
-                notificationBody = `✏️ تم تعديل المشترك "${name}"`;
-            } else {
-                notificationBody = `✏️ تم تعديل المشترك "${name}"`;
-            }
-            
-            saveLocalData();
-            saveUsersToLocal();
-            
-            if (navigator.onLine && window.location.protocol !== 'file:') {
-                saveDataToCloudForce().then(() => {
-                    console.log('☁️ تم رفع وتأكيد التغييرات في السحابة بنجاح');
-                    requestPushNotification('المخبز', notificationBody + ' ✓');
-                }).catch(e => {
-                    console.warn('⚠️ فشل الرفع والتأكيد، سيتم الرفع لاحقاً:', e);
-                    syncNeeded = true;
-                    localStorage.setItem('pending_sync', 'true');
-                    updateSyncStatusUI('failed');
-                });
-            }
         }
         editId = null;
     } else {
@@ -321,29 +249,29 @@ async function addOrUpdate() {
             history: []
         });
         addActivityLog('إضافة مشترك', `تم إضافة مشترك جديد: ${name}`);
-        
-        saveLocalData();
-        saveUsersToLocal();
-        
-        if (navigator.onLine && window.location.protocol !== 'file:') {
-            saveDataToCloudForce().then(() => {
-                console.log('☁️ تم رفع وتأكيد التغييرات في السحابة بنجاح');
-                requestPushNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
-            }).catch(e => {
-                console.warn('⚠️ فشل الرفع والتأكيد، سيتم الرفع لاحقاً:', e);
-                syncNeeded = true;
-                localStorage.setItem('pending_sync', 'true');
-                updateSyncStatusUI('failed');
-            });
-        } else {
+    }
+    
+    saveLocalData();
+    saveUsersToLocal();
+    
+    if (navigator.onLine && window.location.protocol !== 'file:') {
+        saveDataToCloudForce().then(() => {
+            console.log('☁️ تم رفع وتأكيد التغييرات في السحابة بنجاح');
+            requestPushNotification('المخبز', `تم ${isEdit ? 'تعديل' : 'إضافة'} المشترك • ${name} ✓`);
+        }).catch(e => {
+            console.warn('⚠️ فشل الرفع والتأكيد، سيتم الرفع لاحقاً:', e);
             syncNeeded = true;
             localStorage.setItem('pending_sync', 'true');
-            updateSyncStatusUI('offline');
-        }
+            updateSyncStatusUI('failed');
+        });
+    } else {
+        syncNeeded = true;
+        localStorage.setItem('pending_sync', 'true');
+        updateSyncStatusUI('offline');
     }
     
     cancelEdit();
-    renderAll();
+    if (typeof renderAll === 'function') renderAll();
 }
 
 async function deleteSub(id) {
@@ -398,26 +326,11 @@ async function deleteSub(id) {
         updateSyncStatusUI('offline');
     }
     
-    renderAll();
+    if (typeof renderAll === 'function') renderAll();
 }
 
-function editSub(id) {
-    if (!hasFullEditDelete()) {
-        showToast('لا صلاحية', true);
-        return;
-    }
-    
-    const sub = subscribers.find(s => s.id == id);
-    if (sub) {
-        document.getElementById('subName').value = sub.name;
-        loadCardsForEdit(sub);
-        editId = id;
-        document.getElementById('saveBtn').innerText = '💾 تحديث';
-        updateDuplicateWarnings();
-    } else {
-        showToast('المشترك غير موجود', true);
-    }
-}
+// ⚠️ تم إزالة تعريف editSub من هنا لأنه موجود في ui-modals.js
+// سيتم استخدام window.editSub من الملف الآخر
 
 async function editPayment(subId) {
     if (!hasPaymentActions()) {
@@ -458,7 +371,7 @@ async function editPayment(subId) {
     if (navigator.onLine && window.location.protocol !== 'file:') {
         saveDataToCloudForce().then(() => {
             console.log('☁️ تم رفع وتأكيد المدفوعات في السحابة بنجاح');
-            requestPushNotification('المخبز', `💰 تم تعديل المدفوع للمشترك "${sub.name}" والمتبقي ${getRemaining(subId).toFixed(2)} ج.م ✓`);
+            requestPushNotification('المخبز', `تم تعديل مدفوعات • ${sub.name} ✓`);
         }).catch(e => {
             console.warn('⚠️ فشل رفع المدفوعات:', e);
             syncNeeded = true;
@@ -471,7 +384,7 @@ async function editPayment(subId) {
         updateSyncStatusUI('offline');
     }
     
-    renderAll();
+    if (typeof renderAll === 'function') renderAll();
 }
 
 async function toggleFullPayment(subId, wantPaid) {
@@ -504,7 +417,7 @@ async function toggleFullPayment(subId, wantPaid) {
             if (navigator.onLine && window.location.protocol !== 'file:') {
                 saveDataToCloudForce().then(() => {
                     console.log('☁️ تم رفع وتأكيد التسديد في السحابة بنجاح');
-                    requestPushNotification('المخبز', `✅ كامل السداد للمشترك "${sub.name}" بقيمة ${formatNumber(totalValue)} ج.م ✓`);
+                    requestPushNotification('المخبز', `تم تسديد كامل الاشتراك • ${sub.name} • بقيمة ${formatNumber(totalValue)} ج.م ✓`);
                 }).catch(e => {
                     console.warn('⚠️ فشل رفع التسديد:', e);
                     syncNeeded = true;
@@ -517,7 +430,7 @@ async function toggleFullPayment(subId, wantPaid) {
                 updateSyncStatusUI('offline');
             }
             
-            renderAll();
+            if (typeof renderAll === 'function') renderAll();
         }
     } else if (!wantPaid && getPaid(subId) > 0) {
         if (confirm(`مسح جميع دفعات هذا الشهر للمشترك ${sub.name}؟`)) {
@@ -531,7 +444,7 @@ async function toggleFullPayment(subId, wantPaid) {
             if (navigator.onLine && window.location.protocol !== 'file:') {
                 saveDataToCloudForce().then(() => {
                     console.log('☁️ تم رفع وتأكيد الإلغاء في السحابة بنجاح');
-                    requestPushNotification('المخبز', `🗑️ تم إلغاء مدفوعات "${sub.name}" والمتبقي ${getRemaining(subId).toFixed(2)} ج.م ✗`);
+                    requestPushNotification('المخبز', `تم إلغاء مدفوعات • ${sub.name} ✗`);
                 }).catch(e => {
                     console.warn('⚠️ فشل رفع الإلغاء:', e);
                     syncNeeded = true;
@@ -544,7 +457,7 @@ async function toggleFullPayment(subId, wantPaid) {
                 updateSyncStatusUI('offline');
             }
             
-            renderAll();
+            if (typeof renderAll === 'function') renderAll();
         }
     }
 }
@@ -561,7 +474,8 @@ async function editDailyBread(subId) {
         return;
     }
     
-    disableBodyScroll();
+    if (typeof disableBodyScroll === 'function') disableBodyScroll();
+    
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     
@@ -590,8 +504,8 @@ async function editDailyBread(subId) {
         </div>
     `;
     document.body.appendChild(modal);
-    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); enableBodyScroll(); } });
-    document.getElementById('cancelBreadBtn').onclick = () => { modal.remove(); enableBodyScroll(); };
+    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); if (typeof enableBodyScroll === 'function') enableBodyScroll(); } });
+    document.getElementById('cancelBreadBtn').onclick = () => { modal.remove(); if (typeof enableBodyScroll === 'function') enableBodyScroll(); };
     document.getElementById('saveBreadBtn').onclick = async () => {
         const key = getKey(currentYear, currentMonth);
         const today = new Date().getDate();
@@ -650,7 +564,7 @@ async function editDailyBread(subId) {
         if (navigator.onLine && window.location.protocol !== 'file:') {
             saveDataToCloudForce().then(() => {
                 console.log('☁️ تم رفع وتأكيد تعديل الحصة في السحابة بنجاح');
-                requestPushNotification('المخبز', `🍞 تم تعديل حصة المشترك "${sub.name}" ✓`);
+                requestPushNotification('المخبز', `تم تعديل حصة • ${sub.name} ✓`);
             }).catch(e => {
                 console.warn('⚠️ فشل رفع تعديل الحصة:', e);
                 syncNeeded = true;
@@ -663,8 +577,23 @@ async function editDailyBread(subId) {
             updateSyncStatusUI('offline');
         }
         
-        renderAll();
+        if (typeof renderAll === 'function') renderAll();
         modal.remove();
-        enableBodyScroll();
+        if (typeof enableBodyScroll === 'function') enableBodyScroll();
     };
 }
+
+// تصدير الدوال للنطاق العام
+if (typeof window !== 'undefined') {
+    window.renderTempCards = renderTempCards;
+    window.addNewCard = addNewCard;
+    window.loadCardsForEdit = loadCardsForEdit;
+    window.cancelEdit = cancelEdit;
+    window.addOrUpdate = addOrUpdate;
+    window.deleteSub = deleteSub;
+    window.editPayment = editPayment;
+    window.toggleFullPayment = toggleFullPayment;
+    window.editDailyBread = editDailyBread;
+}
+
+console.log('✅ subscribers.js loaded');
