@@ -247,7 +247,25 @@ async function addOrUpdate() {
         requestPushNotification('المخبز', `تم إضافة المشترك • ${name} ✓`);
     }
     
-    await saveDataAndWait();
+    // ⭐ حفظ فوري إجباري
+    saveLocalData();
+    saveUsersToLocal();
+    
+    if (navigator.onLine && window.location.protocol !== 'file:') {
+        // ⭐ رفع للسحابة فوراً (بدون انتظار الرد عشان متأخرش الواجهة)
+        saveDataToCloudForce().then(() => {
+            console.log('☁️ تم رفع التغييرات للسحابة بنجاح');
+        }).catch(e => {
+            console.warn('⚠️ فشل الرفع الفوري، سيتم الرفع لاحقاً:', e);
+            syncNeeded = true;
+            localStorage.setItem('pending_sync', 'true');
+            updateSyncStatusUI('failed');
+        });
+    } else {
+        syncNeeded = true;
+        localStorage.setItem('pending_sync', 'true');
+        updateSyncStatusUI('offline');
+    }
     
     cancelEdit();
     renderAll();
