@@ -3,7 +3,7 @@
 // ========== آلية القفل لمنع التداخل ==========
 let isSavingToCloud = false;
 let pendingSaveToCloud = false;
-let lastSaveTime = 0; // ⭐ وقت آخر رفع ناجح
+let lastSaveTime = 0;
 
 // ========== تحميل البيانات المحلية (للقراءة السريعة فقط) ==========
 function loadLocalData() {
@@ -68,6 +68,7 @@ async function saveDataToCloudForce() {
     }
     
     isSavingToCloud = true;
+    let confirmed = false;
     
     try {
         const cleanSubscribers = subscribers.map(s => sanitizeSubscriber(s));
@@ -106,9 +107,8 @@ async function saveDataToCloudForce() {
         console.log('☁️☁️ رفع فوري ناجح');
         
         // ⭐⭐ تأكيد الرفع: اسحب من السحابة وتأكد إن البيانات وصلت
-        let confirmed = false;
         for (let attempt = 1; attempt <= 3; attempt++) {
-            await new Promise(resolve => setTimeout(resolve, 2000)); // استنى ثانيتين
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             try {
                 const verifyData = await loadDataFromCloud();
@@ -145,6 +145,10 @@ async function saveDataToCloudForce() {
         throw e;
     } finally {
         isSavingToCloud = false;
+        
+        if (!confirmed && navigator.onLine) {
+            showToast('⚠️ تعذر تأكيد الحفظ في السحابة. سيتم إعادة المحاولة.', true);
+        }
         
         if (pendingSaveToCloud) {
             pendingSaveToCloud = false;
@@ -325,6 +329,7 @@ async function loadData(forceLocal = false) {
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
             
+            // ⭐ استبدال كامل من السحابة
             subscribers = cloudSubscribers;
             monthlyPayments = data.monthlyPayments || {};
             paymentDates = data.paymentDates || {};
@@ -423,109 +428,6 @@ async function manualSync() {
         updateSyncStatusUI('failed');
         showToast(`❌ فشل التحميل: ${e.message}`, true);
         return false;
-    }
-}
-
-// ========== مزامنة دورية (تحترم القفل وفترة الانتظار بعد الرفع) ==========
-let autoRefreshInterval = null;
-let isRefreshing = false;
-let failedRefreshAttempts = 0;
-const MAX_FAILED_ATTEMPTS = 3;
-
-function startAutoRefresh(intervalSeconds = 120) {
-    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-    
-    autoRefreshInterval = setInterval(async () => {
-        // ⭐ لو فيه رفع شغال، أجل التحديث
-        if (isSavingToCloud) {
-            console.log('⏳ تأجيل التحديث الدوري لأن فيه رفع شغال...');
-            return;
-        }
-        
-        // ⭐ لو آخر رفع كان من أقل من 5 ثواني، أجل التحديث
-        const timeSinceLastSave = Date.now() - lastSaveTime;
-        if (timeSinceLastSave < 5000) {
-            console.log(`⏳ تأجيل التحديث الدوري (آخر رفع منذ ${(timeSinceLastSave / 1000).toFixed(1)} ثانية)...`);
-            return;
-        }
-        
-        if (navigator.onLine && document.visibilityState === 'visible' && !isRefreshing) {
-            console.log('🔄 تحديث دوري للبيانات...');
-            isRefreshing = true;
-            try {
-                const newData = await loadDataFromCloud();
-                
-                if (newData && newData.subscribers && Array.isArray(newData.subscribers)) {
-                    failedRefreshAttempts = 0;
-                    const cloudSubscribers = newData.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
-                    
-                    let hasChanges = false;
-                    
-                    if (cloudSubscribers.length !== subscribers.length) {
-                        hasChanges = true;
-                    } else {
-                        for (const cloudSub of cloudSubscribers) {
-                            const localSub = subscribers.find(s => s.id === cloudSub.id);
-                            if (!localSub || new Date(cloudSub.updatedAt) > new Date(localSub.updatedAt)) {
-                                hasChanges = true;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (hasChanges) {
-                        console.log('📦 تم اكتشاف تغييرات من السحابة، جاري تحديث الواجهة...');
-                        
-                        subscribers = cloudSubscribers;
-                        monthlyPayments = newData.monthlyPayments || {};
-                        paymentDates = newData.paymentDates || {};
-                        breadOverrides = newData.breadOverrides || {};
-                        
-                        if (newData.users && Array.isArray(newData.users) && newData.users.length) {
-                            usersList = newData.users;
-                            saveUsersToLocal();
-                        }
-                        
-                        if (newData.systemNotes !== undefined) systemNotes = newData.systemNotes;
-                        if (newData.activityLog) {
-                            activityLog = newData.activityLog;
-                            saveActivityLogToLocal();
-                        }
-                        
-                        saveLocalData();
-                        
-                        if (typeof renderAll === 'function') renderAll();
-                        
-                        showBellNotification('تحديث البيانات', 'تم تحديث البيانات من السحابة');
-                        console.log('☁️ تم تحديث البيانات من السحابة:', subscribers.length, 'مشترك');
-                    } else {
-                        console.log('✅ لا توجد تغييرات جديدة في السحابة');
-                    }
-                }
-            } catch (e) {
-                failedRefreshAttempts++;
-                console.warn(`فشل التحديث الدوري (${failedRefreshAttempts}/${MAX_FAILED_ATTEMPTS}):`, e.message);
-                
-                if (failedRefreshAttempts >= MAX_FAILED_ATTEMPTS) {
-                    console.warn('توقف التحديث الدوري مؤقتاً بعد 3 محاولات فاشلة');
-                    stopAutoRefresh();
-                    setTimeout(() => {
-                        console.log('🔄 إعادة تشغيل التحديث الدوري...');
-                        startAutoRefresh(120);
-                        failedRefreshAttempts = 0;
-                    }, 120000);
-                }
-            } finally {
-                isRefreshing = false;
-            }
-        }
-    }, intervalSeconds * 1000);
-}
-
-function stopAutoRefresh() {
-    if (autoRefreshInterval) {
-        clearInterval(autoRefreshInterval);
-        autoRefreshInterval = null;
     }
 }
 
