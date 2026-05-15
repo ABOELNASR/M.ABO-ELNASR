@@ -3,7 +3,7 @@
 // ========== نافذة تعديل المشترك المنبثقة ==========
 
 function showEditSubscriberModal(sub) {
-    disableBodyScroll();
+    if (typeof disableBodyScroll === 'function') disableBodyScroll();
     
     if (sub.cardsList && sub.cardsList.length) {
         tempCardsList = JSON.parse(JSON.stringify(sub.cardsList));
@@ -39,10 +39,10 @@ function showEditSubscriberModal(sub) {
     
     const closeModal = () => {
         modal.remove();
-        enableBodyScroll();
+        if (typeof enableBodyScroll === 'function') enableBodyScroll();
         editId = null;
         tempCardsList = [];
-        renderAll();
+        if (typeof renderAll === 'function') renderAll();
     };
     
     modal.addEventListener('click', (e) => {
@@ -70,22 +70,22 @@ function showEditSubscriberModal(sub) {
         });
         container.innerHTML = html;
         
-        document.querySelectorAll('.card-name').forEach((input, i) => {
+        document.querySelectorAll('#editCardsListContainer .card-name').forEach((input, i) => {
             input.addEventListener('change', (e) => {
                 tempCardsList[i].cardName = e.target.value;
                 renderEditCards();
-                updateDuplicateWarnings();
+                updateDuplicateWarningsEdit();
             });
         });
-        document.querySelectorAll('.card-individuals').forEach((input, i) => {
+        document.querySelectorAll('#editCardsListContainer .card-individuals').forEach((input, i) => {
             input.addEventListener('change', (e) => {
                 let val = parseInt(arabicToEnglishNumber(e.target.value));
                 tempCardsList[i].individuals = isNaN(val) ? 0 : val;
                 e.target.value = tempCardsList[i].individuals;
-                updateDuplicateWarnings();
+                updateDuplicateWarningsEdit();
             });
         });
-        document.querySelectorAll('.remove-card-btn').forEach(btn => {
+        document.querySelectorAll('#editCardsListContainer .remove-card-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const idx = parseInt(btn.dataset.editIdx);
@@ -106,19 +106,60 @@ function showEditSubscriberModal(sub) {
                 
                 tempCardsList.splice(idx, 1);
                 renderEditCards();
-                updateDuplicateWarnings();
+                updateDuplicateWarningsEdit();
                 logDeletedCard(cardName, individuals, subscriberName, note);
                 addActivityLog('حذف بطاقة', `حذف بطاقة "${cardName}" من ${subscriberName} - السبب: ${note}`);
-                showBellNotification('المخبز', `🗑️ تم حذف البطاقة "${cardName}" للمشترك "${subscriberName}"`);
+                showToast(`🗑️ تم حذف البطاقة. السبب: ${note}`);
             });
         });
+    };
+    
+    const updateDuplicateWarningsEdit = () => {
+        const editSubName = document.getElementById('editSubName')?.value.trim();
+        const subWarning = document.getElementById('editSubNameWarning');
+        if (subWarning) {
+            if (editSubName && isDuplicateSubscriberName(editSubName, editId)) {
+                subWarning.style.display = 'block';
+                subWarning.innerText = '⚠️ اسم المشترك موجود بالفعل. الرجاء استخدام اسم آخر.';
+            } else {
+                subWarning.style.display = 'none';
+            }
+        }
+        
+        let duplicateCardMsg = '';
+        for (let i = 0; i < tempCardsList.length; i++) {
+            const card = tempCardsList[i];
+            if (!card.cardName || card.cardName.trim() === '') continue;
+            if (isDuplicateCardInTemp(card.cardName, i)) {
+                duplicateCardMsg = '⚠️ يوجد بطاقة مكررة بنفس الاسم في القائمة.';
+                break;
+            }
+            if (isDuplicateCardNameGlobal(card.cardName, editId)) {
+                duplicateCardMsg = `⚠️ اسم البطاقة "${card.cardName}" موجود بالفعل لدى مشترك آخر.`;
+                break;
+            }
+        }
+        const cardWarning = document.getElementById('editCardNameWarning');
+        if (cardWarning) {
+            if (duplicateCardMsg) {
+                cardWarning.style.display = 'block';
+                cardWarning.innerText = duplicateCardMsg;
+            } else {
+                cardWarning.style.display = 'none';
+            }
+        }
     };
     
     renderEditCards();
     document.getElementById('editAddCardBtn').onclick = () => {
         tempCardsList.push({
             cardName: '',
-            individuals: ''
+            individuals: '',
+            dailyBreadOverride: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            history: [],
+            notes: ''
         });
         renderEditCards();
     };
@@ -134,10 +175,32 @@ function showEditSubscriberModal(sub) {
             return;
         }
         
+        if (isDuplicateSubscriberName(name, editId)) {
+            showToast('❌ اسم المشترك موجود بالفعل', true);
+            return;
+        }
+        
+        let duplicateCardName = null;
+        for (let i = 0; i < tempCardsList.length; i++) {
+            const card = tempCardsList[i];
+            if (!card.cardName || !card.cardName.trim()) continue;
+            if (isDuplicateCardNameGlobal(card.cardName, editId)) {
+                duplicateCardName = card.cardName;
+                break;
+            }
+            if (isDuplicateCardInTemp(card.cardName, i)) {
+                duplicateCardName = card.cardName;
+                break;
+            }
+        }
+        if (duplicateCardName) {
+            showToast(`❌ اسم البطاقة "${duplicateCardName}" مكرر`, true);
+            return;
+        }
+        
         const idx = subscribers.findIndex(s => s.id == sub.id);
         if (idx !== -1) {
             const oldSub = subscribers[idx];
-            const oldCardsCount = oldSub.cardsList ? oldSub.cardsList.length : 0;
             
             const key = getKey(currentYear, currentMonth);
             const today = new Date().getDate();
@@ -146,98 +209,53 @@ function showEditSubscriberModal(sub) {
             const cardsList = tempCardsList.map(card => ({
                 cardName: String(card.cardName || '').trim(),
                 individuals: parseInt(card.individuals) || 1,
-                dailyBreadOverride: null,
+                dailyBreadOverride: card.dailyBreadOverride || null,
                 createdAt: card.createdAt || new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 history: Array.isArray(card.history) ? card.history : [],
                 notes: String(card.notes || '')
             }));
             
-            // ⭐ تتبع التغييرات للإشعار التفصيلي
-            let nameChanged = (oldSub.name !== name);
-            let individualsChanged = false;
-            let cardsAdded = cardsList.length > oldCardsCount;
-            let addedCard = null;
-            
-            if (cardsAdded) {
-                addedCard = cardsList[cardsList.length - 1];
-            }
-            
-            const newTotalDailyBread = cardsList.reduce((sum, c) => {
-                return sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
-            }, 0);
-            
-            const oldTotalDailyBread = oldSub.cardsList 
-                ? oldSub.cardsList.reduce((sum, c) => sum + (c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON), 0)
-                : 0;
-            
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
-                if (oldCard && oldCard.individuals !== newCard.individuals) {
-                    individualsChanged = true;
+                if (oldCard && oldCard.individuals !== newCard.individuals && today > 1 && today < days) {
+                    const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
+                    if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
+                        newCard.dailyBreadOverride = newDefaultBread;
+                    }
+                    
+                    const newTotalDailyBread = cardsList.reduce((sum, c) => {
+                        return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
+                    }, 0);
+                    
+                    if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
+                    if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
+                    
+                    breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
+                    
+                    breadOverrides[oldSub.id][key].push({
+                        day: today,
+                        totalDailyBread: newTotalDailyBread,
+                        reason: `تغيير عدد أفراد بطاقة "${newCard.cardName}" من ${oldCard.individuals} إلى ${newCard.individuals}`
+                    });
+                    
+                    breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
                 }
             });
-            
-            // ⭐ إضافة breadOverride: إضافة بطاقة جديدة
-            if (cardsAdded && addedCard && today > 1 && today < days) {
-                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
-                
-                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
-                
-                breadOverrides[oldSub.id][key].push({
-                    day: today,
-                    totalDailyBread: newTotalDailyBread,
-                    oldDailyBread: oldTotalDailyBread,
-                    reason: `إضافة بطاقة "${addedCard.cardName}" (${addedCard.individuals} أفراد)`
-                });
-                
-                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
-            }
-            // ⭐ إضافة breadOverride: زيادة أفراد بطاقة موجودة
-            else if (individualsChanged && !cardsAdded && today > 1 && today < days) {
-                if (!breadOverrides[oldSub.id]) breadOverrides[oldSub.id] = {};
-                if (!breadOverrides[oldSub.id][key]) breadOverrides[oldSub.id][key] = [];
-                
-                breadOverrides[oldSub.id][key] = breadOverrides[oldSub.id][key].filter(o => o.day !== today);
-                
-                breadOverrides[oldSub.id][key].push({
-                    day: today,
-                    totalDailyBread: newTotalDailyBread,
-                    oldDailyBread: oldTotalDailyBread,
-                    reason: `تعديل عدد الأفراد`
-                });
-                
-                breadOverrides[oldSub.id][key].sort((a, b) => a.day - b.day);
-            }
             
             subscribers[idx].name = name;
             subscribers[idx].cardsList = cardsList;
             subscribers[idx].updatedAt = new Date().toISOString();
-            
-            addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
-            await saveData();
-            closeModal();
-            
-            // ⭐ تحديد نص الإشعار التفصيلي
-            let notificationBody;
-            if (cardsAdded && addedCard) {
-                notificationBody = `📇 تم إضافة البطاقة "${addedCard.cardName}" للمشترك "${name}"`;
-            } else if (individualsChanged && !nameChanged) {
-                notificationBody = `👥 تم تعديل عدد أفراد المشترك "${name}"`;
-            } else if (nameChanged && !individualsChanged) {
-                notificationBody = `✏️ تم تعديل اسم المشترك إلى "${name}"`;
-            } else if (nameChanged && individualsChanged) {
-                notificationBody = `✏️ تم تعديل المشترك "${name}"`;
-            } else {
-                notificationBody = `✏️ تم تعديل المشترك "${name}"`;
-            }
-            
-            requestPushNotification('المخبز', notificationBody + ' ✓');
         }
+        
+        addActivityLog('تعديل مشترك', `تم تعديل المشترك ${name}`);
+        requestPushNotification('المخبز', `تم تعديل المشترك • ${name} ✓`);
+        await saveData();
+        closeModal();
     };
 }
 
+// ========== دالة editSub الرئيسية (المستخدمة في كل مكان) ==========
 function editSub(id) {
     if (!hasFullEditDelete()) {
         showToast('لا صلاحية', true);
@@ -256,7 +274,7 @@ function editSub(id) {
 function showUserManagement() {
     if (!isAdmin()) return;
 
-    disableBodyScroll();
+    if (typeof disableBodyScroll === 'function') disableBodyScroll();
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.innerHTML = `
@@ -284,12 +302,12 @@ function showUserManagement() {
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             modal.remove();
-            enableBodyScroll();
+            if (typeof enableBodyScroll === 'function') enableBodyScroll();
         }
     });
     document.getElementById('closeUserModal').onclick = () => {
         modal.remove();
-        enableBodyScroll();
+        if (typeof enableBodyScroll === 'function') enableBodyScroll();
     };
 
     const renderUserGrid = () => {
@@ -388,3 +406,12 @@ function showUserManagement() {
         document.getElementById('newEmail').value = '';
     };
 }
+
+// تصدير الدوال للنطاق العام
+if (typeof window !== 'undefined') {
+    window.editSub = editSub;
+    window.showEditSubscriberModal = showEditSubscriberModal;
+    window.showUserManagement = showUserManagement;
+}
+
+console.log('✅ ui-modals.js loaded');
