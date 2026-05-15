@@ -27,13 +27,13 @@
 
 .table-section.fullscreen table {
     min-width: 100%;
-    font-size: 0.45rem;
+    font-size: 0.75rem;
     white-space: nowrap;
 }
 
 .table-section.fullscreen th,
 .table-section.fullscreen td {
-    padding: 3px 1px;
+    padding: 10px 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -76,9 +76,9 @@
 
 .table-section.fullscreen .action-icon-btn {
     flex-shrink: 0;
-    width: 22px;
-    height: 22px;
-    font-size: 0.8rem;
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
     margin: 0;
 }
 
@@ -100,16 +100,16 @@
 }
 
 .table-section.fullscreen .subscriber-card {
-    font-size: 0.65rem;
-    padding: 0.5rem;
+    font-size: 0.75rem;
+    padding: 0.7rem;
 }
 
 .table-section.fullscreen .card-detail-value {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
 }
 
 .table-section.fullscreen .card-detail-label {
-    font-size: 0.5rem;
+    font-size: 0.6rem;
 }
 
 .table-section.fullscreen .card-checkbox {
