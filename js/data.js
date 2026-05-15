@@ -105,23 +105,20 @@ async function saveDataToCloudForce() {
         console.log('☁️☁️ رفع فوري ناجح:', result);
         
         // ⭐⭐ تأكيد الرفع: اسحب من السحابة وتأكد إن البيانات وصلت
-        for (let attempt = 1; attempt <= 2; attempt++) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            try {
-                const verifyData = await loadDataFromCloud();
-                if (verifyData && verifyData.subscribers && Array.isArray(verifyData.subscribers)) {
-                    if (verifyData.subscribers.length === cleanSubscribers.length) {
-                        console.log(`✅ تم تأكيد الرفع من المحاولة ${attempt}`);
-                        confirmed = true;
-                        break;
-                    } else {
-                        console.log(`⏳ المحاولة ${attempt}: السحابة (${verifyData.subscribers.length}) ≠ المحلي (${cleanSubscribers.length})`);
-                    }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        try {
+            const verifyData = await loadDataFromCloud();
+            if (verifyData && verifyData.subscribers && Array.isArray(verifyData.subscribers)) {
+                if (verifyData.subscribers.length === cleanSubscribers.length) {
+                    console.log(`✅ تم تأكيد الرفع`);
+                    confirmed = true;
+                } else {
+                    console.log(`⏳ السحابة (${verifyData.subscribers.length}) ≠ المحلي (${cleanSubscribers.length})`);
                 }
-            } catch (e) {
-                console.log(`⚠️ فشل التحقق (محاولة ${attempt}):`, e.message);
             }
+        } catch (e) {
+            console.log(`⚠️ فشل التحقق:`, e.message);
         }
         
         if (confirmed) {
@@ -129,7 +126,7 @@ async function saveDataToCloudForce() {
             lastSaveTime = Date.now();
             return true;
         } else {
-            console.warn('⚠️ تعذر تأكيد الرفع بعد محاولتين');
+            console.warn('⚠️ تعذر تأكيد الرفع');
             updateSyncStatusUI('failed');
             syncNeeded = true;
             localStorage.setItem('pending_sync', 'true');
