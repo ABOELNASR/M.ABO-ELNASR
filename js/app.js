@@ -158,13 +158,8 @@ async function initApp() {
     appContainer.style.display = 'block';
     console.log('📦 appContainer ظاهر');
 
-    try {
-        await loadData();
-    } catch (e) {
-        console.warn('تعذر تحميل البيانات من السحابة، استخدام المحلية');
-        loadLocalData();
-        renderAll();
-    }
+    // ⭐ تحميل البيانات من السحابة (الأساس)
+    await loadData();
 
     const statsSection = document.getElementById('statsSection');
     if (statsSection) statsSection.style.display = 'grid';
