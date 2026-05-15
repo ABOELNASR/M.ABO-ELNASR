@@ -32,6 +32,7 @@ function loadLocalData() {
         breadOverrides = {};
     }
     
+    if (!Array.isArray(subscribers)) subscribers = [];
     subscribers.forEach(s => { if (!s.cardsList) s.cardsList = []; });
     
     const notes = localStorage.getItem(STORAGE_SYSTEM_NOTES);
@@ -56,6 +57,9 @@ function saveLocalData() {
         console.log('✅ تم حفظ نسخة محلية احتياطية');
     } catch (e) {
         console.error('خطأ في الحفظ المحلي:', e);
+        if (e.name === 'QuotaExceededError') {
+            showToast('⚠️ سعة التخزين المحلي ممتلئة، الرجاء مسح بعض البيانات', true);
+        }
     }
 }
 
@@ -95,13 +99,18 @@ async function saveDataToCloudForce() {
 
         const response = await fetch(API_URL, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         });
         
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        console.log('☁️☁️ رفع فوري ناجح');
+        const result = await response.json();
+        console.log('☁️ رفع فوري ناجح:', result);
         
+        // تأكيد الرفع
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         try {
@@ -134,7 +143,7 @@ async function saveDataToCloudForce() {
         updateSyncStatusUI('failed');
         syncNeeded = true;
         localStorage.setItem('pending_sync', 'true');
-        throw e;
+        return false;
     } finally {
         isSavingToCloud = false;
         
@@ -184,7 +193,7 @@ async function saveData() {
     }
 }
 
-// ========== حفظ وانتظار التأكيد (إجباري) ==========
+// ========== حفظ وانتظار التأكيد ==========
 async function saveDataAndWait() {
     saveLocalData();
     saveUsersToLocal();
@@ -225,11 +234,11 @@ function updateSyncStatusUI(status) {
             syncStatus.style.color = '#ef5350';
             break;
         case 'offline':
-            syncStatus.innerHTML = '🔴 غير متزامن';
+            syncStatus.innerHTML = '🔴 غير متزامن (غير متصل)';
             syncStatus.style.color = '#ef5350';
             break;
         case 'no_connection':
-            syncStatus.innerHTML = '🔴 غير متزامن';
+            syncStatus.innerHTML = '🔴 غير متزامن (لا يوجد اتصال)';
             syncStatus.style.color = '#ef5350';
             break;
         case 'syncing':
@@ -276,17 +285,35 @@ function setupAutoSync() {
         updateSyncStatusUI('offline');
         showToast('⚠️ فقد الاتصال بالإنترنت، سيتم الحفظ محلياً', true);
     });
+    
+    // مزامنة دورية كل 5 دقائق
+    setInterval(() => {
+        if (navigator.onLine && syncNeeded) {
+            syncPendingActions();
+        }
+    }, 5 * 60 * 1000);
 }
 
 // ========== تحميل البيانات من السحابة ==========
 async function loadDataFromCloud() {
     try {
-        const response = await fetch(`${API_URL}?action=load&t=${Date.now()}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        const response = await fetch(`${API_URL}?action=load&t=${Date.now()}`, {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (data.error) throw new Error(data.error);
         return data;
     } catch (e) {
+        if (e.name === 'AbortError') {
+            throw new Error('انتهى وقت الانتظار للاتصال بالسحابة');
+        }
         throw e;
     }
 }
@@ -297,13 +324,13 @@ async function loadData(forceLocal = false) {
         showToast('⚠️ التطبيق يعمل من ملف محلي', true);
         updateSyncStatusUI('no_connection');
         loadLocalData();
-        renderAll();
+        if (typeof renderAll === 'function') renderAll();
         return;
     }
 
     if (forceLocal || !navigator.onLine) {
         loadLocalData();
-        renderAll();
+        if (typeof renderAll === 'function') renderAll();
         updateSyncStatusUI('offline');
         return;
     }
@@ -362,10 +389,10 @@ async function loadData(forceLocal = false) {
         }
     }
     
-    renderAll();
+    if (typeof renderAll === 'function') renderAll();
 }
 
-// ========== مزامنة يدوية (تحديث من السحابة) ==========
+// ========== مزامنة يدوية ==========
 async function manualSync() {
     if (!navigator.onLine) {
         showToast('❌ لا يوجد اتصال بالإنترنت', true);
@@ -400,9 +427,9 @@ async function manualSync() {
             }
             
             saveLocalData();
-            renderAll();
+            if (typeof renderAll === 'function') renderAll();
             
-            showToast('☁️ تم الاتصال بالسحابة');
+            showToast('☁️ تم المزامنة بنجاح');
             updateSyncStatusUI('success');
             return true;
         }
@@ -412,13 +439,15 @@ async function manualSync() {
         return true;
     } catch (e) {
         updateSyncStatusUI('failed');
-        showToast(`❌ فشل التحميل: ${e.message}`, true);
+        showToast(`❌ فشل المزامنة: ${e.message}`, true);
         return false;
     }
 }
 
 // ========== تنقية البيانات ==========
 function sanitizeSubscriber(sub) {
+    if (!sub || !sub.id) return null;
+    
     const clean = {
         id: sub.id,
         name: String(sub.name || '').trim(),
@@ -452,39 +481,44 @@ function migrateSubscriber(sub) {
         return null;
     }
     
-    if (typeof sub.cardsList === 'string') {
+    // إنشاء نسخة آمنة
+    const migrated = JSON.parse(JSON.stringify(sub));
+    
+    if (typeof migrated.cardsList === 'string') {
         try {
-            sub.cardsList = JSON.parse(sub.cardsList);
+            migrated.cardsList = JSON.parse(migrated.cardsList);
         } catch (e) {
-            sub.cardsList = [];
+            migrated.cardsList = [];
         }
     }
     
-    if (!Array.isArray(sub.cardsList)) sub.cardsList = [];
+    if (!Array.isArray(migrated.cardsList)) migrated.cardsList = [];
     
-    sub.cardsList = sub.cardsList.map(card => {
+    migrated.cardsList = migrated.cardsList.filter(card => {
         let cardName = card.cardName;
-        if (!cardName || cardName === 'individuals' || cardName === 'monthlyPayments' || cardName === 'activityLog' || cardName === 'user') {
-            cardName = 'بطاقة غير مسماة';
+        if (!cardName || typeof cardName !== 'string') {
+            console.warn(`بطاقة بدون اسم صحيح للمشترك ${migrated.name}`);
+            return false;
         }
-        return {
-            cardName: String(cardName).trim(),
-            individuals: parseInt(card.individuals) || 1,
-            dailyBreadOverride: card.dailyBreadOverride || null,
-            createdAt: card.createdAt || sub.createdAt || new Date().toISOString(),
-            updatedAt: card.updatedAt || new Date().toISOString(),
-            history: Array.isArray(card.history) ? card.history : [],
-            notes: String(card.notes || '')
-        };
+        if (cardName.trim() === '') return false;
+        
+        card.cardName = cardName.trim();
+        card.individuals = parseInt(card.individuals) || 1;
+        card.dailyBreadOverride = card.dailyBreadOverride || null;
+        card.createdAt = card.createdAt || migrated.createdAt || new Date().toISOString();
+        card.updatedAt = card.updatedAt || new Date().toISOString();
+        card.history = Array.isArray(card.history) ? card.history : [];
+        card.notes = String(card.notes || '');
+        
+        return true;
     });
     
-    sub.cardsList = sub.cardsList.filter(card => card.cardName !== '');
-    if (sub.balance === undefined) sub.balance = 0;
-    if (!sub.createdAt) sub.createdAt = new Date().toISOString();
-    if (!sub.updatedAt) sub.updatedAt = new Date().toISOString();
-    if (!Array.isArray(sub.history)) sub.history = [];
+    if (migrated.balance === undefined) migrated.balance = 0;
+    if (!migrated.createdAt) migrated.createdAt = new Date().toISOString();
+    if (!migrated.updatedAt) migrated.updatedAt = new Date().toISOString();
+    if (!Array.isArray(migrated.history)) migrated.history = [];
     
-    return sub;
+    return migrated;
 }
 
 // ========== إدارة المستخدمين ==========
@@ -502,7 +536,11 @@ function initUsers() {
 }
 
 function saveUsersToLocal() {
-    localStorage.setItem(STORAGE_USERS, JSON.stringify(usersList));
+    try {
+        localStorage.setItem(STORAGE_USERS, JSON.stringify(usersList));
+    } catch (e) {
+        console.error('خطأ في حفظ المستخدمين:', e);
+    }
 }
 
 async function loadUsersFromCloud() {
@@ -533,7 +571,11 @@ function addActivityLog(action, details) {
 }
 
 function saveActivityLogToLocal() {
-    localStorage.setItem(STORAGE_ACTIVITY_LOG, JSON.stringify(activityLog));
+    try {
+        localStorage.setItem(STORAGE_ACTIVITY_LOG, JSON.stringify(activityLog));
+    } catch (e) {
+        console.error('خطأ في حفظ سجل العمليات:', e);
+    }
 }
 
 function loadActivityLogFromLocal() {
@@ -551,15 +593,34 @@ function loadActivityLogFromLocal() {
 async function savePushSubscription(subscription) {
     if (!subscription || !subscription.token) return;
     try {
-        const formData = new FormData();
-        formData.append('action', 'saveSubscription');
-        formData.append('data', JSON.stringify(subscription));
-        await fetch(API_URL, {
+        const response = await fetch(API_URL, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'saveSubscription',
+                data: subscription
+            })
         });
         console.log('✅ تم حفظ رمز الاشتراك في الخادم');
     } catch (e) {
         console.error('فشل حفظ رمز الاشتراك:', e);
     }
 }
+
+// تصدير الدوال للنطاق العام
+if (typeof window !== 'undefined') {
+    window.loadData = loadData;
+    window.saveData = saveData;
+    window.saveDataAndWait = saveDataAndWait;
+    window.manualSync = manualSync;
+    window.syncPendingActions = syncPendingActions;
+    window.addActivityLog = addActivityLog;
+    window.migrateSubscriber = migrateSubscriber;
+    window.sanitizeSubscriber = sanitizeSubscriber;
+    window.loadLocalData = loadLocalData;
+    window.saveLocalData = saveLocalData;
+}
+
+console.log('✅ data.js loaded');
