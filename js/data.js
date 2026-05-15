@@ -96,9 +96,6 @@ async function saveDataToCloudForce() {
         // ⭐ إرسال البيانات كـ JSON مباشر في جسم الطلب
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify(payload)
         });
         
