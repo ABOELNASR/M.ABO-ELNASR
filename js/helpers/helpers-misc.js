@@ -31,9 +31,39 @@ function logDeletedCard(cardName, individuals, subscriberName, reason) {
 
 // ========== دوال الإشعارات ==========
 
+// إشعار داخلي مع رمز الجرس
+function showBellNotification(title, body) {
+    let coloredBody = String(body || '')
+        .replace(/✓/g, '<span class="bell-mark-green">✓</span>')
+        .replace(/✗/g, '<span class="bell-mark-red">✗</span>')
+        .replace(/✅/g, '<span class="bell-mark-green">✅</span>')
+        .replace(/❌/g, '<span class="bell-mark-red">❌</span>')
+        .replace(/تم/g, '<span class="bell-mark-green">تم</span>');
+
+    const notif = document.createElement('div');
+    notif.className = 'bell-notification';
+    notif.innerHTML = `
+        <span class="bell-icon">🔔</span>
+        <div class="bell-content">
+            <span class="bell-title">${escapeHtml(title) || 'المخبز'}</span>
+            <span class="bell-body">${coloredBody}</span>
+        </div>
+    `;
+    document.body.appendChild(notif);
+    
+    setTimeout(() => notif.classList.add('show'), 100);
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 300);
+    }, 4000);
+}
+
 // طلب إرسال إشعار (للخادم)
 async function requestPushNotification(title, body) {
     console.log('📤 طلب إرسال إشعار:', title);
+    
+    // ⭐ عرض الإشعار الداخلي (الجرس) فوراً
+    showBellNotification(title, body);
     
     // محاولة الإرسال عبر الخادم للإشعارات الخارجية (Service Worker)
     try {
@@ -82,7 +112,6 @@ async function testConnection() {
 
 // ========== دوال إضافية ==========
 
-// دالة لتنظيف البيانات القديمة (اختياري)
 async function cleanupOldData() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -112,5 +141,4 @@ async function cleanupOldData() {
     console.log('🧹 تم تنظيف البيانات القديمة');
 }
 
-// تسجيل تحميل الملف
 console.log('✅ helpers-misc.js loaded');
