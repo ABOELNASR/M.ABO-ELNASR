@@ -34,7 +34,7 @@ async function setupPushNotifications() {
             }
             if (event.data && event.data.type === 'FORCE_REFRESH') {
                 console.log('🔄 أمر بالتحديث من SW');
-                manualSync();
+                loadData();
             }
         });
 
@@ -108,7 +108,6 @@ function organizeMonthPickerForLandscape() {
 // ========== إعدادات المزامنة الفورية ==========
 function setupRealTimeSync() {
     setupAutoSync();
-    startAutoRefresh(60);
     
     window.addEventListener('storage', (event) => {
         if (event.key === STORAGE_DATA) {
@@ -121,8 +120,8 @@ function setupRealTimeSync() {
     
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && navigator.onLine) {
-            console.log('👁️ الصفحة أصبحت مرئية - تحديث البيانات');
-            manualSync();
+            console.log('👁️ الصفحة أصبحت مرئية - تحميل من السحابة');
+            loadData();
         }
     });
     
@@ -158,7 +157,6 @@ async function initApp() {
     appContainer.style.display = 'block';
     console.log('📦 appContainer ظاهر');
 
-    // ⭐ تحميل البيانات من السحابة (الأساس)
     await loadData();
 
     const statsSection = document.getElementById('statsSection');
@@ -171,7 +169,6 @@ async function initApp() {
     if (cardsCountHeader) cardsCountHeader.style.display = 'block';
 
     applyPermissions();
-    // renderAll محذوف من هنا لأنه متنادي جوه loadData أو loadLocalData
     
     setupRealTimeSync();
     
