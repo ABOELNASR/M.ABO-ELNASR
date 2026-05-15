@@ -216,33 +216,28 @@ function updateSyncStatusUI(status) {
     
     switch(status) {
         case 'saving':
-            syncStatus.innerHTML = '⏳ جاري الرفع للسحابة...';
+            syncStatus.innerHTML = '⏳ جاري الرفع...';
             syncStatus.style.color = '#ff9800';
             break;
         case 'success':
-            syncStatus.innerHTML = '☁️ متزامن مع السحابة';
+            syncStatus.innerHTML = '🟢 متزامن';
             syncStatus.style.color = '#4caf50';
-            setTimeout(() => {
-                if (syncStatus.innerHTML === '☁️ متزامن مع السحابة') {
-                    syncStatus.style.opacity = '0.7';
-                }
-            }, 2000);
             break;
         case 'failed':
-            syncStatus.innerHTML = '⚠️ فشل الرفع - النسخة المحلية محفوظة';
+            syncStatus.innerHTML = '🔴 غير متزامن';
             syncStatus.style.color = '#ef5350';
             break;
         case 'offline':
-            syncStatus.innerHTML = '⚠️ غير متصل (حفظ محلي)';
-            syncStatus.style.color = '#ff9800';
+            syncStatus.innerHTML = '🔴 غير متزامن';
+            syncStatus.style.color = '#ef5350';
             break;
         case 'no_connection':
-            syncStatus.innerHTML = '⚠️ مطلوب اتصال';
+            syncStatus.innerHTML = '🔴 غير متزامن';
             syncStatus.style.color = '#ef5350';
             break;
         case 'syncing':
-            syncStatus.innerHTML = '🔄 جاري التحميل من السحابة...';
-            syncStatus.style.color = '#2196f3';
+            syncStatus.innerHTML = '🟡 جاري المزامنة...';
+            syncStatus.style.color = '#ff9800';
             break;
     }
     syncStatus.style.opacity = '1';
