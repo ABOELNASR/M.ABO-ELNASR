@@ -29,6 +29,9 @@ async function setupPushNotifications() {
         console.log('✅ SW مسجل:', registration);
 
         navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SHOW_TOAST') {
+                showBellNotification(event.data.title, event.data.body);
+            }
             if (event.data && event.data.type === 'FORCE_REFRESH') {
                 console.log('🔄 أمر بالتحديث من SW');
                 loadData();
@@ -111,6 +114,7 @@ function setupRealTimeSync() {
             console.log('📦 تم اكتشاف تغيير في localStorage من تبويب آخر');
             loadLocalData();
             renderAll();
+            showBellNotification('تحديث البيانات', 'تم تحديث البيانات من تبويب آخر');
         }
     });
     
