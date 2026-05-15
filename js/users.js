@@ -23,7 +23,16 @@ function initUsers() {
  * حفظ قائمة المستخدمين في LocalStorage
  */
 function saveUsersToLocal() {
-    localStorage.setItem(STORAGE_USERS, JSON.stringify(usersList));
+    try {
+        localStorage.setItem(STORAGE_USERS, JSON.stringify(usersList));
+    } catch (e) {
+        console.error('خطأ في حفظ المستخدمين:', e);
+        if (e.name === 'QuotaExceededError') {
+            if (typeof showToast === 'function') {
+                showToast('⚠️ سعة التخزين المحلي ممتلئة', true);
+            }
+        }
+    }
 }
 
 /**
@@ -34,7 +43,15 @@ async function loadUsersFromCloud() {
     if (!navigator.onLine) return;
     
     try {
-        const res = await fetch(`${API_URL}?action=load`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        const res = await fetch(`${API_URL}?action=load&t=${Date.now()}`, {
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
@@ -49,9 +66,14 @@ async function loadUsersFromCloud() {
                 updatedAt: u.updatedAt || new Date().toISOString()
             }));
             saveUsersToLocal();
+            console.log('✅ تم تحميل المستخدمين من السحابة');
         }
     } catch (e) {
-        console.warn('لم يتم تحميل المستخدمين من السحابة:', e);
+        if (e.name === 'AbortError') {
+            console.warn('⚠️ انتهى وقت الانتظار لتحميل المستخدمين');
+        } else {
+            console.warn('لم يتم تحميل المستخدمين من السحابة:', e.message);
+        }
     }
 }
 
@@ -72,13 +94,21 @@ function login(username, password, remember) {
             role: user.role,
             email: user.email || ''
         };
+        const sessionData = JSON.stringify(currentUser);
         if (remember) {
-            localStorage.setItem(STORAGE_SESSION, JSON.stringify(currentUser));
+            localStorage.setItem(STORAGE_SESSION, sessionData);
         } else {
-            sessionStorage.setItem(STORAGE_SESSION, JSON.stringify(currentUser));
+            sessionStorage.setItem(STORAGE_SESSION, sessionData);
         }
+        
+        if (typeof addActivityLog === 'function') {
+            addActivityLog('تسجيل دخول', `${username} قام بتسجيل الدخول`);
+        }
+        
         return true;
     }
+    
+    console.warn(`محاولة تسجيل دخول فاشلة: ${username}`);
     return false;
 }
 
@@ -86,10 +116,22 @@ function login(username, password, remember) {
  * تسجيل الخروج
  */
 function logout() {
+    const username = currentUser ? currentUser.username : 'unknown';
     currentUser = null;
     localStorage.removeItem(STORAGE_SESSION);
     sessionStorage.removeItem(STORAGE_SESSION);
-    showLoginScreen();
+    
+    if (typeof addActivityLog === 'function') {
+        addActivityLog('تسجيل خروج', `${username} قام بتسجيل الخروج`);
+    }
+    
+    if (typeof showLoginScreen === 'function') {
+        showLoginScreen();
+    }
+    
+    // إخفاء واجهة التطبيق
+    const appContainer = document.getElementById('appContainer');
+    if (appContainer) appContainer.style.display = 'none';
 }
 
 /**
@@ -103,6 +145,7 @@ function checkSession() {
             currentUser = JSON.parse(saved);
             return true;
         } catch (e) {
+            console.error('خطأ في قراءة الجلسة:', e);
             return false;
         }
     }
@@ -211,7 +254,7 @@ function validateUser(user) {
  * @returns {Array} قائمة المستخدمين المطابقين
  */
 function findUsers(username = '') {
-    if (!username) return usersList;
+    if (!username) return [...usersList];
     const term = username.toLowerCase();
     return usersList.filter(u => u.username.toLowerCase().includes(term));
 }
@@ -237,3 +280,66 @@ function refreshCurrentUser() {
         }
     }
 }
+
+/**
+ * تغيير كلمة مرور المستخدم الحالي
+ * @param {string} oldPassword - كلمة المرور القديمة
+ * @param {string} newPassword - كلمة المرور الجديدة
+ * @returns {boolean} نجاح أو فشل
+ */
+function changePassword(oldPassword, newPassword) {
+    if (!currentUser) {
+        if (typeof showToast === 'function') showToast('❌ يجب تسجيل الدخول أولاً', true);
+        return false;
+    }
+    
+    const userIndex = usersList.findIndex(u => u.username === currentUser.username);
+    if (userIndex === -1) {
+        if (typeof showToast === 'function') showToast('❌ المستخدم غير موجود', true);
+        return false;
+    }
+    
+    if (usersList[userIndex].password !== oldPassword) {
+        if (typeof showToast === 'function') showToast('❌ كلمة المرور القديمة غير صحيحة', true);
+        return false;
+    }
+    
+    if (newPassword.length < 6) {
+        if (typeof showToast === 'function') showToast('❌ كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل', true);
+        return false;
+    }
+    
+    usersList[userIndex].password = newPassword;
+    usersList[userIndex].updatedAt = new Date().toISOString();
+    saveUsersToLocal();
+    saveData();
+    
+    if (typeof addActivityLog === 'function') {
+        addActivityLog('تغيير كلمة مرور', `${currentUser.username} قام بتغيير كلمة المرور`);
+    }
+    
+    if (typeof showToast === 'function') showToast('✅ تم تغيير كلمة المرور بنجاح');
+    return true;
+}
+
+// تصدير الدوال للنطاق العام
+if (typeof window !== 'undefined') {
+    window.initUsers = initUsers;
+    window.saveUsersToLocal = saveUsersToLocal;
+    window.loadUsersFromCloud = loadUsersFromCloud;
+    window.login = login;
+    window.logout = logout;
+    window.checkSession = checkSession;
+    window.hasAddEditSubscriber = hasAddEditSubscriber;
+    window.hasFullEditDelete = hasFullEditDelete;
+    window.hasPaymentActions = hasPaymentActions;
+    window.isAdmin = isAdmin;
+    window.isReadOnly = isReadOnly;
+    window.getRoleNameArabic = getRoleNameArabic;
+    window.validateUser = validateUser;
+    window.findUsers = findUsers;
+    window.refreshCurrentUser = refreshCurrentUser;
+    window.changePassword = changePassword;
+}
+
+console.log('✅ users.js loaded');
