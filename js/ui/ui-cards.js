@@ -155,7 +155,8 @@ function renderCards() {
                 <div class="card-cards-header">👤 ${escapeHtml(sub.name)}</div>
                 ${cardsListHtml || '<div style="text-align:center;color:var(--text-secondary);">لا توجد بطاقات</div>'}
             </div>
-            <div class="card-actions-row">
+            <div class="card-actions-row" style="position: relative;">
+                ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid card-checkbox" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} title="خالص" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%);">` : ''}
                 <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; width: 100%;">
                     ${showEditDelete ? `<button class="action-icon-btn edit-btn" data-id="${sub.id}" title="تعديل">✏️</button>` : ''}
                     ${showEditDelete ? `<button class="action-icon-btn delete-btn" data-id="${sub.id}" title="حذف">🗑️</button>` : ''}
@@ -163,9 +164,6 @@ function renderCards() {
                     ${showPaymentActions ? `<button class="action-icon-btn edit-bread-btn" data-id="${sub.id}" title="حصة">🍞</button>` : ''}
                     ${!showEditDelete && !showPaymentActions ? '<span style="padding:6px; opacity:0.6;">🔒</span>' : ''}
                 </div>
-                ${showPaymentActions ? `<div style="width: 100%; display: flex; justify-content: flex-start; margin-top: 4px;">
-                    <input type="checkbox" class="checkbox-paid card-checkbox" data-id="${sub.id}" ${checked} title="خالص">
-                </div>` : ''}
             </div>
         </div>`;
     });
