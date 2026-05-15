@@ -7,7 +7,11 @@ function updateUI() {
         let totalVal = 0, totalPaid = 0;
         const totalCardsCount = getFilteredCardsCount(currentSearch);
         const filteredSubs = subscribers.filter(s => subscriberMatchesSearch(s, currentSearch));
-        filteredSubs.forEach(s => { totalVal += subValue(s); totalPaid += getPaid(s.id); });
+        
+        filteredSubs.forEach(s => { 
+            totalVal += subValue(s); 
+            totalPaid += getPaid(s.id); 
+        });
 
         const elSubs = document.getElementById('totalSubs');
         if (elSubs) elSubs.innerText = filteredSubs.length;
@@ -24,6 +28,7 @@ function updateUI() {
         const elCards = document.getElementById('cardsCountHeader');
         if (elCards) elCards.innerHTML = `📇 عدد البطاقات: ${totalCardsCount}`;
 
+        // تصحيح حجم الخط في بطاقات الإحصائيات
         fitTextToContainer(document.getElementById('totalMonthValue'));
         fitTextToContainer(document.getElementById('totalPaidMonth'));
         fitTextToContainer(document.getElementById('totalDueMonth'));
@@ -36,6 +41,8 @@ function updateUI() {
     if (elMonthYear) elMonthYear.innerText = `${getMonthName(currentMonth)} ${currentYear}`;
 }
 
+// ========== عرض جميع البيانات ==========
+
 function renderAll() { 
     updateUI(); 
     if (viewMode === 'cards') {
@@ -44,6 +51,8 @@ function renderAll() {
         renderTable();
     }
 }
+
+// ========== تغيير الشهر ==========
 
 function changeMonth(delta) {
     let nm = currentMonth + delta, ny = currentYear;
@@ -82,30 +91,152 @@ function toggleView(mode) {
             renderCards();
         }
     }
+    
+    // حفظ وضع العرض المفضل
+    localStorage.setItem('preferred_view_mode', mode);
+}
+
+// ========== تحميل وضع العرض المحفوظ ==========
+
+function loadPreferredViewMode() {
+    const savedMode = localStorage.getItem('preferred_view_mode');
+    if (savedMode === 'cards' || savedMode === 'table') {
+        viewMode = savedMode;
+        toggleView(viewMode);
+    } else {
+        // الوضع الافتراضي هو الجدول
+        viewMode = 'table';
+        toggleView('table');
+    }
 }
 
 // ========== ربط الأحداث العامة للواجهة ==========
 
-window.addEventListener('DOMContentLoaded', function() {
+function bindGlobalEvents() {
+    // زر ملء الشاشة
     const fullscreenBtn = document.getElementById('toggleFullscreenBtn');
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', toggleFullscreenTable);
     }
     
+    // أزرار تبديل العرض
     const tableViewBtn = document.getElementById('tableViewBtn');
     const cardsViewBtn = document.getElementById('cardsViewBtn');
     if (tableViewBtn) tableViewBtn.addEventListener('click', () => toggleView('table'));
     if (cardsViewBtn) cardsViewBtn.addEventListener('click', () => toggleView('cards'));
-});
+    
+    // زر العودة للأعلى
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    if (scrollBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollBtn.style.display = 'flex';
+            } else {
+                scrollBtn.style.display = 'none';
+            }
+        });
+        scrollBtn.addEventListener('click', scrollToTop);
+    }
+    
+    // زر مسح البحث
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', () => {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                currentSearch = '';
+                renderAll();
+            }
+        });
+    }
+    
+    // حقل البحث
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            currentSearch = e.target.value;
+            renderAll();
+        });
+    }
+    
+    // أزرار التصفية
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(f => f.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderAll();
+        });
+    });
+    
+    // زر مسح التصفية
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    if (clearFilterBtn) {
+        clearFilterBtn.addEventListener('click', () => {
+            currentFilter = 'all';
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
+            if (allBtn) allBtn.classList.add('active');
+            renderAll();
+        });
+    }
+}
 
 // ========== حدث النقر خارج الجدول لإغلاق التفاصيل ==========
 
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('table') && !e.target.closest('.modal-overlay') && !e.target.closest('button') && !e.target.closest('.subscriber-card')) {
-        if (currentSelectedRowId !== null) {
-            currentSelectedRowId = null;
-            expandedRowId = null;
-            renderAll();
+function bindOutsideClickHandler() {
+    document.addEventListener('click', (e) => {
+        // التحقق مما إذا كان النقر خارج الجدول وخارج الكروت
+        const isInsideTable = e.target.closest('table');
+        const isInsideCard = e.target.closest('.subscriber-card');
+        const isInsideModal = e.target.closest('.modal-overlay');
+        const isInsideButton = e.target.closest('button');
+        
+        if (!isInsideTable && !isInsideCard && !isInsideModal && !isInsideButton) {
+            if (currentSelectedRowId !== null) {
+                currentSelectedRowId = null;
+                expandedRowId = null;
+                renderAll();
+            }
         }
-    }
-});
+    });
+}
+
+// ========== تهيئة واجهة المستخدم ==========
+
+function initUI() {
+    bindGlobalEvents();
+    bindOutsideClickHandler();
+    loadPreferredViewMode();
+    
+    // تحديث الوقت كل ثانية
+    setInterval(updateDateTime, 1000);
+    
+    // مراقبة حالة الاتصال
+    window.addEventListener('online', () => {
+        updateOnlineStatus(true);
+    });
+    window.addEventListener('offline', () => {
+        updateOnlineStatus(false);
+    });
+    
+    // التحقق من حالة الاتصال عند التحميل
+    updateOnlineStatus(navigator.onLine);
+    
+    console.log('✅ UI initialized');
+}
+
+// ========== تصدير الدوال للنطاق العام ==========
+if (typeof window !== 'undefined') {
+    window.updateUI = updateUI;
+    window.renderAll = renderAll;
+    window.changeMonth = changeMonth;
+    window.toggleView = toggleView;
+    window.loadPreferredViewMode = loadPreferredViewMode;
+    window.bindGlobalEvents = bindGlobalEvents;
+    window.bindOutsideClickHandler = bindOutsideClickHandler;
+    window.initUI = initUI;
+}
+
+console.log('✅ ui-main.js loaded');
