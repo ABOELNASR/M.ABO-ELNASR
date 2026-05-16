@@ -20,6 +20,9 @@ function toggleFullscreenTable() {
         if (toolbarRow) section.insertBefore(toolbarRow, tableWrapper);
         if (cardsCountHeader) section.insertBefore(cardsCountHeader, tableWrapper);
         
+        // ⭐ نقل الزر إلى body عشان يظهر ثابت فوق الكل
+        document.body.appendChild(btn);
+        
         section.classList.add('fullscreen');
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
@@ -33,10 +36,20 @@ function toggleFullscreenTable() {
             parent.insertBefore(viewToggle, section);
         }
         if (toolbarRow && toolbarRow.parentNode === section) {
+            // إرجاع الزر إلى داخل toolbarRow
+            if (btn && btn.parentNode === document.body) {
+                toolbarRow.appendChild(btn);
+            }
             parent.insertBefore(toolbarRow, section);
         }
         if (cardsCountHeader && cardsCountHeader.parentNode === section) {
             parent.insertBefore(cardsCountHeader, section);
+        }
+        
+        // لو الزر لسه في body، نرجعه لـ toolbarRow
+        if (btn && btn.parentNode === document.body) {
+            const tr = document.getElementById('toolbarRow');
+            if (tr) tr.appendChild(btn);
         }
         
         section.classList.remove('fullscreen');
