@@ -16,16 +16,38 @@ function toggleFullscreenTable() {
         
         // نقل الأدوات إلى داخل table-section (قبل table-wrapper)
         const tableWrapper = document.getElementById('tableWrapper');
-        if (viewToggle) section.insertBefore(viewToggle, tableWrapper);
-        if (toolbarRow) section.insertBefore(toolbarRow, tableWrapper);
-        if (cardsCountHeader) section.insertBefore(cardsCountHeader, tableWrapper);
+        if (viewToggle && viewToggle.parentNode !== section) {
+            section.insertBefore(viewToggle, tableWrapper);
+        }
+        if (toolbarRow && toolbarRow.parentNode !== section) {
+            section.insertBefore(toolbarRow, tableWrapper);
+        }
+        if (cardsCountHeader && cardsCountHeader.parentNode !== section) {
+            section.insertBefore(cardsCountHeader, tableWrapper);
+        }
         
-        // ⭐ نقل الزر إلى body عشان يظهر ثابت فوق الكل
-        document.body.appendChild(btn);
-        
-        section.classList.add('fullscreen');
+        // ⭐ إظهار الزر وجعله ثابت
+        btn.style.display = 'flex';
+        btn.style.position = 'fixed';
+        btn.style.top = '10px';
+        btn.style.right = '10px';
+        btn.style.zIndex = '1600';
+        btn.style.width = '36px';
+        btn.style.height = '36px';
+        btn.style.borderRadius = '50%';
+        btn.style.fontSize = '1.2rem';
+        btn.style.alignItems = 'center';
+        btn.style.justifyContent = 'center';
+        btn.style.background = 'var(--danger)';
+        btn.style.color = 'white';
+        btn.style.border = 'none';
+        btn.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.25)';
+        btn.style.cursor = 'pointer';
+        btn.style.padding = '0';
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
+        
+        section.classList.add('fullscreen');
         disableBodyScroll();
     } else {
         // ⭐ خروج من وضع ملء الشاشة
@@ -36,25 +58,34 @@ function toggleFullscreenTable() {
             parent.insertBefore(viewToggle, section);
         }
         if (toolbarRow && toolbarRow.parentNode === section) {
-            // إرجاع الزر إلى داخل toolbarRow
-            if (btn && btn.parentNode === document.body) {
-                toolbarRow.appendChild(btn);
-            }
             parent.insertBefore(toolbarRow, section);
         }
         if (cardsCountHeader && cardsCountHeader.parentNode === section) {
             parent.insertBefore(cardsCountHeader, section);
         }
         
-        // لو الزر لسه في body، نرجعه لـ toolbarRow
-        if (btn && btn.parentNode === document.body) {
-            const tr = document.getElementById('toolbarRow');
-            if (tr) tr.appendChild(btn);
-        }
-        
-        section.classList.remove('fullscreen');
+        // ⭐ إرجاع الزر لوضعه الطبيعي
+        btn.style.display = '';
+        btn.style.position = '';
+        btn.style.top = '';
+        btn.style.right = '';
+        btn.style.zIndex = '';
+        btn.style.width = '';
+        btn.style.height = '';
+        btn.style.borderRadius = '';
+        btn.style.fontSize = '';
+        btn.style.alignItems = '';
+        btn.style.justifyContent = '';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.border = '';
+        btn.style.boxShadow = '';
+        btn.style.cursor = '';
+        btn.style.padding = '';
         btn.innerHTML = '🖥️';
         btn.title = 'تكبير الجدول';
+        
+        section.classList.remove('fullscreen');
         enableBodyScroll();
     }
 }
