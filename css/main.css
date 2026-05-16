@@ -528,6 +528,11 @@ body.modal-open {
     margin-bottom: 0.3rem;
 }
 
+/* ========== حاوية الجدول والكروت ========== */
+.table-section {
+    transition: all 0.3s ease;
+}
+
 /* ========== تذييل الصفحة ========== */
 .footer-note {
     margin-top: 1rem;
@@ -864,24 +869,6 @@ body.modal-open {
     .actions-row.single-center .btn {
         max-width: 160px;
     }
-    
-    .table-section.fullscreen .action-icon-btn {
-        width: 18px;
-        height: 18px;
-        font-size: 0.65rem;
-    }
-    .table-section.fullscreen .checkbox-paid {
-        width: 14px;
-        height: 14px;
-        transform: scale(1);
-    }
-    .table-section.fullscreen table {
-        font-size: 0.55rem;
-    }
-    .table-section.fullscreen th,
-    .table-section.fullscreen td {
-        padding: 7px 5px;
-    }
 }
 
 /* ========== شاشات الكمبيوتر ========== */
@@ -934,14 +921,6 @@ body.modal-open {
     }
     .actions-row {
         flex-wrap: nowrap !important;
-    }
-    
-    .table-section.fullscreen table {
-        font-size: 0.65rem;
-    }
-    .table-section.fullscreen th,
-    .table-section.fullscreen td {
-        padding: 4px 2px;
     }
 }
 
