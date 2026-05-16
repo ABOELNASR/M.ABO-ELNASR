@@ -45,25 +45,25 @@
 }
 
 /* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
-.table-section.fullscreen #toggleFullscreenBtn {
-    position: fixed;
-    top: 8px;
-    right: 8px;
-    z-index: 1600;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    font-size: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--danger);
-    color: white;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
+body > #toggleFullscreenBtn {
+    position: fixed !important;
+    top: 8px !important;
+    right: 8px !important;
+    z-index: 1600 !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    font-size: 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--danger) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    line-height: 1 !important;
 }
 
 /* ========== حاوية الجدول في وضع ملء الشاشة ========== */
