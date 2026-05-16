@@ -1,4 +1,8 @@
 /* ========== وضع ملء الشاشة للجدول ========== */
+.table-section {
+    transition: all 0.3s ease;
+}
+
 .table-section.fullscreen {
     position: fixed;
     top: 0;
@@ -13,26 +17,21 @@
     overflow-x: hidden;
 }
 
-/* ========== الأدوات المنقولة داخل وضع ملء الشاشة ========== */
-.table-section.fullscreen .view-toggle,
-.table-section.fullscreen .toolbar-row,
-.table-section.fullscreen .cards-count-header {
-    display: flex;
-}
-
+/* ========== الأدوات داخل وضع ملء الشاشة ========== */
 .table-section.fullscreen .view-toggle {
+    display: flex;
     justify-content: center;
     gap: 8px;
     margin-bottom: 0.5rem;
 }
 
 .table-section.fullscreen .toolbar-row {
+    display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 6px;
     margin-bottom: 0.5rem;
-    padding: 0.3rem 50px 0.3rem 0.3rem;
 }
 
 .table-section.fullscreen .cards-count-header {
