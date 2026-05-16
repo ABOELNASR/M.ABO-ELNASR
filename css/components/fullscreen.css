@@ -1,8 +1,4 @@
 /* ========== وضع ملء الشاشة للجدول ========== */
-.table-section {
-    transition: all 0.3s ease;
-}
-
 .table-section.fullscreen {
     position: fixed;
     top: 0;
@@ -15,6 +11,38 @@
     border-radius: 0;
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+/* ========== الأدوات المنقولة داخل وضع ملء الشاشة ========== */
+.table-section.fullscreen .view-toggle,
+.table-section.fullscreen .toolbar-row,
+.table-section.fullscreen .cards-count-header {
+    display: flex;
+}
+
+.table-section.fullscreen .view-toggle {
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.table-section.fullscreen .toolbar-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.5rem;
+    padding: 0.3rem 50px 0.3rem 0.3rem;
+}
+
+.table-section.fullscreen .cards-count-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: right;
+    padding: 0.3rem 0.5rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 0.3rem;
 }
 
 /* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
@@ -36,34 +64,6 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     cursor: pointer;
     padding: 0;
-}
-
-/* ========== الأدوات داخل وضع ملء الشاشة ========== */
-.table-section.fullscreen .view-toggle {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 0.5rem;
-}
-
-.table-section.fullscreen .toolbar-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 0.5rem;
-    padding: 0.3rem 50px 0.3rem 0.3rem;
-}
-
-.table-section.fullscreen .cards-count-header {
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-align: right;
-    padding: 0.3rem 0.5rem;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border-light);
-    margin-bottom: 0.3rem;
 }
 
 /* ========== حاوية الجدول في وضع ملء الشاشة ========== */
