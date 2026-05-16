@@ -521,7 +521,7 @@ async function toggleFullPayment(subId, wantPaid) {
             if (navigator.onLine && window.location.protocol !== 'file:') {
                 saveDataToCloudForce().then(() => {
                     console.log('☁️ تم رفع وتأكيد الإلغاء في السحابة بنجاح');
-                    requestPushNotification('المخبز', `🗑️ تم إلغاء مدفوعات "${sub.name}" والمتبقي ${getRemaining(subId).toFixed(2)} ج.م ✗`);
+                    requestPushNotification('المخبز', `تم إلغاء مدفوعات "${sub.name}" والمتبقي ${getRemaining(subId).toFixed(2)} ج.م ✗`);
                 }).catch(e => {
                     console.warn('⚠️ فشل رفع الإلغاء:', e);
                     syncNeeded = true;
