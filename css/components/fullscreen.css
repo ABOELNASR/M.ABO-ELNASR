@@ -50,10 +50,10 @@
     top: 8px;
     right: 8px;
     z-index: 1600;
-    width: 28px;
-    height: 28px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     display: flex;
     align-items: center;
     justify-content: center;
