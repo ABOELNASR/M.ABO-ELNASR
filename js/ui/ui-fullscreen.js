@@ -20,7 +20,7 @@ function toggleFullscreenTable() {
         if (toolbarRow) section.insertBefore(toolbarRow, tableWrapper);
         if (cardsCountHeader) section.insertBefore(cardsCountHeader, tableWrapper);
         
-        // نقل الزر إلى body عشان يظهر ثابت فوق الكل
+        // ⭐ نقل الزر إلى body عشان يظهر ثابت فوق الكل
         document.body.appendChild(btn);
         
         section.classList.add('fullscreen');
