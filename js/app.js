@@ -160,7 +160,7 @@ async function initApp() {
     if (statsSection) statsSection.style.display = 'grid';
     const tableSection = document.getElementById('tableSection');
     if (tableSection) tableSection.style.display = 'block';
-    const toolbar = document.getElementById('toolbar');
+    const toolbar = document.getElementById('toolbarRow');
     if (toolbar) toolbar.style.display = 'flex';
     const cardsCountHeader = document.getElementById('cardsCountHeader');
     if (cardsCountHeader) cardsCountHeader.style.display = 'block';
@@ -245,25 +245,49 @@ async function initApp() {
         if (typeof renderAll === 'function') renderAll();
     });
 
+    // ⭐ زر ✖ بتاع مربع البحث - يمسح النص ويقفل المربع ويخرج من وضع البحث
     const clearSearchBtn = document.getElementById('clearSearchBtn');
-    if (clearSearchBtn) {
+    const searchInput = document.getElementById('searchInput');
+    
+    if (clearSearchBtn && searchInput) {
         clearSearchBtn.addEventListener('mousedown', (e) => {
             e.preventDefault();
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.value = '';
-                currentSearch = '';
-                if (typeof renderAll === 'function') renderAll();
-            }
+            e.stopPropagation();
+            
+            // مسح النص
+            searchInput.value = '';
+            currentSearch = '';
+            
+            // إغلاق المربع (فقدان التركيز)
+            searchInput.blur();
+            
+            // إخفاء زر ✖
+            clearSearchBtn.style.display = 'none';
+            
+            // تحديث العرض
+            if (typeof renderAll === 'function') renderAll();
         });
     }
 
-    const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.oninput = e => {
             currentSearch = e.target.value;
+            
+            // ⭐ إظهار/إخفاء زر ✖ حسب وجود نص
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) {
+                clearBtn.style.display = e.target.value ? 'flex' : 'none';
+            }
+            
             if (typeof renderAll === 'function') renderAll();
         };
+        
+        // ⭐ لما المستخدم يضغط Enter أو يفقد التركيز، يقفل المربع
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchInput.blur();
+            }
+        });
     }
 
     document.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => {
