@@ -47,13 +47,13 @@
 /* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
 .table-section.fullscreen #toggleFullscreenBtn {
     position: fixed;
-    top: 10px;
-    right: 10px;
+    top: 8px;
+    right: 8px;
     z-index: 1600;
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     justify-content: center;
