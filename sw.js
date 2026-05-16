@@ -80,7 +80,7 @@ self.addEventListener('push', event => {
     icon: './icons/launchericon-192x192.png',
     badge: './icons/launchericon-72x72.png',
     vibrate: [200, 100, 200],
-    tag: 'bakery-notification',
+    tag: 'bakery-notifications-group',
     renotify: true,
     data: {
       url: './',
