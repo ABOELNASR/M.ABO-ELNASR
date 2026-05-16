@@ -43,7 +43,7 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* ⭐ الدائرة الدوارة - ستايل كروم */
+/* ⭐ الدائرة الدوارة - محاكاة دقيقة لكروم */
 .splash-spinner {
     position: absolute;
     top: 0;
@@ -53,24 +53,48 @@
     border: 5px solid transparent;
     border-top-color: var(--btn-light-green);
     border-right-color: var(--btn-light-green);
+    border-bottom-color: var(--btn-light-green);
     border-radius: 50%;
-    animation: chromeSpin 1.5s cubic-bezier(0.4, 0.0, 0.2, 1.0) infinite;
+    animation: chromeSpin 1.2s linear infinite;
     z-index: 1;
 }
 
-/* ⭐ حركة كروم: بتسرع وتبطئ بشكل طبيعي */
+/* ⭐ حركة كروم الدقيقة: بتغير سرعتها 4 مرات في الدورة الواحدة */
 @keyframes chromeSpin {
-    0% {
-        transform: rotate(0deg);
+    0% { 
+        transform: rotate(0deg); 
+        animation-timing-function: cubic-bezier(0.55, 0.0, 1.0, 0.55); 
     }
-    60% {
-        transform: rotate(270deg);
+    12.5% { 
+        transform: rotate(45deg); 
+        animation-timing-function: cubic-bezier(0.0, 0.55, 0.55, 1.0); 
     }
-    85% {
-        transform: rotate(340deg);
+    25% { 
+        transform: rotate(135deg); 
+        animation-timing-function: cubic-bezier(0.55, 0.0, 1.0, 0.55); 
     }
-    100% {
-        transform: rotate(360deg);
+    37.5% { 
+        transform: rotate(180deg); 
+        animation-timing-function: cubic-bezier(0.0, 0.55, 0.55, 1.0); 
+    }
+    50% { 
+        transform: rotate(225deg); 
+        animation-timing-function: cubic-bezier(0.55, 0.0, 1.0, 0.55); 
+    }
+    62.5% { 
+        transform: rotate(270deg); 
+        animation-timing-function: cubic-bezier(0.0, 0.55, 0.55, 1.0); 
+    }
+    75% { 
+        transform: rotate(315deg); 
+        animation-timing-function: cubic-bezier(0.55, 0.0, 1.0, 0.55); 
+    }
+    87.5% { 
+        transform: rotate(350deg); 
+        animation-timing-function: cubic-bezier(0.0, 0.55, 0.55, 1.0); 
+    }
+    100% { 
+        transform: rotate(360deg); 
     }
 }
 
@@ -113,6 +137,7 @@ body.dark-mode .splash-spinner {
     border-color: transparent;
     border-top-color: var(--btn-light-green);
     border-right-color: var(--btn-light-green);
+    border-bottom-color: var(--btn-light-green);
 }
 
 /* ========== شاشة تسجيل الدخول ========== */
