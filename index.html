@@ -50,7 +50,7 @@
             -webkit-user-select: text;
         }
 
-        .sync-status {
+                .sync-status {
             display: flex;
             align-items: center;
             gap: 6px;
@@ -182,14 +182,8 @@
             </div>
         </div>
 
-        <!-- ========== السطر الأول: أزرار التنقل بين الجدول والكروت ========== -->
-        <div class="view-toggle" id="viewToggle">
-            <button id="tableViewBtn" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
-            <button id="cardsViewBtn" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
-        </div>
-
-        <!-- ========== السطر الثاني: شريط الأدوات ========== -->
-        <div class="toolbar-row" id="toolbarRow">
+        <!-- شريط الأدوات -->
+        <div class="toolbar" id="toolbar">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="بحث">
                 <span class="search-icon">🔍</span>
@@ -202,15 +196,24 @@
                 <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح الفلتر</button>
             </div>
             <div class="sync-status" id="syncStatus">🟢 متزامن</div>
+        </div>
+
+        <!-- أزرار تبديل العرض (Toggle) -->
+        <div class="view-toggle" id="viewToggle">
+            <button id="tableViewBtn" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
+            <button id="cardsViewBtn" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
+        </div>
+
+        <!-- عداد البطاقات -->
+        <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
+
+        <!-- زر ملء الشاشة -->
+        <div id="fullscreenBtnContainer" style="text-align: right; margin-bottom: 4px;">
             <button id="toggleFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
         </div>
 
-        <!-- ========== السطر الثالث: عدد البطاقات ========== -->
-        <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
-
-        <!-- حاوية الجدول ومنطقة العرض -->
+        <!-- حاوية الجدول -->
         <div class="table-section" id="tableSection">
-            <!-- حاوية الجدول -->
             <div class="table-wrapper" id="tableWrapper">
                 <table id="subscribersTable">
                     <thead>
