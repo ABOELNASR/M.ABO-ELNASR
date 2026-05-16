@@ -14,10 +14,11 @@ function toggleFullscreenTable() {
     if (isEntering) {
         // ⭐ دخول وضع ملء الشاشة
         
-        // نقل الأدوات إلى داخل table-section
-        if (viewToggle) section.insertBefore(viewToggle, section.firstChild);
-        if (toolbarRow) section.insertBefore(toolbarRow, section.children[1] || section.firstChild);
-        if (cardsCountHeader) section.insertBefore(cardsCountHeader, section.children[2] || section.firstChild);
+        // نقل الأدوات إلى داخل table-section (قبل table-wrapper)
+        const tableWrapper = document.getElementById('tableWrapper');
+        if (viewToggle) section.insertBefore(viewToggle, tableWrapper);
+        if (toolbarRow) section.insertBefore(toolbarRow, tableWrapper);
+        if (cardsCountHeader) section.insertBefore(cardsCountHeader, tableWrapper);
         
         section.classList.add('fullscreen');
         btn.innerHTML = '✖';
