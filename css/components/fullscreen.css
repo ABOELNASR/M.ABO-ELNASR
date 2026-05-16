@@ -12,10 +12,9 @@
     z-index: 1500;
     background: var(--bg-container);
     padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
     border-radius: 0;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
@@ -37,12 +36,6 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     cursor: pointer;
     padding: 0;
-    flex-shrink: 0;
-}
-
-/* ========== إخفاء أيقونة 🖥️ داخل وضع ملء الشاشة ========== */
-.table-section.fullscreen #toggleFullscreenBtn .btn-info {
-    display: none;
 }
 
 /* ========== الأدوات داخل وضع ملء الشاشة ========== */
@@ -51,7 +44,6 @@
     justify-content: center;
     gap: 8px;
     margin-bottom: 0.5rem;
-    flex-shrink: 0;
 }
 
 .table-section.fullscreen .toolbar-row {
@@ -61,8 +53,7 @@
     align-items: center;
     gap: 6px;
     margin-bottom: 0.5rem;
-    padding: 0.3rem 50px 0.3rem 0.3rem; /* مساحة للزر الثابت */
-    flex-shrink: 0;
+    padding: 0.3rem 50px 0.3rem 0.3rem;
 }
 
 .table-section.fullscreen .cards-count-header {
@@ -73,13 +64,10 @@
     color: var(--text-primary);
     border-bottom: 1px solid var(--border-light);
     margin-bottom: 0.3rem;
-    flex-shrink: 0;
 }
 
 /* ========== حاوية الجدول في وضع ملء الشاشة ========== */
 .table-section.fullscreen .table-wrapper {
-    flex: 1;
-    overflow: auto;
     border-radius: 1rem;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
 }
@@ -165,12 +153,10 @@
 
 /* ========== حاوية الكروت في وضع ملء الشاشة ========== */
 .table-section.fullscreen .cards-view-container {
-    flex: 1;
-    overflow-y: auto;
     padding: 0.5rem 0;
 }
 
-/* ========== إخفاء السكرول بار عند الحاجة ========== */
+/* ========== إخفاء سكرول الجسم ========== */
 body:has(.table-section.fullscreen) {
     overflow: hidden;
 }
