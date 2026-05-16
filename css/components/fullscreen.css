@@ -11,13 +11,72 @@
     bottom: 0;
     z-index: 1500;
     background: var(--bg-container);
-    padding: 3rem 0.5rem 0.5rem 0.5rem;
+    padding: 0.5rem;
     display: flex;
     flex-direction: column;
     border-radius: 0;
     overflow-y: auto;
 }
 
+/* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
+.table-section.fullscreen #toggleFullscreenBtn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1600;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--danger);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+/* ========== إخفاء أيقونة 🖥️ داخل وضع ملء الشاشة ========== */
+.table-section.fullscreen #toggleFullscreenBtn .btn-info {
+    display: none;
+}
+
+/* ========== الأدوات داخل وضع ملء الشاشة ========== */
+.table-section.fullscreen .view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+    flex-shrink: 0;
+}
+
+.table-section.fullscreen .toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.5rem;
+    padding: 0.3rem 50px 0.3rem 0.3rem; /* مساحة للزر الثابت */
+    flex-shrink: 0;
+}
+
+.table-section.fullscreen .cards-count-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: right;
+    padding: 0.3rem 0.5rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 0.3rem;
+    flex-shrink: 0;
+}
+
+/* ========== حاوية الجدول في وضع ملء الشاشة ========== */
 .table-section.fullscreen .table-wrapper {
     flex: 1;
     overflow: auto;
@@ -39,21 +98,7 @@
     text-overflow: ellipsis;
 }
 
-.table-section.fullscreen #toggleFullscreenBtn {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    left: auto;
-    z-index: 1600;
-    font-size: 0.9rem;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
+/* ========== أزرار الإجراءات في وضع ملء الشاشة ========== */
 .table-section.fullscreen .action-buttons-container {
     display: flex !important;
     flex-direction: row !important;
@@ -82,23 +127,7 @@
     margin: 0;
 }
 
-.table-section.fullscreen .toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 0.5rem;
-    padding: 0.3rem;
-    background: var(--card-bg);
-    border-radius: 0.8rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.table-section.fullscreen .cards-count-header {
-    margin-left: 55px;
-    margin-right: 27px;
-    font-size: 0.65rem;
-}
-
+/* ========== الكروت في وضع ملء الشاشة ========== */
 .table-section.fullscreen .subscriber-card {
     font-size: 0.75rem;
     padding: 0.7rem;
@@ -134,70 +163,14 @@
     padding: 0.4rem 0 !important;
 }
 
-/* ========== شريط الأدوات - بحث ========== */
-.search-box {
-    position: relative;
-    display: inline-block;
-    direction: rtl;
+/* ========== حاوية الكروت في وضع ملء الشاشة ========== */
+.table-section.fullscreen .cards-view-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0;
 }
 
-.search-box input {
-    padding: 5px 28px 5px 12px;
-    border-radius: 30px;
-    border: 1px solid var(--border-light);
-    background: var(--bg-container);
-    color: var(--text-primary);
-    width: 200px;
-    font-size: 0.75rem;
-    transition: all 0.2s;
-    text-align: right;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-}
-
-.search-box input:focus {
-    outline: none;
-    border-color: var(--btn-info);
-    box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1);
-    width: 220px;
-}
-
-.search-icon {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-    color: #999;
-    font-size: 0.8rem;
-    transition: opacity 0.2s;
-}
-
-.search-box input:focus ~ .search-icon {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.search-clear {
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 1.1rem !important;
-    background-color: #ef5350 !important;
-    color: white !important;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    padding: 0;
-    border: none;
-    box-shadow: 0 2px 6px rgba(239, 83, 80, 0.3);
-}
-
-.search-box input:not(:placeholder-shown) ~ .search-clear {
-    display: flex !important;
+/* ========== إخفاء السكرول بار عند الحاجة ========== */
+body:has(.table-section.fullscreen) {
+    overflow: hidden;
 }
