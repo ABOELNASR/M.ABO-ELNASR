@@ -59,18 +59,80 @@ function showBellNotification(title, body) {
     }, 4000);
 }
 
+// ⭐ ========== مجموعة الإشعارات المجمعة ==========
+const MAX_NOTIFICATIONS = 5;
+
+// ⭐ دالة إضافة إشعار للمجموعة
+function addToNotificationGroup(body) {
+    let notifications = [];
+    try {
+        const stored = localStorage.getItem('pending_notifications');
+        if (stored) {
+            notifications = JSON.parse(stored);
+        }
+    } catch(e) {
+        notifications = [];
+    }
+    
+    // إزالة العلامات الخاصة عشان النص يبقى نضيف
+    let cleanBody = String(body || '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/✓/g, '')
+        .replace(/✗/g, '')
+        .replace(/✅/g, '')
+        .replace(/❌/g, '')
+        .trim();
+    
+    notifications.unshift(cleanBody);
+    
+    // ⭐ نحتفظ بآخر 5 إشعارات فقط
+    if (notifications.length > MAX_NOTIFICATIONS) {
+        notifications = notifications.slice(0, MAX_NOTIFICATIONS);
+    }
+    
+    localStorage.setItem('pending_notifications', JSON.stringify(notifications));
+}
+
+// ⭐ دالة الحصول على الإشعارات المجمعة
+function getGroupedNotifications() {
+    let notifications = [];
+    try {
+        const stored = localStorage.getItem('pending_notifications');
+        if (stored) {
+            notifications = JSON.parse(stored);
+        }
+    } catch(e) {
+        notifications = [];
+    }
+    
+    if (notifications.length === 0) return '';
+    
+    return notifications.join('\n');
+}
+
+// ⭐ دالة مسح الإشعارات المجمعة
+function clearNotificationGroup() {
+    localStorage.removeItem('pending_notifications');
+}
+
 // طلب إرسال إشعار (للخادم)
 async function requestPushNotification(title, body) {
     console.log('📤 طلب إرسال إشعار:', title);
     
-    // عرض الإشعار الداخلي فوراً
+    // ⭐ إضافة الإشعار لقائمة الإشعارات المجمعة
+    addToNotificationGroup(body);
+    
+    // عرض الإشعار الداخلي فوراً (جرس)
     showBellNotification(title, body);
     
-    // محاولة الإرسال عبر الخادم للإشعارات الخارجية
+    // ⭐ إرسال الإشعار المجمّع للخادم
     try {
         const formData = new FormData();
         formData.append('action', 'sendPush');
-        formData.append('data', JSON.stringify({ title: title || 'المخبز', body: body }));
+        formData.append('data', JSON.stringify({ 
+            title: title || 'المخبز', 
+            body: getGroupedNotifications() 
+        }));
 
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -144,6 +206,11 @@ async function cleanupOldData() {
     await saveData();
     console.log('🧹 تم تنظيف البيانات القديمة');
 }
+
+// ⭐ مسح الإشعارات المجمعة عند فتح التطبيق
+document.addEventListener('DOMContentLoaded', function() {
+    clearNotificationGroup();
+});
 
 // تسجيل تحميل الملف
 console.log('✅ helpers-misc.js loaded');
