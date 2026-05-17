@@ -206,7 +206,7 @@ async function saveDataAndWait() {
     return false;
 }
 
-// ========== تحديث واجهة المزامنة ==========
+// ⭐ ========== تحديث واجهة المزامنة ==========
 function updateSyncStatusUI(status) {
     const syncStatus = document.getElementById('syncStatus');
     if (!syncStatus) return;
@@ -233,8 +233,9 @@ function updateSyncStatusUI(status) {
             syncStatus.style.color = '#ef5350';
             break;
         case 'syncing':
-            syncStatus.innerHTML = '🟡 جاري المزامنة...';
-            syncStatus.style.color = '#ff9800';
+            // ⭐ لمبة صفراء فقط، بدون كلمة
+            syncStatus.innerHTML = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ff9800;box-shadow:0 0 8px rgba(255,152,0,0.6);"></span>';
+            syncStatus.style.color = '';
             break;
     }
     syncStatus.style.opacity = '1';
