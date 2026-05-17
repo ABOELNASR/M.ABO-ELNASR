@@ -547,16 +547,17 @@ function loadActivityLogFromLocal() {
     }
 }
 
-// ========== حفظ اشتراك Push ==========
+// ⭐ ========== حفظ اشتراك Push (POST + JSON) ==========
 async function savePushSubscription(subscription) {
     if (!subscription || !subscription.token) return;
     try {
-        const formData = new FormData();
-        formData.append('action', 'saveSubscription');
-        formData.append('data', JSON.stringify(subscription));
         await fetch(API_URL, {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'saveSubscription',
+                data: subscription
+            })
         });
         console.log('✅ تم حفظ رمز الاشتراك في الخادم');
     } catch (e) {
