@@ -1,4 +1,4 @@
-const API_URL = 'https://corsproxy.io/?' + encodeURIComponent('https://script.google.com/macros/s/AKfycby58YWfS9lVr8osM4gQEcjAW_VH_yYFIfS24w13rcrdbVqm1L0RU7LXJfZTcxxcLnAc1A/exec');
+const API_URL = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://script.google.com/macros/s/AKfycby58YWfS9lVr8osM4gQEcjAW_VH_yYFIfS24w13rcrdbVqm1L0RU7LXJfZTcxxcLnAc1A/exec');
 
 const VAPID_PUBLIC_KEY = 'BFVFu7GzLkcwF-hCA5yVO7T5H49FpMp9hUyeBaF3QjtG-BaDxstIYU-rs8w8S2B6-rdEvBlbYsOQhoNqa7lpl3o';
 
