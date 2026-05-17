@@ -115,7 +115,7 @@ function clearNotificationGroup() {
     localStorage.removeItem('pending_notifications');
 }
 
-// ⭐ طلب إرسال إشعار (للخادم) - POST + JSON
+// ⭐ طلب إرسال إشعار (للخادم)
 async function requestPushNotification(title, body) {
     console.log('📤 طلب إرسال إشعار:', title);
     
@@ -127,16 +127,16 @@ async function requestPushNotification(title, body) {
     
     // ⭐ إرسال الإشعار المجمّع للخادم
     try {
+        const formData = new FormData();
+        formData.append('action', 'sendPush');
+        formData.append('data', JSON.stringify({ 
+            title: title || 'المخبز', 
+            body: getGroupedNotifications() 
+        }));
+
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'sendPush',
-                data: {
-                    title: title || 'المخبز',
-                    body: getGroupedNotifications()
-                }
-            })
+            body: formData
         });
         
         try {
