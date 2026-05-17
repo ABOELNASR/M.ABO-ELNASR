@@ -33,7 +33,6 @@ function logDeletedCard(cardName, individuals, subscriberName, reason) {
 
 // إشعار داخلي مع رمز الجرس
 function showBellNotification(title, body) {
-    // تلوين العلامات
     let coloredBody = String(body || '')
         .replace(/✓/g, '<span class="bell-mark-green">✓</span>')
         .replace(/✗/g, '<span class="bell-mark-red">✗</span>')
@@ -59,84 +58,25 @@ function showBellNotification(title, body) {
     }, 4000);
 }
 
-// ⭐ ========== مجموعة الإشعارات المجمعة ==========
-const MAX_NOTIFICATIONS = 5;
-
-// ⭐ دالة إضافة إشعار للمجموعة
-function addToNotificationGroup(body) {
-    let notifications = [];
-    try {
-        const stored = localStorage.getItem('pending_notifications');
-        if (stored) {
-            notifications = JSON.parse(stored);
-        }
-    } catch(e) {
-        notifications = [];
-    }
-    
-    // إزالة العلامات الخاصة عشان النص يبقى نضيف
-    let cleanBody = String(body || '')
-        .replace(/<[^>]*>/g, '')
-        .replace(/✓/g, '')
-        .replace(/✗/g, '')
-        .replace(/✅/g, '')
-        .replace(/❌/g, '')
-        .trim();
-    
-    notifications.unshift(cleanBody);
-    
-    // ⭐ نحتفظ بآخر 5 إشعارات فقط
-    if (notifications.length > MAX_NOTIFICATIONS) {
-        notifications = notifications.slice(0, MAX_NOTIFICATIONS);
-    }
-    
-    localStorage.setItem('pending_notifications', JSON.stringify(notifications));
-}
-
-// ⭐ دالة الحصول على الإشعارات المجمعة
-function getGroupedNotifications() {
-    let notifications = [];
-    try {
-        const stored = localStorage.getItem('pending_notifications');
-        if (stored) {
-            notifications = JSON.parse(stored);
-        }
-    } catch(e) {
-        notifications = [];
-    }
-    
-    if (notifications.length === 0) return '';
-    
-    return notifications.join('\n');
-}
-
-// ⭐ دالة مسح الإشعارات المجمعة
-function clearNotificationGroup() {
-    localStorage.removeItem('pending_notifications');
-}
-
-// ⭐ طلب إرسال إشعار (للخادم)
+// ⭐ طلب إرسال إشعار (للخادم) - POST + JSON
 async function requestPushNotification(title, body) {
     console.log('📤 طلب إرسال إشعار:', title);
-    
-    // ⭐ إضافة الإشعار لقائمة الإشعارات المجمعة
-    addToNotificationGroup(body);
     
     // عرض الإشعار الداخلي فوراً (جرس)
     showBellNotification(title, body);
     
-    // ⭐ إرسال الإشعار المجمّع للخادم
+    // ⭐ إرسال الإشعار للخادم
     try {
-        const formData = new FormData();
-        formData.append('action', 'sendPush');
-        formData.append('data', JSON.stringify({ 
-            title: title || 'المخبز', 
-            body: getGroupedNotifications() 
-        }));
-
         const response = await fetch(API_URL, {
             method: 'POST',
-            body: formData
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'sendPush',
+                data: {
+                    title: title || 'المخبز',
+                    body: body
+                }
+            })
         });
         
         try {
@@ -175,18 +115,15 @@ async function testConnection() {
 
 // ========== دوال إضافية ==========
 
-// دالة لتنظيف البيانات القديمة (اختياري)
 async function cleanupOldData() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
-    // تنظيف سجل العمليات القديم
     if (activityLog && activityLog.length > 100) {
         activityLog = activityLog.slice(0, 100);
         saveActivityLogToLocal();
     }
     
-    // تنظيف تجاوزات الحصة القديمة (أكثر من 3 أشهر)
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
     
@@ -207,10 +144,4 @@ async function cleanupOldData() {
     console.log('🧹 تم تنظيف البيانات القديمة');
 }
 
-// ⭐ مسح الإشعارات المجمعة عند فتح التطبيق
-document.addEventListener('DOMContentLoaded', function() {
-    clearNotificationGroup();
-});
-
-// تسجيل تحميل الملف
 console.log('✅ helpers-misc.js loaded');
