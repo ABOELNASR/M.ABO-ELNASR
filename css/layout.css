@@ -297,13 +297,21 @@
     box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
 }
 
-/* ========== ٢. صف: مربع البحث (يمين) + متزامن (يسار) ========== */
+/* ========== ٢. صف: مربع البحث + فلاتر (يمين) + متزامن (يسار) ========== */
 .search-sync-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 0.5rem;
     padding: 0 0.2rem;
+}
+
+/* حاوية البحث والفلاتر مع بعض */
+.search-filter-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
 }
 
 /* ========== صندوق البحث ========== */
@@ -375,50 +383,7 @@
     display: flex !important;
 }
 
-/* ========== حالة المزامنة ========== */
-.sync-status {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.65rem;
-    font-weight: 500;
-    background: rgba(76, 175, 80, 0.08);
-    padding: 3px 8px;
-    border-radius: 20px;
-    white-space: nowrap;
-    color: var(--sync-color);
-}
-
-.sync-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-.sync-dot.green {
-    background: #4caf50;
-    box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
-}
-
-.sync-dot.red {
-    background: #ef5350;
-    box-shadow: 0 0 6px rgba(239, 83, 80, 0.6);
-}
-
-.sync-dot.yellow {
-    background: #ff9800;
-    box-shadow: 0 0 6px rgba(255, 152, 0, 0.6);
-}
-
-/* ========== ٣. أزرار الفلاتر في المنتصف ========== */
-.filter-row {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 0.5rem;
-}
-
+/* ========== مجموعة الفلاتر - تحت مربع البحث ========== */
 .filter-group {
     display: flex;
     gap: 4px;
@@ -458,7 +423,45 @@
     box-shadow: 0 2px 8px rgba(239, 83, 80, 0.2);
 }
 
-/* ========== ٤. صف: زر ملء الشاشة (يمين) + عداد البطاقات (يسار) ========== */
+/* ========== حالة المزامنة ========== */
+.sync-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    background: rgba(76, 175, 80, 0.08);
+    padding: 3px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+    color: var(--sync-color);
+    flex-shrink: 0;
+}
+
+.sync-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.sync-dot.green {
+    background: #4caf50;
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+}
+
+.sync-dot.red {
+    background: #ef5350;
+    box-shadow: 0 0 6px rgba(239, 83, 80, 0.6);
+}
+
+.sync-dot.yellow {
+    background: #ff9800;
+    box-shadow: 0 0 6px rgba(255, 152, 0, 0.6);
+}
+
+/* ========== ٣. صف: زر ملء الشاشة (يمين) + عداد البطاقات (يسار) ========== */
 .info-bar-row {
     display: flex;
     justify-content: space-between;
