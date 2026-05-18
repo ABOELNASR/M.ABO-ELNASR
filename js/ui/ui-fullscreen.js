@@ -6,7 +6,6 @@ function toggleFullscreenTable() {
     const viewToggle = document.getElementById('viewToggle');
     const toolbarRow = document.getElementById('toolbarRow');
     const cardsCountHeader = document.getElementById('cardsCountHeader');
-    const btnContainer = document.getElementById('fullscreenBtnContainer');
     
     if (!section || !btn) return;
     
@@ -29,28 +28,20 @@ function toggleFullscreenTable() {
         btn.title = 'إغلاق وضع ملء الشاشة';
         disableBodyScroll();
         
-        // ⭐ إضافة حالة في الـ history عشان زر الرجوع يخرج من ملء الشاشة
         history.pushState({ fullscreen: true }, '', '');
     } else {
         // ⭐ خروج من وضع ملء الشاشة
-        exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, btnContainer, false);
+        exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, false);
     }
 }
 
 // ========== دالة الخروج من وضع ملء الشاشة ==========
-function exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, btnContainer, isBackButton) {
+function exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, isBackButton) {
     if (!section || !btn) return;
     
-    // ⭐ إرجاع الزر إلى الحاوية الأصلية fullscreenBtnContainer
-    if (btn && btn.parentNode === document.body) {
-        if (btnContainer) {
-            btnContainer.appendChild(btn);
-        }
-    }
-    
-    // ⭐ إرجاع الأدوات إلى أماكنها الأصلية بنفس الترتيب
     const parent = section.parentNode;
     
+    // ⭐ إرجاع الأدوات إلى أماكنها الأصلية بنفس الترتيب: viewToggle → toolbarRow → cardsCountHeader
     if (viewToggle && viewToggle.parentNode === section) {
         parent.insertBefore(viewToggle, section);
     }
@@ -61,12 +52,19 @@ function exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHead
         parent.insertBefore(cardsCountHeader, section);
     }
     
+    // ⭐ إرجاع الزر إلى toolbarRow
+    if (btn && btn.parentNode === document.body) {
+        const tr = document.getElementById('toolbarRow');
+        if (tr) {
+            tr.appendChild(btn);
+        }
+    }
+    
     section.classList.remove('fullscreen');
     btn.innerHTML = '🖥️';
     btn.title = 'تكبير الجدول';
     enableBodyScroll();
     
-    // ⭐ لو الخروج تم عن طريق زر الرجوع، نرجع خطوة في الـ history
     if (isBackButton) {
         history.back();
     }
@@ -79,13 +77,9 @@ window.addEventListener('popstate', function(event) {
     const viewToggle = document.getElementById('viewToggle');
     const toolbarRow = document.getElementById('toolbarRow');
     const cardsCountHeader = document.getElementById('cardsCountHeader');
-    const btnContainer = document.getElementById('fullscreenBtnContainer');
     
-    // لو في وضع ملء الشاشة، اخرج منه بدل ما تقفل الصفحة
     if (section && section.classList.contains('fullscreen')) {
-        exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, btnContainer, true);
-        
-        // ⭐ منع الخروج الفعلي من الصفحة
+        exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, true);
         history.pushState({ fullscreen: true }, '', '');
     }
 });
