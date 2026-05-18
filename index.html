@@ -24,32 +24,46 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     
     <!-- ========== ملفات CSS ========== -->
+    <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/cards.css">
+    <link rel="stylesheet" href="css/components/forms.css">
+    <link rel="stylesheet" href="css/components/table.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/components/fullscreen.css">
+    <link rel="stylesheet" href="css/components/misc.css">
+    <link rel="stylesheet" href="css/components/splash.css">
     
     <style>
-        /* إخفاء الخلفية البيضاء قبل تحميل التطبيق */
+        /* ========== إعدادات أولية قبل التحميل ========== */
         html, body {
             background-color: #2c7a4d !important;
         }
         
-        /* إرجاع الخلفية للوضع المظلم */
         body.dark-mode {
             background-color: #0d1117 !important;
         }
         
-        /* منع تحديد النص ونسخه */
+        /* ========== منع تحديد النص ونسخه ========== */
         body, .app-container, .modal-content, input, textarea, button, table, .stat-card, .toast-notification {
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
         }
+        
         /* السماح بتحديد النص فقط في حقول الإدخال القابلة للتعديل */
         input[type="text"], input[type="number"], input[type="password"], input[type="email"], textarea {
             user-select: text;
             -webkit-user-select: text;
         }
-
+        
+        /* ========== تنسيقات مزامنة مؤقتة ========== */
         .sync-status {
             display: flex;
             align-items: center;
@@ -98,10 +112,11 @@
     </div>
 
     <div class="app-container" id="appContainer" style="display: none;">
+        <!-- ========== شريط التحكم العلوي ========== -->
         <div class="top-controls">
             <div class="user-info">
                 <span id="userNameDisplay"></span>
-                <button id="logoutBtn">🚪</button>
+                <button id="logoutBtn" title="تسجيل الخروج">🚪</button>
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <div class="admin-dropdown" id="adminDropdown">
@@ -110,14 +125,16 @@
                         <!-- يتم ملؤها ديناميكيًا من ui-permissions.js -->
                     </div>
                 </div>
-                <button id="darkModeToggle" class="dark-mode-toggle">🌙</button>
+                <button id="darkModeToggle" class="dark-mode-toggle" title="تبديل الوضع الليلي">🌙</button>
             </div>
         </div>
 
+        <!-- ========== العنوان الرئيسي ========== -->
         <div class="header">
-            <h1>منظومة الخبز المدعم</h1>
+            <h1>🍞 منظومة الخبز المدعم</h1>
         </div>
 
+        <!-- ========== بطاقات الإحصائيات ========== -->
         <div id="statsSection" class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">👥 المشتركين</div>
@@ -137,11 +154,12 @@
             </div>
         </div>
 
+        <!-- ========== منتقي الشهر ========== -->
         <div class="month-picker">
             <div class="month-control">
-                <button id="prevMonthBtn">◀</button>
+                <button id="prevMonthBtn" title="الشهر السابق">◀</button>
                 <span id="currentMonthYear"></span>
-                <button id="nextMonthBtn">▶</button>
+                <button id="nextMonthBtn" title="الشهر التالي">▶</button>
             </div>
             <div class="days-info">
                 📆 أيام: <span id="daysCount">30</span> • 🍞 سعر الرغيف: 0.20 ج.م
@@ -153,7 +171,7 @@
             <div id="actionsContainer" class="actions-container"></div>
         </div>
 
-        <!-- نموذج إضافة مشترك جديد (مطوي افتراضياً) -->
+        <!-- ========== نموذج إضافة مشترك جديد ========== -->
         <div class="form-card form-collapsed" id="addSubscriberCard">
             <div class="form-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <span id="formTitle" style="cursor: pointer; user-select: none;">➕ إضافة مشترك جديد</span>
@@ -182,12 +200,12 @@
             </div>
         </div>
 
-        <!-- شريط الأدوات -->
+        <!-- ========== شريط الأدوات ========== -->
         <div class="toolbar-row" id="toolbarRow">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="بحث">
                 <span class="search-icon">🔍</span>
-                <button class="search-clear" id="clearSearchBtn">✖</button>
+                <button class="search-clear" id="clearSearchBtn" title="مسح البحث">✖</button>
             </div>
             <div class="filter-group">
                 <button data-filter="all" class="filter-btn active">الكل</button>
@@ -195,30 +213,33 @@
                 <button data-filter="unpaid" class="filter-btn">❌ عليه متبقي</button>
                 <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح الفلتر</button>
             </div>
-            <div class="sync-status" id="syncStatus">🟢 متزامن</div>
+            <div class="sync-status" id="syncStatus">
+                <span class="sync-dot green"></span> متزامن
+            </div>
         </div>
 
-        <!-- أزرار تبديل العرض (Toggle) -->
+        <!-- ========== أزرار تبديل العرض ========== -->
         <div class="view-toggle" id="viewToggle">
-            <button id="tableViewBtn" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
-            <button id="cardsViewBtn" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
+            <button id="tableViewBtn" class="view-toggle-btn active" data-view="table" title="عرض جدول">📋 جدول</button>
+            <button id="cardsViewBtn" class="view-toggle-btn" data-view="cards" title="عرض كروت">🃏 كروت</button>
         </div>
 
-        <!-- زر الدخول في وضع ملء الشاشة (فوق عداد البطاقات) -->
+        <!-- ========== زر ملء الشاشة + عداد البطاقات ========== -->
         <div class="fullscreen-btn-row" id="fullscreenBtnRow">
             <button id="enterFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
         </div>
 
-        <!-- عداد البطاقات -->
+        <!-- ========== عداد البطاقات ========== -->
         <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
 
-        <!-- حاوية الجدول -->
+        <!-- ========== حاوية الجدول والكروت ========== -->
         <div class="table-section" id="tableSection">
-            <!-- ⭐ نسخ ثابتة للـ Fullscreen (مخفية في الوضع العادي) -->
+            <!-- نسخ ثابتة للـ Fullscreen (مخفية في الوضع العادي) -->
             <div class="fullscreen-clone" id="viewToggleClone" style="display:none;"></div>
             <div class="fullscreen-clone" id="toolbarRowClone" style="display:none;"></div>
             <div class="fullscreen-clone" id="cardsCountHeaderClone" style="display:none;"></div>
             
+            <!-- جدول المشتركين -->
             <div class="table-wrapper" id="tableWrapper">
                 <table id="subscribersTable">
                     <thead>
@@ -244,19 +265,22 @@
                     </tbody>
                 </table>
             </div>
+            
             <!-- حاوية الكروت -->
             <div class="cards-view-container" id="cardsViewContainer" style="display: none;"></div>
         </div>
 
+        <!-- ========== تذييل الصفحة ========== -->
         <div class="footer-note">
             ✅ الدفع الكامل عبر التأشير في المربع • تعديل المدفوع من أزرار الإجراءات.
             <div class="designer-credit">تصميم م. محمد أبوالنصر</div>
         </div>
     </div>
 
+    <!-- ========== زر العودة للأعلى ========== -->
     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="العودة للأعلى" style="display: none;">⬆️</button>
 
-    <!-- ⭐ زر الخروج من وضع ملء الشاشة (ثابت، مخفي في الوضع العادي) -->
+    <!-- ========== زر الخروج من وضع ملء الشاشة ========== -->
     <button id="exitFullscreenBtn" class="btn btn-sm" title="إغلاق وضع ملء الشاشة" style="display: none;">✖</button>
 
     <!-- ========== ملفات JavaScript ========== -->
@@ -265,7 +289,7 @@
     <script src="js/env.js"></script>
     <script src="js/config.js"></script>
     
-    <!-- 2. الدوال المساعدة - الأساس قبل الباقي -->
+    <!-- 2. الدوال المساعدة -->
     <script src="js/helpers/helpers-ui.js"></script>
     <script src="js/helpers/helpers-text.js"></script>
     <script src="js/helpers/helpers-date.js"></script>
