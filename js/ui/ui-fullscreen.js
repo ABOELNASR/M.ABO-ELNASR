@@ -6,19 +6,38 @@ function toggleFullscreenTable() {
     const exitBtn = document.getElementById('exitFullscreenBtn');
     const viewToggle = document.getElementById('viewToggle');
     const toolbarRow = document.getElementById('toolbarRow');
-    const cardsCountHeader = document.getElementById('cardsCountHeader');
+    const cardsCountHeaderRow = document.getElementById('cardsCountHeaderRow');
     
     if (!section) return;
     
     const isEntering = !section.classList.contains('fullscreen');
     
     if (isEntering) {
-        // ⭐ دخول وضع ملء الشاشة
+        // ⭐ دخول وضع ملء الشاشة - إنشاء نسخ وإضافتها لـ tableSection
         
         const tableWrapper = document.getElementById('tableWrapper');
-        if (viewToggle) section.insertBefore(viewToggle, tableWrapper);
-        if (toolbarRow) section.insertBefore(toolbarRow, tableWrapper);
-        if (cardsCountHeader) section.insertBefore(cardsCountHeader, tableWrapper);
+        
+        // إنشاء نسخ من العناصر الأصلية (العناصر الأصلية تفضل في مكانها)
+        if (viewToggle) {
+            const clone = viewToggle.cloneNode(true);
+            clone.id = 'viewToggleClone';
+            section.insertBefore(clone, tableWrapper);
+        }
+        if (toolbarRow) {
+            const clone = toolbarRow.cloneNode(true);
+            clone.id = 'toolbarRowClone';
+            section.insertBefore(clone, tableWrapper);
+        }
+        if (cardsCountHeaderRow) {
+            const clone = cardsCountHeaderRow.cloneNode(true);
+            clone.id = 'cardsCountHeaderRowClone';
+            section.insertBefore(clone, tableWrapper);
+        }
+        
+        // إخفاء العناصر الأصلية
+        if (viewToggle) viewToggle.style.display = 'none';
+        if (toolbarRow) toolbarRow.style.display = 'none';
+        if (cardsCountHeaderRow) cardsCountHeaderRow.style.display = 'none';
         
         section.classList.add('fullscreen');
         
@@ -29,18 +48,16 @@ function toggleFullscreenTable() {
         disableBodyScroll();
         history.pushState({ fullscreen: true }, '', '');
     } else {
-        // ⭐ خروج من وضع ملء الشاشة
-        const parent = section.parentNode;
+        // ⭐ خروج من وضع ملء الشاشة - حذف النسخ
         
-        if (viewToggle && viewToggle.parentNode === section) {
-            parent.insertBefore(viewToggle, section);
-        }
-        if (toolbarRow && toolbarRow.parentNode === section) {
-            parent.insertBefore(toolbarRow, section);
-        }
-        if (cardsCountHeader && cardsCountHeader.parentNode === section) {
-            parent.insertBefore(cardsCountHeader, section);
-        }
+        // حذف النسخ اللي أضفناها
+        const clones = section.querySelectorAll('#viewToggleClone, #toolbarRowClone, #cardsCountHeaderRowClone');
+        clones.forEach(clone => clone.remove());
+        
+        // إظهار العناصر الأصلية تاني
+        if (viewToggle) viewToggle.style.display = '';
+        if (toolbarRow) toolbarRow.style.display = '';
+        if (cardsCountHeaderRow) cardsCountHeaderRow.style.display = '';
         
         section.classList.remove('fullscreen');
         
