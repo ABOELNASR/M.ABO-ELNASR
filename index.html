@@ -50,7 +50,7 @@
             -webkit-user-select: text;
         }
 
-                .sync-status {
+        .sync-status {
             display: flex;
             align-items: center;
             gap: 6px;
@@ -214,6 +214,11 @@
 
         <!-- حاوية الجدول -->
         <div class="table-section" id="tableSection">
+            <!-- ⭐ نسخ ثابتة للـ Fullscreen (مخفية في الوضع العادي) -->
+            <div class="fullscreen-clone" id="viewToggleClone" style="display:none;"></div>
+            <div class="fullscreen-clone" id="toolbarRowClone" style="display:none;"></div>
+            <div class="fullscreen-clone" id="cardsCountHeaderClone" style="display:none;"></div>
+            
             <div class="table-wrapper" id="tableWrapper">
                 <table id="subscribersTable">
                     <thead>
