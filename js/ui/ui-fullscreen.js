@@ -19,6 +19,9 @@ function toggleFullscreenTable() {
         if (toolbarRow) section.insertBefore(toolbarRow, tableWrapper);
         if (cardsCountHeader) section.insertBefore(cardsCountHeader, tableWrapper);
         
+        // ⭐ نقل الزر إلى body عشان يظهر ثابت فوق الكل
+        document.body.appendChild(btn);
+        
         section.classList.add('fullscreen');
         btn.innerHTML = '✖';
         btn.title = 'إغلاق وضع ملء الشاشة';
@@ -26,8 +29,8 @@ function toggleFullscreenTable() {
         history.pushState({ fullscreen: true }, '', '');
     } else {
         // ⭐ خروج من وضع ملء الشاشة
-        
         const parent = section.parentNode;
+        
         if (viewToggle && viewToggle.parentNode === section) {
             parent.insertBefore(viewToggle, section);
         }
@@ -38,6 +41,12 @@ function toggleFullscreenTable() {
             parent.insertBefore(cardsCountHeader, section);
         }
         
+        // ⭐ إرجاع الزر إلى fullscreenBtnContainer
+        const btnContainer = document.getElementById('fullscreenBtnContainer');
+        if (btn && btn.parentNode === document.body && btnContainer) {
+            btnContainer.appendChild(btn);
+        }
+        
         section.classList.remove('fullscreen');
         btn.innerHTML = '🖥️';
         btn.title = 'تكبير الجدول';
@@ -45,7 +54,6 @@ function toggleFullscreenTable() {
     }
 }
 
-// ========== حدث زر الرجوع في الهاتف ==========
 window.addEventListener('popstate', function(event) {
     const section = document.getElementById('tableSection');
     if (section && section.classList.contains('fullscreen')) {
