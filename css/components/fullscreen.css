@@ -1,8 +1,11 @@
-/* ========== وضع ملء الشاشة للجدول ========== */
-.table-section {
-    transition: all 0.3s ease;
+/* ========== fullscreen.css - وضع ملء الشاشة ========== */
+
+/* ========== النسخ الثابتة (افتراضيًا مخفية) ========== */
+.fullscreen-clone {
+    display: none;
 }
 
+/* ========== وضع ملء الشاشة للجدول ========== */
 .table-section.fullscreen {
     position: fixed;
     top: 0;
@@ -17,12 +20,13 @@
     overflow-x: hidden;
 }
 
-/* ========== الوضع الليلي ========== */
 body.dark-mode .table-section.fullscreen {
     background: #0d1117;
 }
 
-/* ========== الأدوات داخل وضع ملء الشاشة (العناصر الأصلية لو موجودة) ========== */
+/* ========== الأدوات داخل وضع ملء الشاشة ========== */
+
+/* أزرار تبديل العرض */
 .table-section.fullscreen .view-toggle,
 #viewToggleClone {
     display: flex;
@@ -31,6 +35,7 @@ body.dark-mode .table-section.fullscreen {
     margin-bottom: 0.5rem;
 }
 
+/* شريط الأدوات (بحث + فلاتر + مزامنة) */
 .table-section.fullscreen .toolbar-row,
 #toolbarRowClone {
     display: flex;
@@ -39,29 +44,44 @@ body.dark-mode .table-section.fullscreen {
     align-items: center;
     gap: 6px;
     margin-bottom: 0.5rem;
+    padding: 0.2rem 0;
 }
 
-.table-section.fullscreen .cards-count-header,
-#cardsCountHeaderClone {
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-align: right;
-    padding: 0.3rem 0.5rem;
-    color: var(--text-primary);
+/* صف زر ملء الشاشة + عداد البطاقات */
+#cardsCountHeaderRowClone {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0.5rem;
     border-bottom: 1px solid var(--border-light);
     margin-bottom: 0.3rem;
+    gap: 1rem;
 }
 
-/* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
+#cardsCountHeaderRowClone .fullscreen-enter-btn {
+    display: none; /* مخفي في وضع fullscreen */
+}
+
+#cardsCountHeaderRowClone .cards-count-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin: 0;
+    border-bottom: none;
+    text-align: right;
+    flex-grow: 1;
+}
+
+/* ========== زر الخروج من ملء الشاشة ========== */
 #exitFullscreenBtn {
     position: fixed;
     top: 8px;
-    right: 8px;
+    left: 8px;
     z-index: 1600;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -124,6 +144,10 @@ body.dark-mode .table-section.fullscreen {
 }
 
 /* ========== الكروت في وضع ملء الشاشة ========== */
+.table-section.fullscreen .cards-view-container {
+    padding: 0.5rem 0;
+}
+
 .table-section.fullscreen .subscriber-card {
     font-size: 0.75rem;
     padding: 0.7rem;
@@ -159,12 +183,49 @@ body.dark-mode .table-section.fullscreen {
     padding: 0.4rem 0 !important;
 }
 
-/* ========== حاوية الكروت في وضع ملء الشاشة ========== */
-.table-section.fullscreen .cards-view-container {
-    padding: 0.5rem 0;
-}
-
 /* ========== إخفاء سكرول الجسم ========== */
 body:has(.table-section.fullscreen) {
     overflow: hidden;
+}
+
+/* ========== التجاوب مع الموبايل ========== */
+@media (max-width: 768px) {
+    .table-section.fullscreen {
+        padding: 0.3rem;
+    }
+    
+    .table-section.fullscreen .toolbar-row,
+    #toolbarRowClone {
+        gap: 4px;
+    }
+    
+    .table-section.fullscreen .search-box input {
+        width: 140px;
+    }
+    
+    .table-section.fullscreen .filter-btn {
+        padding: 2px 6px;
+        font-size: 0.6rem;
+    }
+    
+    #exitFullscreenBtn {
+        top: 4px;
+        left: 4px;
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-section.fullscreen .action-icon-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+    
+    .table-section.fullscreen .search-box input {
+        width: 120px;
+        font-size: 0.65rem;
+    }
 }
