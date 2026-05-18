@@ -145,11 +145,15 @@ function bindSearchCloneEvents(searchSyncRowClone) {
             }
         });
         
-        // ⭐ تأثير بصري: تصغير مربع البحث عند الخروج
+        // ⭐ تأثير بصري: عند الخروج من الفوكس - النص يفضل موجود والمربع يرجع حجمه
         clonedSearchInput.addEventListener('blur', function() {
-            if (!this.value) {
+            // لو فيه نص، يفضل موجود لكن المربع يصغر
+            if (this.value) {
+                this.style.width = '180px';
+            } else {
                 this.style.width = '180px';
             }
+            // النص يفضل موجود في الأصلي
             originalSearchInput.value = this.value;
         });
         
@@ -158,17 +162,33 @@ function bindSearchCloneEvents(searchSyncRowClone) {
             originalSearchInput.value = this.value;
             originalSearchInput.dispatchEvent(new Event('keyup', { bubbles: true }));
         });
+        
+        // ⭐ الضغط خارج مربع البحث (على أي مكان تاني في الصفحة)
+        document.addEventListener('click', function(e) {
+            if (clonedSearchInput && searchSyncRowClone.style.display !== 'none') {
+                // لو الضغطة مش جوه مربع البحث المنسوخ
+                if (!clonedSearchInput.contains(e.target) && e.target !== clonedSearchInput) {
+                    // لو فيه نص، النص يفضل موجود والمربع يصغر
+                    if (clonedSearchInput.value) {
+                        clonedSearchInput.style.width = '180px';
+                    }
+                }
+            }
+        });
     }
     
     // ⭐ تأثير إخفاء أيقونة البحث عند الفوكس (زي الأصل)
     if (clonedSearchInput && clonedSearchBox) {
         const clonedSearchIcon = clonedSearchBox.querySelector('.search-icon');
+        const clonedClearBtnLocal = clonedSearchBox.querySelector('.search-clear');
+        
         if (clonedSearchIcon) {
             clonedSearchInput.addEventListener('focus', function() {
                 clonedSearchIcon.style.opacity = '0';
                 clonedSearchIcon.style.visibility = 'hidden';
             });
             clonedSearchInput.addEventListener('blur', function() {
+                // لو المربع فاضي، نظهر الأيقونة تاني
                 if (!this.value) {
                     clonedSearchIcon.style.opacity = '';
                     clonedSearchIcon.style.visibility = '';
@@ -177,7 +197,6 @@ function bindSearchCloneEvents(searchSyncRowClone) {
         }
         
         // ⭐ زر المسح يظهر ويختفي (زي الأصل)
-        const clonedClearBtnLocal = clonedSearchBox.querySelector('.search-clear');
         if (clonedClearBtnLocal) {
             clonedSearchInput.addEventListener('input', function() {
                 if (this.value) {
@@ -192,23 +211,75 @@ function bindSearchCloneEvents(searchSyncRowClone) {
                 }
             });
             clonedSearchInput.addEventListener('blur', function() {
+                // ⭐ عند الخروج من الفوكس، لو فيه نص زر المسح يفضل ظاهر
                 if (!this.value) {
                     clonedClearBtnLocal.style.display = 'none';
                 }
+                // لو فيه نص، زر المسح يفضل ظاهر
             });
         }
     }
     
-    // ربط زر مسح البحث
+    // ⭐ ربط زر مسح البحث: يمسح النص + يقفل الفوكس + يرجع كل البيانات
     if (clonedClearBtn && originalClearBtn) {
         clonedClearBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            originalClearBtn.click();
-            // تفريغ المنسوخ وتصغيره بعد المسح
+            
+            // 1. مسح النص في المنسوخ
+            if (clonedSearchInput) {
+                clonedSearchInput.value = '';
+                clonedSearchInput.style.width = '180px';
+            }
+            
+            // 2. مسح النص في الأصلي
+            if (originalSearchInput) {
+                originalSearchInput.value = '';
+            }
+            
+            // 3. قفل الفوكس (blur) من مربع البحث المنسوخ
+            if (clonedSearchInput) {
+                clonedSearchInput.blur();
+            }
+            
+            // 4. تفعيل فلتر "الكل" لإظهار جميع البيانات
+            const clonedFilterBtns = searchSyncRowClone.querySelectorAll('.filter-btn');
+            const originalFilterBtns = document.querySelectorAll('#searchSyncRow .filter-btn');
+            
+            // تفعيل فلتر الكل في النسخة
+            clonedFilterBtns.forEach(b => {
+                b.classList.remove('active');
+                if (b.dataset.filter === 'all') {
+                    b.classList.add('active');
+                }
+            });
+            
+            // تفعيل فلتر الكل في الأصلي
+            originalFilterBtns.forEach(origBtn => {
+                origBtn.classList.remove('active');
+                if (origBtn.dataset.filter === 'all') {
+                    origBtn.classList.add('active');
+                    origBtn.click();
+                }
+            });
+            
+            // 5. إخفاء زر المسح
+            const clonedClearBtnLocal = clonedSearchBox ? clonedSearchBox.querySelector('.search-clear') : null;
+            if (clonedClearBtnLocal) {
+                clonedClearBtnLocal.style.display = 'none';
+            }
+            
+            // 6. إظهار أيقونة البحث
+            const clonedSearchIcon = clonedSearchBox ? clonedSearchBox.querySelector('.search-icon') : null;
+            if (clonedSearchIcon) {
+                clonedSearchIcon.style.opacity = '';
+                clonedSearchIcon.style.visibility = '';
+            }
+            
+            // 7. تشغيل حدث input فاضي على الأصلي عشان يرجع كل البيانات
             setTimeout(() => {
-                if (clonedSearchInput) {
-                    clonedSearchInput.value = '';
-                    clonedSearchInput.style.width = '180px';
+                if (originalSearchInput) {
+                    originalSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    originalSearchInput.dispatchEvent(new Event('keyup', { bubbles: true }));
                 }
             }, 50);
         });
