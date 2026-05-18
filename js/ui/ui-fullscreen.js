@@ -6,13 +6,12 @@ function toggleFullscreenTable() {
     const exitBtn = document.getElementById('exitFullscreenBtn');
     const viewToggle = document.getElementById('viewToggle');
     const toolbarRow = document.getElementById('toolbarRow');
-    const fullscreenBtnRow = document.getElementById('fullscreenBtnRow');
-    const cardsCountHeader = document.getElementById('cardsCountHeader');
+    const cardsCountHeaderRow = document.getElementById('cardsCountHeaderRow') || document.querySelector('.cards-count-header-row');
     
     // النسخ الثابتة (موجودة في HTML)
     const viewToggleClone = document.getElementById('viewToggleClone');
     const toolbarRowClone = document.getElementById('toolbarRowClone');
-    const cardsCountHeaderClone = document.getElementById('cardsCountHeaderClone');
+    const cardsCountHeaderRowClone = document.getElementById('cardsCountHeaderRowClone');
     
     if (!section) return;
     
@@ -21,29 +20,35 @@ function toggleFullscreenTable() {
     if (isEntering) {
         // ⭐ دخول وضع ملء الشاشة
         
-        // تحديث محتوى النسخ من العناصر الأصلية
+        // نسخ محتوى أزرار تبديل العرض
         if (viewToggleClone && viewToggle) {
             viewToggleClone.innerHTML = viewToggle.innerHTML;
             viewToggleClone.style.display = '';
-            // إعادة ربط أحداث الأزرار في النسخة
             bindCloneEvents(viewToggleClone);
         }
+        
+        // نسخ محتوى شريط الأدوات (بحث + فلاتر + مزامنة)
         if (toolbarRowClone && toolbarRow) {
             toolbarRowClone.innerHTML = toolbarRow.innerHTML;
             toolbarRowClone.style.display = '';
-            // إعادة ربط أحداث البحث والفلترة في النسخة
             bindToolbarCloneEvents(toolbarRowClone);
         }
-        if (cardsCountHeaderClone && cardsCountHeader) {
-            cardsCountHeaderClone.innerHTML = cardsCountHeader.innerHTML;
-            cardsCountHeaderClone.style.display = '';
+        
+        // نسخ صف زر ملء الشاشة + عداد البطاقات
+        if (cardsCountHeaderRowClone && cardsCountHeaderRow) {
+            cardsCountHeaderRowClone.innerHTML = cardsCountHeaderRow.innerHTML;
+            cardsCountHeaderRowClone.style.display = '';
+            // إخفاء زر ملء الشاشة في النسخة (لأننا بالفعل في وضع fullscreen)
+            const clonedEnterBtn = cardsCountHeaderRowClone.querySelector('#enterFullscreenBtn, .fullscreen-enter-btn');
+            if (clonedEnterBtn) {
+                clonedEnterBtn.style.display = 'none';
+            }
         }
         
-        // إخفاء العناصر الأصلية (استخدام visibility عشان يحتفظوا بمساحتهم)
+        // إخفاء العناصر الأصلية
         if (viewToggle) viewToggle.style.visibility = 'hidden';
         if (toolbarRow) toolbarRow.style.visibility = 'hidden';
-        if (fullscreenBtnRow) fullscreenBtnRow.style.visibility = 'hidden';
-        if (cardsCountHeader) cardsCountHeader.style.visibility = 'hidden';
+        if (cardsCountHeaderRow) cardsCountHeaderRow.style.visibility = 'hidden';
         
         section.classList.add('fullscreen');
         
@@ -61,13 +66,12 @@ function toggleFullscreenTable() {
         // إخفاء النسخ
         if (viewToggleClone) viewToggleClone.style.display = 'none';
         if (toolbarRowClone) toolbarRowClone.style.display = 'none';
-        if (cardsCountHeaderClone) cardsCountHeaderClone.style.display = 'none';
+        if (cardsCountHeaderRowClone) cardsCountHeaderRowClone.style.display = 'none';
         
         // إظهار العناصر الأصلية
         if (viewToggle) viewToggle.style.visibility = '';
         if (toolbarRow) toolbarRow.style.visibility = '';
-        if (fullscreenBtnRow) fullscreenBtnRow.style.visibility = '';
-        if (cardsCountHeader) cardsCountHeader.style.visibility = '';
+        if (cardsCountHeaderRow) cardsCountHeaderRow.style.visibility = '';
         
         section.classList.remove('fullscreen');
         
@@ -85,12 +89,10 @@ function bindCloneEvents(viewToggleClone) {
     const buttons = viewToggleClone.querySelectorAll('.view-toggle-btn');
     buttons.forEach(btn => {
         btn.addEventListener('click', function() {
-            // محاكاة الضغط على الزر الأصلي
             const originalBtn = document.querySelector(`#viewToggle .view-toggle-btn[data-view="${this.dataset.view}"]`);
             if (originalBtn) {
                 originalBtn.click();
             }
-            // تحديث نشاط الأزرار في النسخة
             buttons.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
         });
@@ -135,7 +137,6 @@ function bindToolbarCloneEvents(toolbarRowClone) {
                     origBtn.click();
                 }
             });
-            // تحديث الكلاسات في النسخة
             filterBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
         });
@@ -152,9 +153,7 @@ function updateFullscreenCardsView() {
     
     if (!section || !cardsContainer) return;
     
-    // التحقق إذا كان عرض الكروت نشط
     if (tableViewBtn && !tableViewBtn.classList.contains('active')) {
-        // عرض الكروت نشط - ضبط التنسيق للـ fullscreen
         const screenWidth = window.innerWidth;
         if (screenWidth < 600) {
             cardsContainer.style.gridTemplateColumns = '1fr';
