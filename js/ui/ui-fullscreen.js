@@ -2,12 +2,13 @@
 
 function toggleFullscreenTable() {
     const section = document.getElementById('tableSection');
-    const btn = document.getElementById('toggleFullscreenBtn');
+    const enterBtn = document.getElementById('enterFullscreenBtn');
+    const exitBtn = document.getElementById('exitFullscreenBtn');
     const viewToggle = document.getElementById('viewToggle');
     const toolbarRow = document.getElementById('toolbarRow');
     const cardsCountHeader = document.getElementById('cardsCountHeader');
     
-    if (!section || !btn) return;
+    if (!section) return;
     
     const isEntering = !section.classList.contains('fullscreen');
     
@@ -20,8 +21,11 @@ function toggleFullscreenTable() {
         if (cardsCountHeader) section.insertBefore(cardsCountHeader, tableWrapper);
         
         section.classList.add('fullscreen');
-        btn.innerHTML = '✖';
-        btn.title = 'إغلاق وضع ملء الشاشة';
+        
+        // إخفاء زر الدخول، إظهار زر الخروج
+        if (enterBtn) enterBtn.style.display = 'none';
+        if (exitBtn) exitBtn.style.display = 'flex';
+        
         disableBodyScroll();
         history.pushState({ fullscreen: true }, '', '');
     } else {
@@ -39,8 +43,11 @@ function toggleFullscreenTable() {
         }
         
         section.classList.remove('fullscreen');
-        btn.innerHTML = '🖥️';
-        btn.title = 'تكبير الجدول';
+        
+        // إظهار زر الدخول، إخفاء زر الخروج
+        if (enterBtn) enterBtn.style.display = '';
+        if (exitBtn) exitBtn.style.display = 'none';
+        
         enableBodyScroll();
     }
 }
