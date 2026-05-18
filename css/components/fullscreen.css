@@ -22,15 +22,17 @@ body.dark-mode .table-section.fullscreen {
     background: #0d1117;
 }
 
-/* ========== الأدوات داخل وضع ملء الشاشة ========== */
-.table-section.fullscreen .view-toggle {
+/* ========== الأدوات داخل وضع ملء الشاشة (العناصر الأصلية لو موجودة) ========== */
+.table-section.fullscreen .view-toggle,
+#viewToggleClone {
     display: flex;
     justify-content: center;
     gap: 8px;
     margin-bottom: 0.5rem;
 }
 
-.table-section.fullscreen .toolbar-row {
+.table-section.fullscreen .toolbar-row,
+#toolbarRowClone {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -39,7 +41,8 @@ body.dark-mode .table-section.fullscreen {
     margin-bottom: 0.5rem;
 }
 
-.table-section.fullscreen .cards-count-header {
+.table-section.fullscreen .cards-count-header,
+#cardsCountHeaderClone {
     font-size: 0.8rem;
     font-weight: bold;
     text-align: right;
