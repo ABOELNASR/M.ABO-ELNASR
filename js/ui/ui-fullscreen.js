@@ -1,4 +1,4 @@
-// ========== ui-fullscreen.js - وضع ملء الشاشة للجدول =========
+// ========== ui-fullscreen.js - وضع ملء الشاشة للجدول ==========
 
 function toggleFullscreenTable() {
     const section = document.getElementById('tableSection');
