@@ -6,7 +6,8 @@ function toggleFullscreenTable() {
     const exitBtn = document.getElementById('exitFullscreenBtn');
     const viewToggle = document.getElementById('viewToggle');
     const toolbarRow = document.getElementById('toolbarRow');
-    const cardsCountHeaderRow = document.getElementById('cardsCountHeaderRow');
+    const fullscreenBtnRow = document.getElementById('fullscreenBtnRow');
+    const cardsCountHeader = document.getElementById('cardsCountHeader');
     
     if (!section) return;
     
@@ -28,16 +29,17 @@ function toggleFullscreenTable() {
             clone.id = 'toolbarRowClone';
             section.insertBefore(clone, tableWrapper);
         }
-        if (cardsCountHeaderRow) {
-            const clone = cardsCountHeaderRow.cloneNode(true);
-            clone.id = 'cardsCountHeaderRowClone';
+        if (cardsCountHeader) {
+            const clone = cardsCountHeader.cloneNode(true);
+            clone.id = 'cardsCountHeaderClone';
             section.insertBefore(clone, tableWrapper);
         }
         
         // إخفاء العناصر الأصلية
         if (viewToggle) viewToggle.style.display = 'none';
         if (toolbarRow) toolbarRow.style.display = 'none';
-        if (cardsCountHeaderRow) cardsCountHeaderRow.style.display = 'none';
+        if (fullscreenBtnRow) fullscreenBtnRow.style.display = 'none';
+        if (cardsCountHeader) cardsCountHeader.style.display = 'none';
         
         section.classList.add('fullscreen');
         
@@ -51,13 +53,14 @@ function toggleFullscreenTable() {
         // ⭐ خروج من وضع ملء الشاشة - حذف النسخ
         
         // حذف النسخ اللي أضفناها
-        const clones = section.querySelectorAll('#viewToggleClone, #toolbarRowClone, #cardsCountHeaderRowClone');
+        const clones = section.querySelectorAll('#viewToggleClone, #toolbarRowClone, #cardsCountHeaderClone');
         clones.forEach(clone => clone.remove());
         
         // إظهار العناصر الأصلية تاني
         if (viewToggle) viewToggle.style.display = '';
         if (toolbarRow) toolbarRow.style.display = '';
-        if (cardsCountHeaderRow) cardsCountHeaderRow.style.display = '';
+        if (fullscreenBtnRow) fullscreenBtnRow.style.display = '';
+        if (cardsCountHeader) cardsCountHeader.style.display = '';
         
         section.classList.remove('fullscreen');
         
