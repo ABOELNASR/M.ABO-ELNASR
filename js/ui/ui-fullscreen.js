@@ -5,13 +5,15 @@ function toggleFullscreenTable() {
     const enterBtn = document.getElementById('enterFullscreenBtn');
     const exitBtn = document.getElementById('exitFullscreenBtn');
     const viewToggle = document.getElementById('viewToggle');
-    const toolbarRow = document.getElementById('toolbarRow');
-    const cardsCountHeaderRow = document.getElementById('cardsCountHeaderRow') || document.querySelector('.cards-count-header-row');
+    const searchSyncRow = document.getElementById('searchSyncRow');
+    const filterRow = document.getElementById('filterRow');
+    const infoBarRow = document.getElementById('infoBarRow');
     
     // النسخ الثابتة (موجودة في HTML)
     const viewToggleClone = document.getElementById('viewToggleClone');
-    const toolbarRowClone = document.getElementById('toolbarRowClone');
-    const cardsCountHeaderRowClone = document.getElementById('cardsCountHeaderRowClone');
+    const searchSyncRowClone = document.getElementById('searchSyncRowClone');
+    const filterRowClone = document.getElementById('filterRowClone');
+    const infoBarRowClone = document.getElementById('infoBarRowClone');
     
     if (!section) return;
     
@@ -27,19 +29,26 @@ function toggleFullscreenTable() {
             bindCloneEvents(viewToggleClone);
         }
         
-        // نسخ محتوى شريط الأدوات (بحث + فلاتر + مزامنة)
-        if (toolbarRowClone && toolbarRow) {
-            toolbarRowClone.innerHTML = toolbarRow.innerHTML;
-            toolbarRowClone.style.display = '';
-            bindToolbarCloneEvents(toolbarRowClone);
+        // نسخ صف البحث + متزامن
+        if (searchSyncRowClone && searchSyncRow) {
+            searchSyncRowClone.innerHTML = searchSyncRow.innerHTML;
+            searchSyncRowClone.style.display = '';
+            bindSearchCloneEvents(searchSyncRowClone);
+        }
+        
+        // نسخ أزرار الفلاتر
+        if (filterRowClone && filterRow) {
+            filterRowClone.innerHTML = filterRow.innerHTML;
+            filterRowClone.style.display = '';
+            bindFilterCloneEvents(filterRowClone);
         }
         
         // نسخ صف زر ملء الشاشة + عداد البطاقات
-        if (cardsCountHeaderRowClone && cardsCountHeaderRow) {
-            cardsCountHeaderRowClone.innerHTML = cardsCountHeaderRow.innerHTML;
-            cardsCountHeaderRowClone.style.display = '';
-            // إخفاء زر ملء الشاشة في النسخة (لأننا بالفعل في وضع fullscreen)
-            const clonedEnterBtn = cardsCountHeaderRowClone.querySelector('#enterFullscreenBtn, .fullscreen-enter-btn');
+        if (infoBarRowClone && infoBarRow) {
+            infoBarRowClone.innerHTML = infoBarRow.innerHTML;
+            infoBarRowClone.style.display = '';
+            // إخفاء زر ملء الشاشة في النسخة
+            const clonedEnterBtn = infoBarRowClone.querySelector('.fullscreen-enter-btn');
             if (clonedEnterBtn) {
                 clonedEnterBtn.style.display = 'none';
             }
@@ -47,8 +56,9 @@ function toggleFullscreenTable() {
         
         // إخفاء العناصر الأصلية
         if (viewToggle) viewToggle.style.visibility = 'hidden';
-        if (toolbarRow) toolbarRow.style.visibility = 'hidden';
-        if (cardsCountHeaderRow) cardsCountHeaderRow.style.visibility = 'hidden';
+        if (searchSyncRow) searchSyncRow.style.visibility = 'hidden';
+        if (filterRow) filterRow.style.visibility = 'hidden';
+        if (infoBarRow) infoBarRow.style.visibility = 'hidden';
         
         section.classList.add('fullscreen');
         
@@ -65,13 +75,15 @@ function toggleFullscreenTable() {
         
         // إخفاء النسخ
         if (viewToggleClone) viewToggleClone.style.display = 'none';
-        if (toolbarRowClone) toolbarRowClone.style.display = 'none';
-        if (cardsCountHeaderRowClone) cardsCountHeaderRowClone.style.display = 'none';
+        if (searchSyncRowClone) searchSyncRowClone.style.display = 'none';
+        if (filterRowClone) filterRowClone.style.display = 'none';
+        if (infoBarRowClone) infoBarRowClone.style.display = 'none';
         
         // إظهار العناصر الأصلية
         if (viewToggle) viewToggle.style.visibility = '';
-        if (toolbarRow) toolbarRow.style.visibility = '';
-        if (cardsCountHeaderRow) cardsCountHeaderRow.style.visibility = '';
+        if (searchSyncRow) searchSyncRow.style.visibility = '';
+        if (filterRow) filterRow.style.visibility = '';
+        if (infoBarRow) infoBarRow.style.visibility = '';
         
         section.classList.remove('fullscreen');
         
@@ -100,14 +112,13 @@ function bindCloneEvents(viewToggleClone) {
 }
 
 /**
- * إعادة ربط أحداث البحث والفلترة في النسخة
+ * إعادة ربط أحداث البحث في النسخة
  */
-function bindToolbarCloneEvents(toolbarRowClone) {
-    // ربط البحث
-    const searchInput = toolbarRowClone.querySelector('#searchInput');
+function bindSearchCloneEvents(searchSyncRowClone) {
+    const searchInput = searchSyncRowClone.querySelector('#searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', function() {
-            const originalInput = document.querySelector('#toolbarRow #searchInput');
+            const originalInput = document.querySelector('#searchSyncRow #searchInput');
             if (originalInput) {
                 originalInput.value = this.value;
                 originalInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -115,23 +126,26 @@ function bindToolbarCloneEvents(toolbarRowClone) {
         });
     }
     
-    // ربط زر مسح البحث
-    const clearBtn = toolbarRowClone.querySelector('#clearSearchBtn');
+    const clearBtn = searchSyncRowClone.querySelector('#clearSearchBtn');
     if (clearBtn) {
         clearBtn.addEventListener('click', function() {
-            const originalClear = document.querySelector('#toolbarRow #clearSearchBtn');
+            const originalClear = document.querySelector('#searchSyncRow #clearSearchBtn');
             if (originalClear) {
                 originalClear.click();
             }
         });
     }
-    
-    // ربط أزرار الفلتر
-    const filterBtns = toolbarRowClone.querySelectorAll('.filter-btn');
+}
+
+/**
+ * إعادة ربط أحداث الفلاتر في النسخة
+ */
+function bindFilterCloneEvents(filterRowClone) {
+    const filterBtns = filterRowClone.querySelectorAll('.filter-btn');
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const filter = this.dataset.filter;
-            const originalBtns = document.querySelectorAll('#toolbarRow .filter-btn');
+            const originalBtns = document.querySelectorAll('#filterRow .filter-btn');
             originalBtns.forEach(origBtn => {
                 if (origBtn.dataset.filter === filter) {
                     origBtn.click();
