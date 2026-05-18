@@ -6,13 +6,11 @@ function toggleFullscreenTable() {
     const exitBtn = document.getElementById('exitFullscreenBtn');
     const viewToggle = document.getElementById('viewToggle');
     const searchSyncRow = document.getElementById('searchSyncRow');
-    const filterRow = document.getElementById('filterRow');
     const infoBarRow = document.getElementById('infoBarRow');
     
     // النسخ الثابتة (موجودة في HTML)
     const viewToggleClone = document.getElementById('viewToggleClone');
     const searchSyncRowClone = document.getElementById('searchSyncRowClone');
-    const filterRowClone = document.getElementById('filterRowClone');
     const infoBarRowClone = document.getElementById('infoBarRowClone');
     
     if (!section) return;
@@ -29,18 +27,11 @@ function toggleFullscreenTable() {
             bindCloneEvents(viewToggleClone);
         }
         
-        // نسخ صف البحث + متزامن
+        // نسخ صف البحث + الفلاتر + متزامن
         if (searchSyncRowClone && searchSyncRow) {
             searchSyncRowClone.innerHTML = searchSyncRow.innerHTML;
             searchSyncRowClone.style.display = '';
             bindSearchCloneEvents(searchSyncRowClone);
-        }
-        
-        // نسخ أزرار الفلاتر
-        if (filterRowClone && filterRow) {
-            filterRowClone.innerHTML = filterRow.innerHTML;
-            filterRowClone.style.display = '';
-            bindFilterCloneEvents(filterRowClone);
         }
         
         // نسخ صف زر ملء الشاشة + عداد البطاقات
@@ -57,7 +48,6 @@ function toggleFullscreenTable() {
         // إخفاء العناصر الأصلية
         if (viewToggle) viewToggle.style.visibility = 'hidden';
         if (searchSyncRow) searchSyncRow.style.visibility = 'hidden';
-        if (filterRow) filterRow.style.visibility = 'hidden';
         if (infoBarRow) infoBarRow.style.visibility = 'hidden';
         
         section.classList.add('fullscreen');
@@ -70,19 +60,35 @@ function toggleFullscreenTable() {
         
         // تحديث عرض الكروت إذا كان نشط
         updateFullscreenCardsView();
+        
+        // إعطاء فوكس لمربع البحث المنسوخ لو كان فيه نص
+        setTimeout(() => {
+            const clonedSearchInput = searchSyncRowClone.querySelector('#searchInput');
+            const originalSearchInput = document.getElementById('searchInput');
+            if (clonedSearchInput && originalSearchInput && originalSearchInput.value) {
+                clonedSearchInput.value = originalSearchInput.value;
+            }
+        }, 100);
+        
     } else {
         // ⭐ خروج من وضع ملء الشاشة
+        
+        // نسخ قيمة البحث من المنسوخ للأصلي قبل الخروج
+        const clonedSearchInput = searchSyncRowClone ? searchSyncRowClone.querySelector('#searchInput') : null;
+        const originalSearchInput = document.getElementById('searchInput');
+        if (clonedSearchInput && originalSearchInput) {
+            originalSearchInput.value = clonedSearchInput.value;
+            originalSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
         
         // إخفاء النسخ
         if (viewToggleClone) viewToggleClone.style.display = 'none';
         if (searchSyncRowClone) searchSyncRowClone.style.display = 'none';
-        if (filterRowClone) filterRowClone.style.display = 'none';
         if (infoBarRowClone) infoBarRowClone.style.display = 'none';
         
         // إظهار العناصر الأصلية
         if (viewToggle) viewToggle.style.visibility = '';
         if (searchSyncRow) searchSyncRow.style.visibility = '';
-        if (filterRow) filterRow.style.visibility = '';
         if (infoBarRow) infoBarRow.style.visibility = '';
         
         section.classList.remove('fullscreen');
@@ -112,46 +118,71 @@ function bindCloneEvents(viewToggleClone) {
 }
 
 /**
- * إعادة ربط أحداث البحث في النسخة
+ * إعادة ربط أحداث البحث والفلاتر في النسخة
  */
 function bindSearchCloneEvents(searchSyncRowClone) {
-    const searchInput = searchSyncRowClone.querySelector('#searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            const originalInput = document.querySelector('#searchSyncRow #searchInput');
-            if (originalInput) {
-                originalInput.value = this.value;
-                originalInput.dispatchEvent(new Event('input', { bubbles: true }));
+    if (!searchSyncRowClone) return;
+    
+    const clonedSearchInput = searchSyncRowClone.querySelector('#searchInput');
+    const originalSearchInput = document.getElementById('searchInput');
+    const clonedClearBtn = searchSyncRowClone.querySelector('#clearSearchBtn');
+    const originalClearBtn = document.getElementById('clearSearchBtn');
+    
+    // ⭐ ربط الفوكس والكتابة: المنسوخ يحدث الأصلي مباشرة
+    if (clonedSearchInput && originalSearchInput) {
+        // حدث input: أي حرف بيتكتب في المنسوخ بينعكس فورًا على الأصلي
+        clonedSearchInput.addEventListener('input', function() {
+            originalSearchInput.value = this.value;
+            originalSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        
+        // حدث focus: لو فيه قيمة قديمة تتنقل
+        clonedSearchInput.addEventListener('focus', function() {
+            if (originalSearchInput.value && !this.value) {
+                this.value = originalSearchInput.value;
             }
+        });
+        
+        // حدث blur: نتأكد إن القيم متطابقة
+        clonedSearchInput.addEventListener('blur', function() {
+            originalSearchInput.value = this.value;
+        });
+        
+        // حدث keyup للبحث الفوري
+        clonedSearchInput.addEventListener('keyup', function() {
+            originalSearchInput.value = this.value;
+            originalSearchInput.dispatchEvent(new Event('keyup', { bubbles: true }));
         });
     }
     
-    const clearBtn = searchSyncRowClone.querySelector('#clearSearchBtn');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
-            const originalClear = document.querySelector('#searchSyncRow #clearSearchBtn');
-            if (originalClear) {
-                originalClear.click();
-            }
+    // ربط زر مسح البحث
+    if (clonedClearBtn && originalClearBtn) {
+        clonedClearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            originalClearBtn.click();
+            // تفريغ المنسوخ بعد المسح
+            setTimeout(() => {
+                if (clonedSearchInput) {
+                    clonedSearchInput.value = '';
+                }
+            }, 50);
         });
     }
-}
-
-/**
- * إعادة ربط أحداث الفلاتر في النسخة
- */
-function bindFilterCloneEvents(filterRowClone) {
-    const filterBtns = filterRowClone.querySelectorAll('.filter-btn');
-    filterBtns.forEach(btn => {
+    
+    // ربط أزرار الفلاتر
+    const clonedFilterBtns = searchSyncRowClone.querySelectorAll('.filter-btn');
+    const originalFilterBtns = document.querySelectorAll('#searchSyncRow .filter-btn');
+    
+    clonedFilterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const filter = this.dataset.filter;
-            const originalBtns = document.querySelectorAll('#filterRow .filter-btn');
-            originalBtns.forEach(origBtn => {
+            originalFilterBtns.forEach(origBtn => {
                 if (origBtn.dataset.filter === filter) {
                     origBtn.click();
                 }
             });
-            filterBtns.forEach(b => b.classList.remove('active'));
+            // تحديث الكلاسات في النسخة
+            clonedFilterBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
         });
     });
