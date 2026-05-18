@@ -304,6 +304,10 @@ async function initApp() {
     safeSetOnclick('logoutBtn', logout);
     safeSetOnclick('addCardBtn', addNewCard);
 
+    // ⭐ ربط زرارين وضع ملء الشاشة
+    safeSetOnclick('enterFullscreenBtn', toggleFullscreenTable);
+    safeSetOnclick('exitFullscreenBtn', toggleFullscreenTable);
+
     tempCardsList = [];
     if (typeof renderTempCards === 'function') renderTempCards();
     updateDateTime();
