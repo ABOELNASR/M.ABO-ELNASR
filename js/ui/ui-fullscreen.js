@@ -9,62 +9,61 @@ function toggleFullscreenTable() {
     const fullscreenBtnRow = document.getElementById('fullscreenBtnRow');
     const cardsCountHeader = document.getElementById('cardsCountHeader');
     
+    // النسخ الثابتة (موجودة في HTML)
+    const viewToggleClone = document.getElementById('viewToggleClone');
+    const toolbarRowClone = document.getElementById('toolbarRowClone');
+    const cardsCountHeaderClone = document.getElementById('cardsCountHeaderClone');
+    
     if (!section) return;
     
     const isEntering = !section.classList.contains('fullscreen');
     
     if (isEntering) {
-        // ⭐ دخول وضع ملء الشاشة - إنشاء نسخ وإضافتها لـ tableSection
+        // ⭐ دخول وضع ملء الشاشة
         
-        const tableWrapper = document.getElementById('tableWrapper');
-        
-        // إنشاء نسخ من العناصر الأصلية (العناصر الأصلية تفضل في مكانها)
-        if (viewToggle) {
-            const clone = viewToggle.cloneNode(true);
-            clone.id = 'viewToggleClone';
-            section.insertBefore(clone, tableWrapper);
+        // تحديث محتوى النسخ من العناصر الأصلية
+        if (viewToggleClone && viewToggle) {
+            viewToggleClone.innerHTML = viewToggle.innerHTML;
+            viewToggleClone.style.display = '';
         }
-        if (toolbarRow) {
-            const clone = toolbarRow.cloneNode(true);
-            clone.id = 'toolbarRowClone';
-            section.insertBefore(clone, tableWrapper);
+        if (toolbarRowClone && toolbarRow) {
+            toolbarRowClone.innerHTML = toolbarRow.innerHTML;
+            toolbarRowClone.style.display = '';
         }
-        if (cardsCountHeader) {
-            const clone = cardsCountHeader.cloneNode(true);
-            clone.id = 'cardsCountHeaderClone';
-            section.insertBefore(clone, tableWrapper);
+        if (cardsCountHeaderClone && cardsCountHeader) {
+            cardsCountHeaderClone.innerHTML = cardsCountHeader.innerHTML;
+            cardsCountHeaderClone.style.display = '';
         }
         
-        // إخفاء العناصر الأصلية
-        if (viewToggle) viewToggle.style.display = 'none';
-        if (toolbarRow) toolbarRow.style.display = 'none';
-        if (fullscreenBtnRow) fullscreenBtnRow.style.display = 'none';
-        if (cardsCountHeader) cardsCountHeader.style.display = 'none';
+        // إخفاء العناصر الأصلية (استخدام visibility عشان يحتفظوا بمساحتهم)
+        if (viewToggle) viewToggle.style.visibility = 'hidden';
+        if (toolbarRow) toolbarRow.style.visibility = 'hidden';
+        if (fullscreenBtnRow) fullscreenBtnRow.style.visibility = 'hidden';
+        if (cardsCountHeader) cardsCountHeader.style.visibility = 'hidden';
         
         section.classList.add('fullscreen');
         
-        // إخفاء زر الدخول، إظهار زر الخروج
         if (enterBtn) enterBtn.style.display = 'none';
         if (exitBtn) exitBtn.style.display = 'flex';
         
         disableBodyScroll();
         history.pushState({ fullscreen: true }, '', '');
     } else {
-        // ⭐ خروج من وضع ملء الشاشة - حذف النسخ
+        // ⭐ خروج من وضع ملء الشاشة
         
-        // حذف النسخ اللي أضفناها
-        const clones = section.querySelectorAll('#viewToggleClone, #toolbarRowClone, #cardsCountHeaderClone');
-        clones.forEach(clone => clone.remove());
+        // إخفاء النسخ
+        if (viewToggleClone) viewToggleClone.style.display = 'none';
+        if (toolbarRowClone) toolbarRowClone.style.display = 'none';
+        if (cardsCountHeaderClone) cardsCountHeaderClone.style.display = 'none';
         
-        // إظهار العناصر الأصلية تاني
-        if (viewToggle) viewToggle.style.display = '';
-        if (toolbarRow) toolbarRow.style.display = '';
-        if (fullscreenBtnRow) fullscreenBtnRow.style.display = '';
-        if (cardsCountHeader) cardsCountHeader.style.display = '';
+        // إظهار العناصر الأصلية
+        if (viewToggle) viewToggle.style.visibility = '';
+        if (toolbarRow) toolbarRow.style.visibility = '';
+        if (fullscreenBtnRow) fullscreenBtnRow.style.visibility = '';
+        if (cardsCountHeader) cardsCountHeader.style.visibility = '';
         
         section.classList.remove('fullscreen');
         
-        // إظهار زر الدخول، إخفاء زر الخروج
         if (enterBtn) enterBtn.style.display = '';
         if (exitBtn) exitBtn.style.display = 'none';
         
