@@ -40,26 +40,24 @@ function toggleFullscreenTable() {
 function exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, isBackButton) {
     if (!section || !btn) return;
     
-    // إرجاع الأدوات إلى أماكنها الأصلية (قبل table-section)
+    // ⭐ إرجاع الزر إلى toolbarRow الأول
+    if (btn && btn.parentNode === document.body) {
+        if (toolbarRow) {
+            toolbarRow.appendChild(btn);
+        }
+    }
+    
+    // ⭐ إرجاع الأدوات إلى أماكنها الأصلية بنفس الترتيب: viewToggle → toolbarRow → cardsCountHeader
     const parent = section.parentNode;
+    
     if (viewToggle && viewToggle.parentNode === section) {
         parent.insertBefore(viewToggle, section);
     }
     if (toolbarRow && toolbarRow.parentNode === section) {
-        // إرجاع الزر إلى داخل toolbarRow
-        if (btn && btn.parentNode === document.body) {
-            toolbarRow.appendChild(btn);
-        }
         parent.insertBefore(toolbarRow, section);
     }
     if (cardsCountHeader && cardsCountHeader.parentNode === section) {
         parent.insertBefore(cardsCountHeader, section);
-    }
-    
-    // لو الزر لسه في body، نرجعه لـ toolbarRow
-    if (btn && btn.parentNode === document.body) {
-        const tr = document.getElementById('toolbarRow');
-        if (tr) tr.appendChild(btn);
     }
     
     section.classList.remove('fullscreen');
