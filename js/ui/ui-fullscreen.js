@@ -127,6 +127,7 @@ function bindSearchCloneEvents(searchSyncRowClone) {
     const originalSearchInput = document.getElementById('searchInput');
     const clonedClearBtn = searchSyncRowClone.querySelector('#clearSearchBtn');
     const originalClearBtn = document.getElementById('clearSearchBtn');
+    const clonedSearchBox = searchSyncRowClone.querySelector('.search-box');
     
     // ⭐ ربط الفوكس والكتابة: المنسوخ يحدث الأصلي مباشرة
     if (clonedSearchInput && originalSearchInput) {
@@ -136,15 +137,19 @@ function bindSearchCloneEvents(searchSyncRowClone) {
             originalSearchInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
         
-        // حدث focus: لو فيه قيمة قديمة تتنقل
+        // ⭐ تأثير بصري: تكبير مربع البحث عند الفوكس
         clonedSearchInput.addEventListener('focus', function() {
+            this.style.width = '200px';
             if (originalSearchInput.value && !this.value) {
                 this.value = originalSearchInput.value;
             }
         });
         
-        // حدث blur: نتأكد إن القيم متطابقة
+        // ⭐ تأثير بصري: تصغير مربع البحث عند الخروج
         clonedSearchInput.addEventListener('blur', function() {
+            if (!this.value) {
+                this.style.width = '180px';
+            }
             originalSearchInput.value = this.value;
         });
         
@@ -155,15 +160,55 @@ function bindSearchCloneEvents(searchSyncRowClone) {
         });
     }
     
+    // ⭐ تأثير إخفاء أيقونة البحث عند الفوكس (زي الأصل)
+    if (clonedSearchInput && clonedSearchBox) {
+        const clonedSearchIcon = clonedSearchBox.querySelector('.search-icon');
+        if (clonedSearchIcon) {
+            clonedSearchInput.addEventListener('focus', function() {
+                clonedSearchIcon.style.opacity = '0';
+                clonedSearchIcon.style.visibility = 'hidden';
+            });
+            clonedSearchInput.addEventListener('blur', function() {
+                if (!this.value) {
+                    clonedSearchIcon.style.opacity = '';
+                    clonedSearchIcon.style.visibility = '';
+                }
+            });
+        }
+        
+        // ⭐ زر المسح يظهر ويختفي (زي الأصل)
+        const clonedClearBtnLocal = clonedSearchBox.querySelector('.search-clear');
+        if (clonedClearBtnLocal) {
+            clonedSearchInput.addEventListener('input', function() {
+                if (this.value) {
+                    clonedClearBtnLocal.style.display = 'flex';
+                } else {
+                    clonedClearBtnLocal.style.display = 'none';
+                }
+            });
+            clonedSearchInput.addEventListener('focus', function() {
+                if (this.value) {
+                    clonedClearBtnLocal.style.display = 'flex';
+                }
+            });
+            clonedSearchInput.addEventListener('blur', function() {
+                if (!this.value) {
+                    clonedClearBtnLocal.style.display = 'none';
+                }
+            });
+        }
+    }
+    
     // ربط زر مسح البحث
     if (clonedClearBtn && originalClearBtn) {
         clonedClearBtn.addEventListener('click', function(e) {
             e.preventDefault();
             originalClearBtn.click();
-            // تفريغ المنسوخ بعد المسح
+            // تفريغ المنسوخ وتصغيره بعد المسح
             setTimeout(() => {
                 if (clonedSearchInput) {
                     clonedSearchInput.value = '';
+                    clonedSearchInput.style.width = '180px';
                 }
             }, 50);
         });
