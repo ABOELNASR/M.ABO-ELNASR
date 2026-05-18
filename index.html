@@ -63,7 +63,7 @@
             -webkit-user-select: text;
         }
         
-        /* ========== تنسيقات مزامنة مؤقتة ========== */
+        /* ========== تنسيقات مزامنة ========== */
         .sync-status {
             display: flex;
             align-items: center;
@@ -200,7 +200,13 @@
             </div>
         </div>
 
-        <!-- ========== شريط الأدوات ========== -->
+        <!-- ========== أزرار تبديل العرض (جدول/كروت) ========== -->
+        <div class="view-toggle" id="viewToggle">
+            <button id="tableViewBtn" class="view-toggle-btn active" data-view="table" title="عرض جدول">📋 جدول</button>
+            <button id="cardsViewBtn" class="view-toggle-btn" data-view="cards" title="عرض كروت">🃏 كروت</button>
+        </div>
+
+        <!-- ========== شريط الأدوات (بحث + فلاتر + مزامنة) ========== -->
         <div class="toolbar-row" id="toolbarRow">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="بحث">
@@ -209,35 +215,27 @@
             </div>
             <div class="filter-group">
                 <button data-filter="all" class="filter-btn active">الكل</button>
-                <button data-filter="paid" class="filter-btn">✅ مدفوع بالكامل</button>
-                <button data-filter="unpaid" class="filter-btn">❌ عليه متبقي</button>
-                <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح الفلتر</button>
+                <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
+                <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
+                <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح</button>
             </div>
             <div class="sync-status" id="syncStatus">
                 <span class="sync-dot green"></span> متزامن
             </div>
         </div>
 
-        <!-- ========== أزرار تبديل العرض ========== -->
-        <div class="view-toggle" id="viewToggle">
-            <button id="tableViewBtn" class="view-toggle-btn active" data-view="table" title="عرض جدول">📋 جدول</button>
-            <button id="cardsViewBtn" class="view-toggle-btn" data-view="cards" title="عرض كروت">🃏 كروت</button>
+        <!-- ========== صف: زر ملء الشاشة (يسار) + عداد البطاقات (يمين) ========== -->
+        <div class="cards-count-header-row">
+            <button id="enterFullscreenBtn" class="btn btn-sm btn-info fullscreen-enter-btn" title="تكبير الجدول">🖥️</button>
+            <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
         </div>
-
-        <!-- ========== زر ملء الشاشة + عداد البطاقات ========== -->
-        <div class="fullscreen-btn-row" id="fullscreenBtnRow">
-            <button id="enterFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
-        </div>
-
-        <!-- ========== عداد البطاقات ========== -->
-        <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
 
         <!-- ========== حاوية الجدول والكروت ========== -->
         <div class="table-section" id="tableSection">
             <!-- نسخ ثابتة للـ Fullscreen (مخفية في الوضع العادي) -->
             <div class="fullscreen-clone" id="viewToggleClone" style="display:none;"></div>
             <div class="fullscreen-clone" id="toolbarRowClone" style="display:none;"></div>
-            <div class="fullscreen-clone" id="cardsCountHeaderClone" style="display:none;"></div>
+            <div class="fullscreen-clone" id="cardsCountHeaderRowClone" style="display:none;"></div>
             
             <!-- جدول المشتركين -->
             <div class="table-wrapper" id="tableWrapper">
