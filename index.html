@@ -164,19 +164,26 @@
             </div>
         </div>
 
-        <!-- ========== أزرار تبديل العرض (جدول/كروت) ========== -->
+        <!-- ========== ١. أزرار تبديل العرض (جدول/كروت) في المنتصف ========== -->
         <div class="view-toggle" id="viewToggle">
             <button id="tableViewBtn" class="view-toggle-btn active" data-view="table" title="عرض جدول">📋 جدول</button>
             <button id="cardsViewBtn" class="view-toggle-btn" data-view="cards" title="عرض كروت">🃏 كروت</button>
         </div>
 
-        <!-- ========== شريط الأدوات (بحث + فلاتر) ========== -->
-        <div class="toolbar-row" id="toolbarRow">
+        <!-- ========== ٢. صف: مربع البحث (يمين) + متزامن (يسار) ========== -->
+        <div class="search-sync-row" id="searchSyncRow">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="بحث">
                 <span class="search-icon">🔍</span>
                 <button class="search-clear" id="clearSearchBtn" title="مسح البحث">✖</button>
             </div>
+            <div class="sync-status" id="syncStatus">
+                <span class="sync-dot green"></span> متزامن
+            </div>
+        </div>
+
+        <!-- ========== ٣. أزرار الفلاتر في المنتصف ========== -->
+        <div class="filter-row" id="filterRow">
             <div class="filter-group">
                 <button data-filter="all" class="filter-btn active">الكل</button>
                 <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
@@ -185,20 +192,18 @@
             </div>
         </div>
 
-        <!-- ========== صف: زر ملء الشاشة + عداد البطاقات + متزامن ========== -->
+        <!-- ========== ٤. صف: زر ملء الشاشة (يمين) + عداد البطاقات (يسار) ========== -->
         <div class="info-bar-row" id="infoBarRow">
             <button id="enterFullscreenBtn" class="fullscreen-enter-btn" title="تكبير الجدول">🖥️</button>
             <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
-            <div class="sync-status" id="syncStatus">
-                <span class="sync-dot green"></span> متزامن
-            </div>
         </div>
 
         <!-- ========== حاوية الجدول والكروت ========== -->
         <div class="table-section" id="tableSection">
             <!-- نسخ ثابتة للـ Fullscreen (مخفية في الوضع العادي) -->
             <div class="fullscreen-clone" id="viewToggleClone" style="display:none;"></div>
-            <div class="fullscreen-clone" id="toolbarRowClone" style="display:none;"></div>
+            <div class="fullscreen-clone" id="searchSyncRowClone" style="display:none;"></div>
+            <div class="fullscreen-clone" id="filterRowClone" style="display:none;"></div>
             <div class="fullscreen-clone" id="infoBarRowClone" style="display:none;"></div>
             
             <!-- جدول المشتركين -->
