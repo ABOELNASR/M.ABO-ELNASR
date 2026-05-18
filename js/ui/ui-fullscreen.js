@@ -6,6 +6,7 @@ function toggleFullscreenTable() {
     const viewToggle = document.getElementById('viewToggle');
     const toolbarRow = document.getElementById('toolbarRow');
     const cardsCountHeader = document.getElementById('cardsCountHeader');
+    const btnContainer = document.getElementById('fullscreenBtnContainer');
     
     if (!section || !btn) return;
     
@@ -32,22 +33,22 @@ function toggleFullscreenTable() {
         history.pushState({ fullscreen: true }, '', '');
     } else {
         // ⭐ خروج من وضع ملء الشاشة
-        exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, false);
+        exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, btnContainer, false);
     }
 }
 
 // ========== دالة الخروج من وضع ملء الشاشة ==========
-function exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, isBackButton) {
+function exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, btnContainer, isBackButton) {
     if (!section || !btn) return;
     
-    // ⭐ إرجاع الزر إلى toolbarRow الأول
+    // ⭐ إرجاع الزر إلى الحاوية الأصلية fullscreenBtnContainer
     if (btn && btn.parentNode === document.body) {
-        if (toolbarRow) {
-            toolbarRow.appendChild(btn);
+        if (btnContainer) {
+            btnContainer.appendChild(btn);
         }
     }
     
-    // ⭐ إرجاع الأدوات إلى أماكنها الأصلية بنفس الترتيب: viewToggle → toolbarRow → cardsCountHeader
+    // ⭐ إرجاع الأدوات إلى أماكنها الأصلية بنفس الترتيب
     const parent = section.parentNode;
     
     if (viewToggle && viewToggle.parentNode === section) {
@@ -78,10 +79,11 @@ window.addEventListener('popstate', function(event) {
     const viewToggle = document.getElementById('viewToggle');
     const toolbarRow = document.getElementById('toolbarRow');
     const cardsCountHeader = document.getElementById('cardsCountHeader');
+    const btnContainer = document.getElementById('fullscreenBtnContainer');
     
     // لو في وضع ملء الشاشة، اخرج منه بدل ما تقفل الصفحة
     if (section && section.classList.contains('fullscreen')) {
-        exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, true);
+        exitFullscreenMode(section, btn, viewToggle, toolbarRow, cardsCountHeader, btnContainer, true);
         
         // ⭐ منع الخروج الفعلي من الصفحة
         history.pushState({ fullscreen: true }, '', '');
