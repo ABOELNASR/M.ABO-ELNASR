@@ -62,42 +62,6 @@
             user-select: text;
             -webkit-user-select: text;
         }
-        
-        /* ========== تنسيقات مزامنة ========== */
-        .sync-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            background: rgba(76, 175, 80, 0.08);
-            padding: 4px 10px;
-            border-radius: 20px;
-            white-space: nowrap;
-        }
-        
-        .sync-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            flex-shrink: 0;
-        }
-        
-        .sync-dot.green {
-            background: #4caf50;
-            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
-        }
-        
-        .sync-dot.red {
-            background: #ef5350;
-            box-shadow: 0 0 8px rgba(239, 83, 80, 0.6);
-        }
-        
-        .sync-dot.yellow {
-            background: #ff9800;
-            box-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
-        }
     </style>
 </head>
 <body oncontextmenu="return false">
@@ -206,7 +170,7 @@
             <button id="cardsViewBtn" class="view-toggle-btn" data-view="cards" title="عرض كروت">🃏 كروت</button>
         </div>
 
-        <!-- ========== شريط الأدوات (بحث + فلاتر + مزامنة) ========== -->
+        <!-- ========== شريط الأدوات (بحث + فلاتر) ========== -->
         <div class="toolbar-row" id="toolbarRow">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="بحث">
@@ -219,15 +183,15 @@
                 <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
                 <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح</button>
             </div>
+        </div>
+
+        <!-- ========== صف: زر ملء الشاشة + عداد البطاقات + متزامن ========== -->
+        <div class="info-bar-row" id="infoBarRow">
+            <button id="enterFullscreenBtn" class="fullscreen-enter-btn" title="تكبير الجدول">🖥️</button>
+            <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
             <div class="sync-status" id="syncStatus">
                 <span class="sync-dot green"></span> متزامن
             </div>
-        </div>
-
-        <!-- ========== صف: زر ملء الشاشة (يسار) + عداد البطاقات (يمين) ========== -->
-        <div class="cards-count-header-row">
-            <button id="enterFullscreenBtn" class="btn btn-sm btn-info fullscreen-enter-btn" title="تكبير الجدول">🖥️</button>
-            <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
         </div>
 
         <!-- ========== حاوية الجدول والكروت ========== -->
@@ -235,7 +199,7 @@
             <!-- نسخ ثابتة للـ Fullscreen (مخفية في الوضع العادي) -->
             <div class="fullscreen-clone" id="viewToggleClone" style="display:none;"></div>
             <div class="fullscreen-clone" id="toolbarRowClone" style="display:none;"></div>
-            <div class="fullscreen-clone" id="cardsCountHeaderRowClone" style="display:none;"></div>
+            <div class="fullscreen-clone" id="infoBarRowClone" style="display:none;"></div>
             
             <!-- جدول المشتركين -->
             <div class="table-wrapper" id="tableWrapper">
@@ -279,7 +243,7 @@
     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="العودة للأعلى" style="display: none;">⬆️</button>
 
     <!-- ========== زر الخروج من وضع ملء الشاشة ========== -->
-    <button id="exitFullscreenBtn" class="btn btn-sm" title="إغلاق وضع ملء الشاشة" style="display: none;">✖</button>
+    <button id="exitFullscreenBtn" title="إغلاق وضع ملء الشاشة" style="display: none;">✖</button>
 
     <!-- ========== ملفات JavaScript ========== -->
     
