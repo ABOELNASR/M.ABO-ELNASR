@@ -45,7 +45,7 @@
 }
 
 /* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
-body > #toggleFullscreenBtn {
+.table-section.fullscreen #toggleFullscreenBtn {
     position: fixed !important;
     top: 8px !important;
     right: 8px !important;
