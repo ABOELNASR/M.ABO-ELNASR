@@ -10,7 +10,7 @@
     right: 0;
     bottom: 0;
     z-index: 1500;
-    background: var(--bg-body);
+    background: var(--bg-container);
     padding: 0.5rem;
     border-radius: 0;
     overflow-y: auto;
@@ -45,7 +45,7 @@
 }
 
 /* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
-.table-section.fullscreen #toggleFullscreenBtn {
+body > #toggleFullscreenBtn {
     position: fixed !important;
     top: 8px !important;
     right: 8px !important;
