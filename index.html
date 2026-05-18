@@ -170,29 +170,27 @@
             <button id="cardsViewBtn" class="view-toggle-btn" data-view="cards" title="عرض كروت">🃏 كروت</button>
         </div>
 
-        <!-- ========== ٢. صف: مربع البحث (يمين) + متزامن (يسار) ========== -->
+        <!-- ========== ٢. صف: مربع البحث + فلاتر (يمين) + متزامن (يسار) ========== -->
         <div class="search-sync-row" id="searchSyncRow">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="بحث">
-                <span class="search-icon">🔍</span>
-                <button class="search-clear" id="clearSearchBtn" title="مسح البحث">✖</button>
+            <div class="search-filter-wrapper">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="بحث">
+                    <span class="search-icon">🔍</span>
+                    <button class="search-clear" id="clearSearchBtn" title="مسح البحث">✖</button>
+                </div>
+                <div class="filter-group" id="filterGroup">
+                    <button data-filter="all" class="filter-btn active">الكل</button>
+                    <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
+                    <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
+                    <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح</button>
+                </div>
             </div>
             <div class="sync-status" id="syncStatus">
                 <span class="sync-dot green"></span> متزامن
             </div>
         </div>
 
-        <!-- ========== ٣. أزرار الفلاتر في المنتصف ========== -->
-        <div class="filter-row" id="filterRow">
-            <div class="filter-group">
-                <button data-filter="all" class="filter-btn active">الكل</button>
-                <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
-                <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
-                <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح</button>
-            </div>
-        </div>
-
-        <!-- ========== ٤. صف: زر ملء الشاشة (يمين) + عداد البطاقات (يسار) ========== -->
+        <!-- ========== ٣. صف: زر ملء الشاشة (يمين) + عداد البطاقات (يسار) ========== -->
         <div class="info-bar-row" id="infoBarRow">
             <button id="enterFullscreenBtn" class="fullscreen-enter-btn" title="تكبير الجدول">🖥️</button>
             <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
@@ -203,7 +201,6 @@
             <!-- نسخ ثابتة للـ Fullscreen (مخفية في الوضع العادي) -->
             <div class="fullscreen-clone" id="viewToggleClone" style="display:none;"></div>
             <div class="fullscreen-clone" id="searchSyncRowClone" style="display:none;"></div>
-            <div class="fullscreen-clone" id="filterRowClone" style="display:none;"></div>
             <div class="fullscreen-clone" id="infoBarRowClone" style="display:none;"></div>
             
             <!-- جدول المشتركين -->
