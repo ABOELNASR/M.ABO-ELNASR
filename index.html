@@ -183,7 +183,7 @@
         </div>
 
         <!-- شريط الأدوات -->
-        <div class="toolbar" id="toolbarRow">
+        <div class="toolbar-row" id="toolbarRow">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="بحث">
                 <span class="search-icon">🔍</span>
@@ -206,11 +206,6 @@
 
         <!-- عداد البطاقات -->
         <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
-
-        <!-- زر ملء الشاشة -->
-        <div id="fullscreenBtnContainer" style="text-align: right; margin-bottom: 4px;">
-            <button id="toggleFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
-        </div>
 
         <!-- حاوية الجدول -->
         <div class="table-section" id="tableSection">
@@ -250,6 +245,9 @@
     </div>
 
     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="العودة للأعلى" style="display: none;">⬆️</button>
+
+    <!-- ⭐ زر وضع ملء الشاشة (ثابت في body) -->
+    <button id="toggleFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
 
     <!-- ========== ملفات JavaScript ========== -->
     
