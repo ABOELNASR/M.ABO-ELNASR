@@ -278,6 +278,15 @@
     gap: 8px;
 }
 
+/* ========== أزرار تبديل العرض (Toggle) ========== */
+.view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
 .search-box {
     position: relative;
     display: inline-block;
