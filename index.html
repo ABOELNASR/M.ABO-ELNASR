@@ -196,8 +196,6 @@
                 <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح الفلتر</button>
             </div>
             <div class="sync-status" id="syncStatus">🟢 متزامن</div>
-            <!-- ⭐ زر الدخول في وضع ملء الشاشة -->
-            <button id="enterFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
         </div>
 
         <!-- أزرار تبديل العرض (Toggle) -->
@@ -206,8 +204,11 @@
             <button id="cardsViewBtn" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
         </div>
 
-        <!-- عداد البطاقات -->
-        <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
+        <!-- عداد البطاقات + زر الدخول في وضع ملء الشاشة -->
+        <div class="cards-count-header-row" id="cardsCountHeaderRow">
+            <span id="cardsCountHeader">📇 عدد البطاقات: 0</span>
+            <button id="enterFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
+        </div>
 
         <!-- حاوية الجدول -->
         <div class="table-section" id="tableSection">
