@@ -127,6 +127,7 @@ function setupRealTimeSync() {
 
 // ========== تهيئة التطبيق بالكامل ==========
 async function initApp() {
+        alert("✅ التطبيق شغال!");  // ← ضيف السطر ده هنا
     initUsers();
 
     const dark = localStorage.getItem('darkMode') === 'enabled';
