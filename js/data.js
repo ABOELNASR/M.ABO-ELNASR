@@ -294,6 +294,7 @@ async function loadDataFromCloud() {
 
 // ========== التحميل الرئيسي (السحابة هي الأساس) ==========
 async function loadData(forceLocal = false) {
+        alert("🔄 loadData بدأت!");  // ← ضيف السطر ده
     if (window.location.protocol === 'file:') {
         showToast('⚠️ التطبيق يعمل من ملف محلي', true);
         updateSyncStatusUI('no_connection');
@@ -351,6 +352,7 @@ async function loadData(forceLocal = false) {
             updateSyncStatusUI('success');
         }
     } catch (e) {
+        alert("❌ فشل الاتصال بالسحابة: " + e.message);
         console.warn('❌ فشل تحميل البيانات من السحابة:', e.message);
         
         loadLocalData();
