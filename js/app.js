@@ -127,7 +127,6 @@ function setupRealTimeSync() {
 
 // ========== تهيئة التطبيق بالكامل ==========
 async function initApp() {
-        alert("✅ التطبيق شغال!");  // ← ضيف السطر ده هنا
     initUsers();
 
     const dark = localStorage.getItem('darkMode') === 'enabled';
@@ -304,10 +303,6 @@ async function initApp() {
     safeSetOnclick('nextMonthBtn', () => changeMonth(1));
     safeSetOnclick('logoutBtn', logout);
     safeSetOnclick('addCardBtn', addNewCard);
-
-    // ⭐ ربط زرارين وضع ملء الشاشة
-    safeSetOnclick('enterFullscreenBtn', toggleFullscreenTable);
-    safeSetOnclick('exitFullscreenBtn', toggleFullscreenTable);
 
     tempCardsList = [];
     if (typeof renderTempCards === 'function') renderTempCards();
