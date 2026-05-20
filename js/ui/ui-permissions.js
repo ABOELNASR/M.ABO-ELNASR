@@ -1,4 +1,4 @@
-// ========== ui-permissions.js - الصلاحيات وشاشة تسجيل الدخول ==========
+// ========== ui-permissions.js - الصلاحيات والتطبيق ==========
 
 // ========== تطبيق الصلاحيات - التوزيع الجديد 2-1-2 ==========
 
@@ -137,53 +137,4 @@ function applyPermissions() {
         row2.appendChild(testBtn);
         actionsContainer.appendChild(row2);
     }
-}
-
-// ========== شاشة تسجيل الدخول ==========
-
-function showLoginScreen() {
-    disableBodyScroll();
-    const overlay = document.createElement('div');
-    overlay.className = 'login-overlay';
-    overlay.innerHTML = `
-        <div class="login-box">
-            <h2>🔐 تسجيل الدخول</h2>
-            <input type="text" id="loginUsername" placeholder="اسم المستخدم">
-            <input type="password" id="loginPassword" placeholder="كلمة المرور">
-            <div class="remember-wrapper">
-                <label><input type="checkbox" id="rememberCheckbox"> تذكرني</label>
-            </div>
-            <button id="loginBtn" class="btn btn-primary">دخول</button>
-        </div>
-    `;
-    document.body.appendChild(overlay);
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            overlay.remove();
-            enableBodyScroll();
-        }
-    });
-
-    const usernameInput = document.getElementById('loginUsername');
-    const passwordInput = document.getElementById('loginPassword');
-    const loginBtn = document.getElementById('loginBtn');
-
-    const doLogin = () => {
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value;
-        const remember = document.getElementById('rememberCheckbox').checked;
-        if (login(username, password, remember)) {
-            overlay.remove();
-            enableBodyScroll();
-            document.getElementById('appContainer').style.display = 'block';
-            applyPermissions();
-            loadData();
-        } else {
-            showToast('خطأ في الاسم أو كلمة المرور', true);
-        }
-    };
-
-    usernameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') doLogin(); });
-    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') doLogin(); });
-    loginBtn.onclick = doLogin;
 }
