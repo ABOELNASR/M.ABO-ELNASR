@@ -100,8 +100,17 @@ body > #toggleFullscreenBtn:hover {
     direction: rtl;
 }
 
+/* ⭐ مربع البحث في وضع ملء الشاشة - يكبر مع التركيز */
 .table-section.fullscreen .search-box input {
-    width: 180px;
+    width: 160px;
+    transition: width 0.3s ease;
+}
+
+.table-section.fullscreen .search-box input:focus {
+    width: 260px;
+    outline: none;
+    border-color: var(--btn-info);
+    box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1);
 }
 
 /* الصف الثالث: أزرار الفلاتر (بدون زر مسح) */
