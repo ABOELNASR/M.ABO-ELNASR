@@ -94,7 +94,6 @@ function showEditSubscriberModal(sub) {
                 const individuals = parseInt(card.individuals) || 0;
                 const subscriberName = sub.name;
                 
-                // ⭐ ملاحظة إلزامية لحذف بطاقة من مشترك موجود
                 const note = prompt(`🗑️ حذف البطاقة "${cardName}" من المشترك "${subscriberName}"\nالرجاء كتابة سبب الحذف (ملاحظة إلزامية):`);
                 if (note === null) {
                     showToast('تم إلغاء الحذف', true);
@@ -139,7 +138,6 @@ function showEditSubscriberModal(sub) {
         if (idx !== -1) {
             const oldSub = subscribers[idx];
             
-            // ⭐ التحقق من تغيير عدد الأفراد وتحديث الحصة اليومية تلقائياً
             const key = getKey(currentYear, currentMonth);
             const today = new Date().getDate();
             const days = getDays(currentYear, currentMonth);
@@ -157,15 +155,12 @@ function showEditSubscriberModal(sub) {
             cardsList.forEach((newCard, cardIdx) => {
                 const oldCard = oldSub.cardsList ? oldSub.cardsList[cardIdx] : null;
                 if (oldCard && oldCard.individuals !== newCard.individuals && today > 1 && today < days) {
-                    // ⭐ تغيير عدد الأفراد في منتصف الشهر - تحديث الحصة تلقائياً
                     const newDefaultBread = newCard.individuals * DEFAULT_DAILY_BREAD_PER_PERSON;
                     
-                    // إذا كان فيه override موجود، نحافظ عليه إذا كان أقل من الافتراضي الجديد
                     if (newCard.dailyBreadOverride !== null && newCard.dailyBreadOverride > newDefaultBread) {
                         newCard.dailyBreadOverride = newDefaultBread;
                     }
                     
-                    // حساب إجمالي الحصة اليومية الجديدة
                     const newTotalDailyBread = cardsList.reduce((sum, c) => {
                         return sum + (c.dailyBreadOverride || c.individuals * DEFAULT_DAILY_BREAD_PER_PERSON);
                     }, 0);
@@ -351,18 +346,21 @@ function showUserManagement() {
 // ========== نافذة تسجيل الدخول ==========
 
 function showLoginScreen() {
-    // إخفاء شاشة التحميل أولاً
+    console.log('🔐 عرض شاشة تسجيل الدخول');
+
+    // إخفاء شاشة التحميل
     const splash = document.getElementById('splashScreen');
     if (splash) {
+        splash.style.display = 'none';
         splash.classList.add('hidden');
-        setTimeout(() => {
-            if (splash.parentNode) splash.remove();
-        }, 500);
     }
 
     // إظهار حاوية التطبيق مع نموذج تسجيل الدخول
     const appContainer = document.getElementById('appContainer');
-    if (!appContainer) return;
+    if (!appContainer) {
+        console.error('❌ appContainer غير موجود');
+        return;
+    }
 
     appContainer.style.display = 'block';
     appContainer.innerHTML = `
@@ -399,7 +397,6 @@ function showLoginScreen() {
     const rememberCheck = document.getElementById('loginRemember');
     const errorDiv = document.getElementById('loginError');
 
-    // دالة تنفيذ تسجيل الدخول
     const doLogin = () => {
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
@@ -442,4 +439,6 @@ function showLoginScreen() {
     setTimeout(() => {
         usernameInput.focus();
     }, 600);
+
+    console.log('✅ شاشة تسجيل الدخول جاهزة');
 }
