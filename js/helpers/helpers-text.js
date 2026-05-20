@@ -62,18 +62,22 @@ function getTextWidth(text, font) {
 }
 
 // ========== دالة تصغير الخط ==========
-function fitTextToContainer(element, maxFontSize, minFontSize = 0.7) {
+function fitTextToContainer(element, maxFontSize, minFontSize) {
     if (!element) return;
     
-    // ⭐ الحصول على حجم خط المشتركين كحجم افتراضي أقصى
+    // ⭐ الحصول على حجم الخط الحالي للعنصر (من CSS) كحجم أقصى
     if (maxFontSize == null) {
-        const subsEl = document.getElementById('totalSubs');
-        if (subsEl) {
-            const subsFontSize = window.getComputedStyle(subsEl).fontSize;
-            maxFontSize = parseFloat(subsFontSize) / 16; // تحويل px إلى rem
-        } else {
-            maxFontSize = 2.0; // احتياطي
+        const currentFontSize = window.getComputedStyle(element).fontSize;
+        maxFontSize = parseFloat(currentFontSize) / 16; // تحويل px إلى rem
+        // إذا كان الحجم صغير جداً، استخدم قيمة افتراضية كبيرة
+        if (maxFontSize < 1.2) {
+            maxFontSize = 1.8;
         }
+    }
+    
+    // ⭐ الحد الأدنى للتصغير - لا يصغر عن هذا أبداً
+    if (minFontSize == null) {
+        minFontSize = 0.7;
     }
     
     const card = element.closest('.stat-card');
@@ -83,26 +87,36 @@ function fitTextToContainer(element, maxFontSize, minFontSize = 0.7) {
     const cardWidth = card.clientWidth;
     const padLeft = parseFloat(cardStyle.paddingLeft) || 0;
     const padRight = parseFloat(cardStyle.paddingRight) || 0;
-    const availableWidth = cardWidth - padLeft - padRight - 8;
+    // المساحة المتاحة داخل البطاقة مع هامش أمان
+    const availableWidth = cardWidth - padLeft - padRight - 12;
     
     const text = element.textContent.trim();
     if (!text) return;
     
     const fontFamily = window.getComputedStyle(element).fontFamily || 'Cairo, sans-serif';
+    const fontWeight = window.getComputedStyle(element).fontWeight || '800';
+    
+    // ⭐ ابدأ بالحجم المطلوب من CSS
     let currentSize = maxFontSize;
     element.style.fontSize = currentSize + 'rem';
     
     const checkAndShrink = () => {
-        const font = `800 ${currentSize}rem ${fontFamily}`;
+        const font = `${fontWeight} ${currentSize}rem ${fontFamily}`;
         const textWidth = getTextWidth(text, font);
         
+        // ⭐ إذا تجاوز النص العرض المتاح AND لم نصل للحد الأدنى → صغّر
         if (textWidth > availableWidth && currentSize > minFontSize) {
             currentSize -= 0.05;
             element.style.fontSize = currentSize + 'rem';
             requestAnimationFrame(checkAndShrink);
         }
+        // ⭐ إذا انتهينا، ثبت الحجم
+        else {
+            element.style.fontSize = currentSize + 'rem';
+        }
     };
     
+    // ⭐ تأخير مزدوج للتأكد من اكتمال الرندر
     requestAnimationFrame(() => {
         requestAnimationFrame(checkAndShrink);
     });
