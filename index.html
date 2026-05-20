@@ -81,11 +81,16 @@
             background: #ff9800;
             box-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
         }
+
+        /* ⭐ شاشة التحميل مخفية افتراضيًا - تظهر فقط بعد تسجيل الدخول */
+        #splashScreen {
+            display: none !important;
+        }
     </style>
 </head>
 <body oncontextmenu="return false">
-    <!-- ⭐ شاشة التحميل -->
-    <div class="splash-screen" id="splashScreen">
+    <!-- ⭐ شاشة التحميل - مخفية افتراضيًا، تظهر بعد تسجيل الدخول -->
+    <div class="splash-screen" id="splashScreen" style="display: none;">
         <div class="splash-spinner-wrapper">
             <img src="icons/launchericon-192x192.png" alt="Logo" class="splash-img">
             <div class="splash-spinner"></div>
