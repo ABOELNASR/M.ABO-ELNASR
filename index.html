@@ -264,30 +264,37 @@
             </div>
         </div>
 
-        <div class="toolbar" id="toolbarRow">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="بحث">
-                <span class="search-icon">🔍</span>
-                <button class="search-clear" id="clearSearchBtn">✖</button>
+        <!-- ⭐ المنطقة المجمعة: أزرار العرض + الأدوات -->
+        <div class="toolbar-area" id="toolbarArea">
+            <!-- الصف الأول: أزرار جدول وكروت في المنتصف -->
+            <div class="view-toggle" id="viewToggle">
+                <button id="tableViewBtn" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
+                <button id="cardsViewBtn" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
             </div>
-            <div class="filter-group">
+
+            <!-- الصف الثاني: زر ملء الشاشة + مربع البحث على اليمين -->
+            <div class="toolbar-top-row">
+                <button id="toggleFullscreenBtn" class="btn btn-sm btn-info fullscreen-btn" title="تكبير الجدول">🖥️</button>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="بحث">
+                    <span class="search-icon">🔍</span>
+                    <button class="search-clear" id="clearSearchBtn">✖</button>
+                </div>
+            </div>
+
+            <!-- الصف الثالث: أزرار الفلاتر -->
+            <div class="filter-group" id="filterGroup">
                 <button data-filter="all" class="filter-btn active">الكل</button>
                 <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
                 <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
                 <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح</button>
             </div>
-            <div class="sync-status" id="syncStatus">🟢 متزامن</div>
-        </div>
 
-        <div class="view-toggle" id="viewToggle">
-            <button id="tableViewBtn" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
-            <button id="cardsViewBtn" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
-        </div>
-
-        <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
-
-        <div id="fullscreenBtnContainer" style="text-align: right; margin-bottom: 4px;">
-            <button id="toggleFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
+            <!-- الصف الرابع: عداد البطاقات يسار + حالة المزامنة يمين -->
+            <div class="toolbar-bottom-row">
+                <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
+                <div class="sync-status" id="syncStatus">🟢 متزامن</div>
+            </div>
         </div>
 
         <div class="table-section" id="tableSection">
