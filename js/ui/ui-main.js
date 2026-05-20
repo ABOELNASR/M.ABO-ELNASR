@@ -23,10 +23,6 @@ function updateUI() {
 
         const elCards = document.getElementById('cardsCountHeader');
         if (elCards) elCards.innerHTML = `📇 عدد البطاقات: ${totalCardsCount}`;
-
-        fitTextToContainer(document.getElementById('totalMonthValue'));
-        fitTextToContainer(document.getElementById('totalPaidMonth'));
-        fitTextToContainer(document.getElementById('totalDueMonth'));
     }
 
     const elDays = document.getElementById('daysCount');
