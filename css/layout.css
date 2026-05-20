@@ -265,6 +265,12 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    /* ⭐ توحيد لون الخلفية */
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 0.6rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--border-light);
 }
 
 /* الصف الأول: أزرار جدول وكروت في المنتصف */
@@ -431,6 +437,8 @@
     justify-content: space-between;
     align-items: center;
     direction: rtl;
+    /* ⭐ توحيد الخلفية مع باقي المنطقة */
+    background: transparent;
 }
 
 .cards-count-header {
