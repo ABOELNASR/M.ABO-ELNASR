@@ -241,7 +241,6 @@
     border-radius: 1rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     border-right: 4px solid #26a69a;
-    /* ⭐ منع النص من الخروج */
     overflow: hidden;
     min-width: 0;
     transition: transform 0.2s, box-shadow 0.2s;
@@ -260,16 +259,60 @@
     white-space: nowrap;
 }
 
-/* ⭐ تم نقل التنسيق إلى variables.css مع clamp() */
-
-/* ========== شريط الأدوات ========== */
-.toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
+/* ========== المنطقة المجمعة: أزرار العرض + الأدوات ========== */
+.toolbar-area {
     margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* الصف الأول: أزرار جدول وكروت في المنتصف */
+.view-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 8px;
+}
+
+.view-toggle-btn {
+    background: #f5f6fa;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #546e7a;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s;
+}
+
+.view-toggle-btn.active {
+    background: var(--btn-light-green);
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+}
+
+/* الصف الثاني: زر ملء الشاشة + مربع البحث على اليمين */
+.toolbar-top-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+    direction: rtl;
+}
+
+.fullscreen-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    padding: 0;
 }
 
 .search-box {
@@ -340,10 +383,13 @@
     display: flex !important;
 }
 
+/* الصف الثالث: أزرار الفلاتر */
 .filter-group {
     display: flex;
     gap: 5px;
     flex-wrap: wrap;
+    justify-content: flex-start;
+    direction: rtl;
 }
 
 .filter-btn {
@@ -379,10 +425,25 @@
     box-shadow: 0 2px 8px rgba(239, 83, 80, 0.2);
 }
 
+/* الصف الرابع: عداد البطاقات يسار + حالة المزامنة يمين */
+.toolbar-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    direction: rtl;
+}
+
+.cards-count-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.3rem;
+}
+
 .sync-status {
     font-size: 0.65rem;
     color: var(--sync-color);
-    margin-right: auto;
     font-weight: 500;
     background: rgba(38, 166, 154, 0.08);
     padding: 3px 8px;
@@ -453,16 +514,4 @@
     gap: 10px;
     padding: 2rem;
     color: var(--text-secondary);
-}
-
-/* ========== عدّاد البطاقات ========== */
-.cards-count-header {
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-align: right;
-    padding: 0 0 0.5rem 0.5rem;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border-light);
-    margin-bottom: 0.5rem;
-    margin-left: 45px;
 }
