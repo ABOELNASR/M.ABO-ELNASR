@@ -348,11 +348,14 @@ function showUserManagement() {
 function showLoginScreen() {
     console.log('🔐 عرض شاشة تسجيل الدخول');
 
-    // إخفاء شاشة التحميل
+    // إخفاء شاشة السبلاش
     const splash = document.getElementById('splashScreen');
     if (splash) {
-        splash.style.display = 'none';
         splash.classList.add('hidden');
+        setTimeout(() => {
+            splash.classList.remove('active');
+            splash.classList.remove('hidden');
+        }, 500);
     }
 
     // إظهار حاوية التطبيق مع نموذج تسجيل الدخول
