@@ -49,9 +49,6 @@
     --card-view-hover: #f0f4ff;
     --input-dark-bg: #1a1d24;
     --card-hover-color: #ff9800;
-    
-    /* ⭐ حجم خط موحد لجميع بطاقات الإحصائيات */
-    --stat-value-font-size: 1.8rem;
 }
 
 body {
@@ -93,12 +90,13 @@ body.modal-open {
     box-shadow: none !important;
 }
 
-/* ⭐ حجم خط موحد لبطاقات الإحصائيات - بدون overflow hidden */
-/* fitTextToContainer هي المسؤولة عن تصغير الخط لمنع الخروج */
+/* ⭐ حجم خط ديناميكي بالكامل - يصغّر تلقائيًا مع صغر عرض البطاقة */
 .stat-value {
-    font-size: var(--stat-value-font-size);
     font-weight: 800;
     color: var(--text-primary);
     line-height: 1.2;
     white-space: nowrap;
+    /* clamp(الحد الأدنى, الحجم المفضل, الحد الأقصى) */
+    /* 3vw يعني 3% من عرض الشاشة - يصغر تلقائيًا على الموبايل */
+    font-size: clamp(0.8rem, 3vw, 2rem);
 }
