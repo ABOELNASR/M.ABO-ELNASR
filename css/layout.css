@@ -241,8 +241,8 @@
     border-radius: 1rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     border-right: 4px solid #26a69a;
-    /* ⭐ إزالة overflow: hidden للسماح لـ fitTextToContainer بالعمل */
-    /* لكن نضيف min-width: 0 لمنع تمدد البطاقة خارج الشبكة */
+    /* ⭐ منع النص من الخروج */
+    overflow: hidden;
     min-width: 0;
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -260,15 +260,7 @@
     white-space: nowrap;
 }
 
-.stat-value {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    line-height: 1.2;
-    white-space: nowrap;
-    /* ⭐ إزالة overflow: hidden و text-overflow: ellipsis */
-    /* fitTextToContainer ستتولى تصغير الخط بدلاً من إخفاء النص */
-}
+/* ⭐ تم نقل التنسيق إلى variables.css مع clamp() */
 
 /* ========== شريط الأدوات ========== */
 .toolbar {
