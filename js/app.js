@@ -125,6 +125,50 @@ function setupRealTimeSync() {
     console.log('✅ تم إعداد نظام المزامنة الفورية');
 }
 
+// ========== إظهار شاشة السبلاش ==========
+function showSplashScreen() {
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+        splash.classList.remove('hidden');
+        splash.classList.add('active');
+        console.log('⏳ شاشة السبلاش ظاهرة');
+    }
+}
+
+// ========== إخفاء شاشة السبلاش ==========
+function hideSplashScreen() {
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+        splash.classList.add('hidden');
+        console.log('✅ شاشة السبلاش مختفية');
+        setTimeout(() => {
+            splash.classList.remove('active');
+            splash.classList.remove('hidden');
+        }, 500);
+    }
+}
+
+// ========== عرض شاشة تسجيل الدخول ==========
+function showLogin() {
+    console.log('🔐 عرض شاشة تسجيل الدخول');
+    
+    // إخفاء السبلاش
+    hideSplashScreen();
+    
+    // إظهار الحاوية
+    const appContainer = document.getElementById('appContainer');
+    if (appContainer) {
+        appContainer.style.display = 'block';
+    }
+    
+    // عرض نموذج تسجيل الدخول
+    if (typeof showLoginScreen === 'function') {
+        showLoginScreen();
+    } else {
+        console.error('❌ showLoginScreen غير معرفة!');
+    }
+}
+
 // ========== تهيئة التطبيق بالكامل ==========
 async function initApp() {
     console.log('🚀 بدء تهيئة التطبيق...');
@@ -152,48 +196,22 @@ async function initApp() {
     const hasSession = checkSession();
     console.log('🔑 حالة الجلسة:', hasSession);
 
-    // ⭐ 5. لو مفيش جلسة → اعرض تسجيل الدخول فورًا بدون شاشة تحميل
+    // ⭐ 5. لو مفيش جلسة → اعرض تسجيل الدخول فورًا بدون سبلاش
     if (!hasSession) {
-        console.log('🔐 لا توجد جلسة - عرض شاشة تسجيل الدخول');
-
-        // تأكد إن شاشة التحميل مختفية
-        const splash = document.getElementById('splashScreen');
-        if (splash) {
-            splash.style.display = 'none';
-            splash.classList.add('hidden');
-        }
-
-        // إظهار الحاوية الرئيسية
-        const appContainer = document.getElementById('appContainer');
-        if (appContainer) {
-            appContainer.style.display = 'block';
-        }
-
-        // عرض تسجيل الدخول
-        if (typeof showLoginScreen === 'function') {
-            showLoginScreen();
-        } else {
-            console.error('❌ showLoginScreen غير معرفة!');
-        }
+        console.log('🔐 لا توجد جلسة - عرض شاشة تسجيل الدخول مباشرة');
+        showLogin();
         return;
     }
 
-    // ⭐ 6. فيه جلسة → التطبيق الطبيعي مع شاشة تحميل
-    console.log('✅ جلسة موجودة - تحميل البيانات...');
+    // ⭐ 6. فيه جلسة → أظهر السبلاش وحمل البيانات
+    console.log('✅ جلسة موجودة - إظهار السبلاش وتحميل البيانات...');
+    showSplashScreen();
 
     const appContainer = document.getElementById('appContainer');
     if (!appContainer) {
         console.error('❌ appContainer غير موجود في الصفحة!');
+        hideSplashScreen();
         return;
-    }
-    appContainer.style.display = 'block';
-
-    // ⭐ إظهار شاشة التحميل
-    const splashScreen = document.getElementById('splashScreen');
-    if (splashScreen) {
-        splashScreen.style.display = 'flex';
-        splashScreen.classList.remove('hidden');
-        console.log('⏳ شاشة التحميل ظاهرة');
     }
 
     // ⭐ تحميل البيانات
@@ -204,7 +222,9 @@ async function initApp() {
         console.error('❌ فشل تحميل البيانات:', err);
     }
 
-    // ⭐ إظهار أقسام التطبيق
+    // ⭐ إظهار الحاوية والأقسام
+    appContainer.style.display = 'block';
+    
     const statsSection = document.getElementById('statsSection');
     if (statsSection) statsSection.style.display = 'grid';
     const tableSection = document.getElementById('tableSection');
@@ -220,18 +240,8 @@ async function initApp() {
     // ⭐ إعداد المزامنة
     setupRealTimeSync();
 
-    // ⭐ إخفاء شاشة التحميل بعد تجهيز كل شيء
-    if (splashScreen) {
-        setTimeout(() => {
-            splashScreen.classList.add('hidden');
-            console.log('✅ شاشة التحميل مختفية');
-            setTimeout(() => {
-                if (splashScreen.parentNode) {
-                    splashScreen.remove();
-                }
-            }, 500);
-        }, 300);
-    }
+    // ⭐ إخفاء شاشة السبلاش بعد تجهيز كل شيء
+    hideSplashScreen();
 
     // ⭐ ========== إعدادات النموذج ==========
     const toggleFormBtn = document.getElementById('toggleFormBtn');
@@ -384,13 +394,7 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log('📄 الصفحة جاهزة - بدء initApp');
     initApp().catch(err => {
         console.error('❌ حدث خطأ أثناء بدء التطبيق:', err);
-        
-        // ⭐ حل طوارئ: لو حصل خطأ، نخفي شاشة التحميل
-        const splash = document.getElementById('splashScreen');
-        if (splash) {
-            splash.style.display = 'none';
-            splash.classList.add('hidden');
-        }
+        hideSplashScreen();
         const appContainer = document.getElementById('appContainer');
         if (appContainer) {
             appContainer.style.display = 'block';
