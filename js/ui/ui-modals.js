@@ -78,10 +78,22 @@ function showEditSubscriberModal(sub) {
             });
         });
         document.querySelectorAll('.card-individuals').forEach((input, i) => {
-            input.addEventListener('change', (e) => {
+            input.addEventListener('input', (e) => {
                 let val = parseInt(arabicToEnglishNumber(e.target.value));
-                tempCardsList[i].individuals = isNaN(val) ? 0 : val;
-                e.target.value = tempCardsList[i].individuals;
+                if (!isNaN(val)) {
+                    tempCardsList[i].individuals = val;
+                }
+                updateDuplicateWarnings();
+            });
+            input.addEventListener('blur', (e) => {
+                let val = parseInt(arabicToEnglishNumber(e.target.value));
+                if (isNaN(val) || val < 1) {
+                    tempCardsList[i].individuals = 1;
+                    e.target.value = 1;
+                } else {
+                    tempCardsList[i].individuals = val;
+                    e.target.value = val;
+                }
                 updateDuplicateWarnings();
             });
         });
