@@ -49,6 +49,9 @@
     --card-view-hover: #f0f4ff;
     --input-dark-bg: #1a1d24;
     --card-hover-color: #ff9800;
+    
+    /* ⭐ حجم خط موحد لجميع بطاقات الإحصائيات */
+    --stat-value-font-size: 1.8rem;
 }
 
 body {
@@ -88,4 +91,15 @@ body.modal-open {
     outline: none !important;
     -webkit-tap-highlight-color: transparent !important;
     box-shadow: none !important;
+}
+
+/* ⭐ حجم خط موحد لبطاقات الإحصائيات - يقاس منه باقي الأحجام */
+.stat-value {
+    font-size: var(--stat-value-font-size);
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
