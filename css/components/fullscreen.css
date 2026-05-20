@@ -10,66 +10,111 @@
     right: 0;
     bottom: 0;
     z-index: 1500;
-    background: var(--bg-container);
+    /* ⭐ خلفية متدرجة جميلة للوضع النهاري */
+    background: linear-gradient(135deg, #e8eaf6 0%, #e3f2fd 30%, #f3e5f5 70%, #fff8e1 100%);
     padding: 0.5rem;
     border-radius: 0;
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-/* ========== الأدوات داخل وضع ملء الشاشة ========== */
-.table-section.fullscreen .view-toggle {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 0.5rem;
-}
-
-.table-section.fullscreen .toolbar-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 0.5rem;
-}
-
-.table-section.fullscreen .cards-count-header {
-    font-size: 0.8rem;
-    font-weight: bold;
-    text-align: right;
-    padding: 0.3rem 0.5rem;
-    color: var(--text-primary);
-    border-bottom: 1px solid var(--border-light);
-    margin-bottom: 0.3rem;
+/* ⭐ خلفية متدرجة للوضع الليلي */
+body.dark-mode .table-section.fullscreen {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 30%, #1a1f2e 70%, #0d1117 100%);
 }
 
 /* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
 body > #toggleFullscreenBtn {
     position: fixed !important;
-    top: 8px !important;
-    right: 8px !important;
+    top: 10px !important;
+    right: 10px !important;
     z-index: 1600 !important;
-    width: 24px !important;
-    height: 24px !important;
+    width: 36px !important;
+    height: 36px !important;
     border-radius: 50% !important;
-    font-size: 0.75rem !important;
+    font-size: 1.1rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     background: var(--danger) !important;
     color: white !important;
     border: none !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
     cursor: pointer !important;
     padding: 0 !important;
     line-height: 1 !important;
+    transition: all 0.3s ease !important;
+}
+
+body > #toggleFullscreenBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ========== المنطقة المجمعة داخل وضع ملء الشاشة ========== */
+.table-section.fullscreen .toolbar-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 0.6rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* الصف الأول: أزرار جدول وكروت في المنتصف */
+.table-section.fullscreen .view-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-section.fullscreen .view-toggle-btn {
+    font-size: 0.85rem;
+    padding: 6px 18px;
+}
+
+/* الصف الثاني: زر ملء الشاشة + مربع البحث على اليمين */
+.table-section.fullscreen .toolbar-top-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+    direction: rtl;
+}
+
+/* الصف الثالث: أزرار الفلاتر */
+.table-section.fullscreen .filter-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    direction: rtl;
+}
+
+/* الصف الرابع: عداد البطاقات يسار + حالة المزامنة يمين */
+.table-section.fullscreen .toolbar-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    direction: rtl;
+}
+
+.table-section.fullscreen .cards-count-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.3rem;
 }
 
 /* ========== حاوية الجدول في وضع ملء الشاشة ========== */
 .table-section.fullscreen .table-wrapper {
     border-radius: 1rem;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    background: var(--card-bg);
 }
 
 .table-section.fullscreen table {
