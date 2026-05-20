@@ -127,8 +127,12 @@ function setupRealTimeSync() {
 
 // ========== تهيئة التطبيق بالكامل ==========
 async function initApp() {
+    console.log('🚀 بدء تهيئة التطبيق...');
+
+    // ⭐ 1. تهيئة المستخدمين المحليين فورًا
     initUsers();
 
+    // ⭐ 2. الوضع الليلي
     const dark = localStorage.getItem('darkMode') === 'enabled';
     if (dark) document.body.classList.add('dark-mode');
     const darkToggle = document.getElementById('darkModeToggle');
@@ -139,12 +143,43 @@ async function initApp() {
         };
     }
 
-    await loadUsersFromCloud();
+    // ⭐ 3. تحميل المستخدمين من السحابة في الخلفية (لا ننتظرها)
+    loadUsersFromCloud().catch(err => {
+        console.warn('⚠️ فشل تحميل المستخدمين من السحابة:', err);
+    });
 
-    if (!checkSession()) {
-        showLoginScreen();
+    // ⭐ 4. التحقق من الجلسة
+    const hasSession = checkSession();
+    console.log('🔑 حالة الجلسة:', hasSession);
+
+    // ⭐ 5. لو مفيش جلسة → اعرض تسجيل الدخول فورًا بدون شاشة تحميل
+    if (!hasSession) {
+        console.log('🔐 لا توجد جلسة - عرض شاشة تسجيل الدخول');
+
+        // تأكد إن شاشة التحميل مختفية
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            splash.style.display = 'none';
+            splash.classList.add('hidden');
+        }
+
+        // إظهار الحاوية الرئيسية
+        const appContainer = document.getElementById('appContainer');
+        if (appContainer) {
+            appContainer.style.display = 'block';
+        }
+
+        // عرض تسجيل الدخول
+        if (typeof showLoginScreen === 'function') {
+            showLoginScreen();
+        } else {
+            console.error('❌ showLoginScreen غير معرفة!');
+        }
         return;
     }
+
+    // ⭐ 6. فيه جلسة → التطبيق الطبيعي مع شاشة تحميل
+    console.log('✅ جلسة موجودة - تحميل البيانات...');
 
     const appContainer = document.getElementById('appContainer');
     if (!appContainer) {
@@ -152,10 +187,24 @@ async function initApp() {
         return;
     }
     appContainer.style.display = 'block';
-    console.log('📦 appContainer ظاهر');
 
-    await loadData();
+    // ⭐ إظهار شاشة التحميل
+    const splashScreen = document.getElementById('splashScreen');
+    if (splashScreen) {
+        splashScreen.style.display = 'flex';
+        splashScreen.classList.remove('hidden');
+        console.log('⏳ شاشة التحميل ظاهرة');
+    }
 
+    // ⭐ تحميل البيانات
+    try {
+        await loadData();
+        console.log('✅ تم تحميل البيانات بنجاح');
+    } catch (err) {
+        console.error('❌ فشل تحميل البيانات:', err);
+    }
+
+    // ⭐ إظهار أقسام التطبيق
     const statsSection = document.getElementById('statsSection');
     if (statsSection) statsSection.style.display = 'grid';
     const tableSection = document.getElementById('tableSection');
@@ -165,20 +214,26 @@ async function initApp() {
     const cardsCountHeader = document.getElementById('cardsCountHeader');
     if (cardsCountHeader) cardsCountHeader.style.display = 'block';
 
+    // ⭐ تطبيق الصلاحيات
     applyPermissions();
     
+    // ⭐ إعداد المزامنة
     setupRealTimeSync();
-    
-    const splashScreen = document.getElementById('splashScreen');
+
+    // ⭐ إخفاء شاشة التحميل بعد تجهيز كل شيء
     if (splashScreen) {
         setTimeout(() => {
             splashScreen.classList.add('hidden');
+            console.log('✅ شاشة التحميل مختفية');
             setTimeout(() => {
-                splashScreen.remove();
+                if (splashScreen.parentNode) {
+                    splashScreen.remove();
+                }
             }, 500);
         }, 300);
     }
 
+    // ⭐ ========== إعدادات النموذج ==========
     const toggleFormBtn = document.getElementById('toggleFormBtn');
     const formTitle = document.getElementById('formTitle');
     const addSubscriberCard = document.getElementById('addSubscriberCard');
@@ -204,6 +259,7 @@ async function initApp() {
         };
     }
 
+    // ⭐ ========== زر إضافة بطاقة ==========
     const addCardBtn = document.getElementById('addCardBtn');
     const subNameInput = document.getElementById('subName');
     if (addCardBtn && subNameInput) {
@@ -224,6 +280,7 @@ async function initApp() {
         });
     }
 
+    // ⭐ ========== القائمة المنسدلة للإدارة ==========
     const adminDropdown = document.getElementById('adminDropdown');
     if (adminDropdown) {
         adminDropdown.addEventListener('click', (e) => {
@@ -237,6 +294,7 @@ async function initApp() {
         });
     }
 
+    // ⭐ ========== زر مسح الفلتر ==========
     safeSetOnclick('clearFilterBtn', () => {
         currentFilter = 'all';
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -245,7 +303,7 @@ async function initApp() {
         if (typeof renderAll === 'function') renderAll();
     });
 
-    // ⭐ زر ✖ بتاع مربع البحث - يمسح النص ويقفل المربع ويخرج من وضع البحث
+    // ⭐ ========== مربع البحث ==========
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     const searchInput = document.getElementById('searchInput');
     
@@ -254,17 +312,11 @@ async function initApp() {
             e.preventDefault();
             e.stopPropagation();
             
-            // مسح النص
             searchInput.value = '';
             currentSearch = '';
-            
-            // إغلاق المربع (فقدان التركيز)
             searchInput.blur();
-            
-            // إخفاء زر ✖
             clearSearchBtn.style.display = 'none';
             
-            // تحديث العرض
             if (typeof renderAll === 'function') renderAll();
         });
     }
@@ -273,7 +325,6 @@ async function initApp() {
         searchInput.oninput = e => {
             currentSearch = e.target.value;
             
-            // ⭐ إظهار/إخفاء زر ✖ حسب وجود نص
             const clearBtn = document.getElementById('clearSearchBtn');
             if (clearBtn) {
                 clearBtn.style.display = e.target.value ? 'flex' : 'none';
@@ -282,7 +333,6 @@ async function initApp() {
             if (typeof renderAll === 'function') renderAll();
         };
         
-        // ⭐ لما المستخدم يضغط Enter أو يفقد التركيز، يقفل المربع
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 searchInput.blur();
@@ -290,6 +340,7 @@ async function initApp() {
         });
     }
 
+    // ⭐ ========== أزرار الفلتر ==========
     document.querySelectorAll('.filter-btn').forEach(b => b.onclick = () => {
         document.querySelectorAll('.filter-btn').forEach(f => f.classList.remove('active'));
         b.classList.add('active');
@@ -297,6 +348,7 @@ async function initApp() {
         if (typeof renderAll === 'function') renderAll();
     });
 
+    // ⭐ ========== ربط الأحداث العامة ==========
     safeSetOnclick('saveBtn', addOrUpdate);
     safeSetOnclick('cancelEditBtn', cancelEdit);
     safeSetOnclick('prevMonthBtn', () => changeMonth(-1));
@@ -304,11 +356,13 @@ async function initApp() {
     safeSetOnclick('logoutBtn', logout);
     safeSetOnclick('addCardBtn', addNewCard);
 
+    // ⭐ ========== تهيئة النموذج ==========
     tempCardsList = [];
     if (typeof renderTempCards === 'function') renderTempCards();
     updateDateTime();
     if (typeof updateDuplicateWarnings === 'function') updateDuplicateWarnings();
 
+    // ⭐ ========== تنظيم الشاشة الأفقية ==========
     organizeMonthPickerForLandscape();
     
     window.addEventListener('resize', () => {
@@ -319,15 +373,32 @@ async function initApp() {
         organizeMonthPickerForLandscape();
     });
 
+    // ⭐ ========== إشعارات الويب ==========
     setupPushNotifications();
+
+    console.log('✅ تم تهيئة التطبيق بنجاح');
 }
 
+// ⭐ ========== بدء التطبيق عند تحميل الصفحة ==========
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 الصفحة جاهزة - بدء initApp');
     initApp().catch(err => {
-        console.error('حدث خطأ أثناء بدء التطبيق:', err);
+        console.error('❌ حدث خطأ أثناء بدء التطبيق:', err);
+        
+        // ⭐ حل طوارئ: لو حصل خطأ، نخفي شاشة التحميل
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            splash.style.display = 'none';
+            splash.classList.add('hidden');
+        }
+        const appContainer = document.getElementById('appContainer');
+        if (appContainer) {
+            appContainer.style.display = 'block';
+        }
     });
 });
 
+// ⭐ ========== زر الرجوع للأعلى ==========
 const scrollBtn = document.getElementById('scrollToTopBtn');
 if (scrollBtn) {
     window.addEventListener('scroll', () => {
