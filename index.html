@@ -163,6 +163,11 @@
             color: rgba(255, 255, 255, 0.7);
         }
         
+        /* ⭐ إخفاء العناصر الأصلية في وضع ملء الشاشة */
+        .toolbar-area.fullscreen-hidden {
+            display: none !important;
+        }
+        
         /* ⭐ appContainer مخفي افتراضيًا لحد ما نقرر نظهره */
         #appContainer {
             display: none;
@@ -264,7 +269,7 @@
             </div>
         </div>
 
-        <!-- ⭐ المنطقة المجمعة: أزرار العرض + الأدوات -->
+        <!-- ⭐ المنطقة المجمعة الأصلية (تظهر في الوضع العادي) -->
         <div class="toolbar-area" id="toolbarArea">
             <!-- الصف الأول: أزرار جدول وكروت في المنتصف -->
             <div class="view-toggle" id="viewToggle">
@@ -298,6 +303,39 @@
         </div>
 
         <div class="table-section" id="tableSection">
+            <!-- ⭐ نسخة مخفية من المنطقة المجمعة لاستخدامها في وضع ملء الشاشة فقط -->
+            <div class="toolbar-area toolbar-area-clone" id="toolbarAreaClone" style="display: none;">
+                <!-- الصف الأول: أزرار جدول وكروت في المنتصف -->
+                <div class="view-toggle" id="viewToggleClone">
+                    <button id="tableViewBtnClone" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
+                    <button id="cardsViewBtnClone" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
+                </div>
+
+                <!-- الصف الثاني: زر ملء الشاشة + مربع البحث على اليمين -->
+                <div class="toolbar-top-row">
+                    <button id="toggleFullscreenBtnClone" class="btn btn-sm btn-info fullscreen-btn" title="تكبير الجدول">🖥️</button>
+                    <div class="search-box">
+                        <input type="text" id="searchInputClone" placeholder="بحث">
+                        <span class="search-icon">🔍</span>
+                        <button class="search-clear" id="clearSearchBtnClone">✖</button>
+                    </div>
+                </div>
+
+                <!-- الصف الثالث: أزرار الفلاتر -->
+                <div class="filter-group" id="filterGroupClone">
+                    <button data-filter="all" class="filter-btn active">الكل</button>
+                    <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
+                    <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
+                    <button id="clearFilterBtnClone" class="clear-filter-btn">🗑️ مسح</button>
+                </div>
+
+                <!-- الصف الرابع: عداد البطاقات يسار + حالة المزامنة يمين -->
+                <div class="toolbar-bottom-row">
+                    <div class="cards-count-header" id="cardsCountHeaderClone">📇 عدد البطاقات: 0</div>
+                    <div class="sync-status" id="syncStatusClone">🟢 متزامن</div>
+                </div>
+            </div>
+
             <div class="table-wrapper" id="tableWrapper">
                 <table id="subscribersTable">
                     <thead>
