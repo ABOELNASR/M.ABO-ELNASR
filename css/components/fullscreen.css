@@ -23,23 +23,23 @@ body.dark-mode .table-section.fullscreen {
     background: linear-gradient(135deg, #0d1117 0%, #161b22 30%, #1a1f2e 70%, #0d1117 100%);
 }
 
-/* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
+/* ========== زر الخروج من ملء الشاشة (ثابت وصغير) ========== */
 body > #toggleFullscreenBtn {
     position: fixed !important;
-    top: 10px !important;
-    right: 10px !important;
+    top: 8px !important;
+    right: 8px !important;
     z-index: 1600 !important;
-    width: 36px !important;
-    height: 36px !important;
+    width: 24px !important;
+    height: 24px !important;
     border-radius: 50% !important;
-    font-size: 1.1rem !important;
+    font-size: 0.7rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     background: var(--danger) !important;
     color: white !important;
     border: none !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
     cursor: pointer !important;
     padding: 0 !important;
     line-height: 1 !important;
@@ -47,13 +47,13 @@ body > #toggleFullscreenBtn {
 }
 
 body > #toggleFullscreenBtn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
+    transform: scale(1.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* ========== المنطقة المجمعة داخل وضع ملء الشاشة ========== */
-.table-section.fullscreen .toolbar-area {
-    display: flex;
+.table-section.fullscreen .toolbar-area-clone {
+    display: flex !important;
     flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
@@ -61,6 +61,7 @@ body > #toggleFullscreenBtn:hover {
     border-radius: 1rem;
     padding: 0.6rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
 }
 
 /* الصف الأول: أزرار جدول وكروت في المنتصف */
@@ -72,11 +73,25 @@ body > #toggleFullscreenBtn:hover {
 }
 
 .table-section.fullscreen .view-toggle-btn {
-    font-size: 0.85rem;
-    padding: 6px 18px;
+    font-size: 0.8rem;
+    padding: 5px 14px;
+    background: #f5f6fa;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    color: #546e7a;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s;
 }
 
-/* الصف الثاني: زر ملء الشاشة + مربع البحث على اليمين */
+.table-section.fullscreen .view-toggle-btn.active {
+    background: var(--btn-light-green);
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+}
+
+/* الصف الثاني: مربع البحث على اليمين (بدون زر ملء الشاشة) */
 .table-section.fullscreen .toolbar-top-row {
     display: flex;
     justify-content: flex-start;
@@ -85,7 +100,11 @@ body > #toggleFullscreenBtn:hover {
     direction: rtl;
 }
 
-/* الصف الثالث: أزرار الفلاتر */
+.table-section.fullscreen .search-box input {
+    width: 180px;
+}
+
+/* الصف الثالث: أزرار الفلاتر (بدون زر مسح) */
 .table-section.fullscreen .filter-group {
     display: flex;
     gap: 5px;
@@ -100,6 +119,7 @@ body > #toggleFullscreenBtn:hover {
     justify-content: space-between;
     align-items: center;
     direction: rtl;
+    background: transparent;
 }
 
 .table-section.fullscreen .cards-count-header {
