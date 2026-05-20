@@ -15,7 +15,7 @@ function renderTempCards() {
         html += `
             <div class="card-item" data-card-index="${idx}">
                 <input type="text" class="card-name" value="${escapeHtml(card.cardName)}" placeholder="اسم البطاقة">
-                <input type="text" class="card-individuals" value="${card.individuals}" placeholder="عدد الأفراد">
+                <input type="number" inputmode="numeric" class="card-individuals" value="${card.individuals}" placeholder="عدد الأفراد" min="1" step="1">
                 <button class="remove-card-btn" data-idx="${idx}">✖</button>
             </div>
         `;
