@@ -1,0 +1,162 @@
+/* ========== وضع ملء الشاشة للجدول ========== */
+.table-section {
+    transition: all 0.3s ease;
+}
+
+.table-section.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1500;
+    background: var(--bg-container);
+    padding: 0.5rem;
+    border-radius: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ========== الأدوات داخل وضع ملء الشاشة ========== */
+.table-section.fullscreen .view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.table-section.fullscreen .toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.table-section.fullscreen .cards-count-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: right;
+    padding: 0.3rem 0.5rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 0.3rem;
+}
+
+/* ========== زر الخروج من ملء الشاشة (ثابت) ========== */
+body > #toggleFullscreenBtn {
+    position: fixed !important;
+    top: 8px !important;
+    right: 8px !important;
+    z-index: 1600 !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    font-size: 0.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--danger) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+}
+
+/* ========== حاوية الجدول في وضع ملء الشاشة ========== */
+.table-section.fullscreen .table-wrapper {
+    border-radius: 1rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.table-section.fullscreen table {
+    min-width: 100%;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.table-section.fullscreen th,
+.table-section.fullscreen td {
+    padding: 10px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ========== أزرار الإجراءات في وضع ملء الشاشة ========== */
+.table-section.fullscreen .action-buttons-container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 0;
+    max-width: 100%;
+}
+
+.table-section.fullscreen .action-buttons-container::-webkit-scrollbar {
+    display: none;
+}
+
+.table-section.fullscreen .action-buttons-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.table-section.fullscreen .action-icon-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+/* ========== الكروت في وضع ملء الشاشة ========== */
+.table-section.fullscreen .subscriber-card {
+    font-size: 0.75rem;
+    padding: 0.7rem;
+}
+
+.table-section.fullscreen .card-detail-value {
+    font-size: 0.75rem;
+}
+
+.table-section.fullscreen .card-detail-label {
+    font-size: 0.6rem;
+}
+
+.table-section.fullscreen .card-checkbox {
+    width: 24px !important;
+    height: 24px !important;
+    margin: 0 0 0 14px !important;
+}
+
+.table-section.fullscreen .card-actions-row .action-icon-btn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1.3rem !important;
+}
+
+.table-section.fullscreen .card-actions-row {
+    gap: 8px !important;
+}
+
+.table-section.fullscreen .card-cards-header {
+    text-align: center !important;
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0 !important;
+}
+
+/* ========== حاوية الكروت في وضع ملء الشاشة ========== */
+.table-section.fullscreen .cards-view-container {
+    padding: 0.5rem 0;
+}
+
+/* ========== إخفاء سكرول الجسم ========== */
+body:has(.table-section.fullscreen) {
+    overflow: hidden;
+}

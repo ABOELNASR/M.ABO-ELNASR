@@ -1,0 +1,133 @@
+/* ========== الوضع الليلي ========== */
+body.dark-mode {
+    --bg-body: #0d1117;
+    --bg-container: #161b22;
+    --text-primary: #c9d1d9;
+    --text-secondary: #8b949e;
+    --border-light: #30363d;
+    --card-bg: #21262d;
+    --header-bg: #161b22;
+    --table-header-bg: #21262d;
+    --table-border: #30363d;
+    --hover-bg: #1c2128;
+    --paid-row-bg: rgba(63, 185, 80, 0.35);
+    --unpaid-row-bg: rgba(255, 123, 114, 0.28);
+    --selected-row-bg: rgba(255, 166, 87, 0.2);
+    --btn-light-green: #3fb950;
+    --btn-light-green-hover: #2ea043;
+    --btn-info: #58a6ff;
+    --btn-info-hover: #1f6feb;
+    --stat-card-bg: #21262d;
+    --sync-color: #3fb950;
+    --arrow-color: #3fb950;
+    --plus-color: #3fb950;
+    --dots-color: #c9d1d9;
+    --form-bg: #161b22;
+    --modal-bg: #21262d;
+    --input-bg: #0d1117;
+    --dropdown-bg: #21262d;
+    --warning-bg: #341a00;
+    --warning-border: #5c3d00;
+    --warning-text: #ffb74d;
+    --scrollbar-thumb: #484f58;
+    --scrollbar-track: #161b22;
+    --footer-text: #2e7d32;
+    --row-hover-bg: rgba(255, 235, 59, 0.3);
+    --card-view-bg: #1c2128;
+    --card-view-border: #30363d;
+    --card-view-hover: #252b34;
+    --input-dark-bg: #1a1d24;
+    --card-hover-color: #ff9800;
+}
+
+body.dark-mode .input-group input {
+    background-color: var(--input-dark-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid #444;
+}
+
+body.dark-mode .input-group input:focus {
+    outline: none;
+    border-color: var(--btn-light-green);
+    box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.2);
+}
+
+body.dark-mode input[type="number"] {
+    background-color: var(--input-dark-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid #444;
+}
+
+body.dark-mode input[type="number"]:focus {
+    border-color: var(--btn-light-green);
+    box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.2);
+}
+
+body.dark-mode textarea {
+    background-color: var(--input-dark-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid #444;
+}
+
+body.dark-mode select {
+    background-color: var(--input-dark-bg) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid #444;
+}
+
+body.dark-mode .form-title {
+    color: #ffffff !important;
+}
+
+body.dark-mode td {
+    color: #c9d1d9;
+}
+
+body.dark-mode .notes-textarea {
+    background-color: var(--input-dark-bg);
+    color: #e0e0e0;
+    border: 1px solid #444;
+}
+
+body.dark-mode .add-user-form input,
+body.dark-mode .add-user-form select {
+    background-color: var(--input-dark-bg);
+    color: #c9d1d9;
+    border: 1px solid #444;
+}
+
+body.dark-mode .date-picker-content input[type="date"] {
+    color-scheme: dark;
+}
+
+/* ========== الوضع الليلي - اسم المشترك في تبويب البطاقات ========== */
+body.dark-mode .card-cards-header {
+    color: #ffffff !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    font-size: 0.8rem !important;
+    padding: 0.5rem 0 !important;
+    margin-bottom: 0.3rem !important;
+    border-bottom: 1px solid var(--border-light) !important;
+}
+
+/* ========== الوضع الليلي - اسم المشترك في وضع ملء الشاشة ========== */
+body.dark-mode .table-section.fullscreen .card-cards-header {
+    color: #ffffff !important;
+    text-align: center !important;
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0 !important;
+}
+/* ========== شاشة التحميل في الوضع الليلي ========== */
+body.dark-mode .splash-screen {
+    background: var(--bg-body);
+}
+
+body.dark-mode .splash-spinner {
+    border-color: var(--border-light);
+    border-top-color: var(--btn-light-green);
+}
+/* ========== الوضع الليلي - إطار التطبيق ========== */
+body.dark-mode .app-container {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
