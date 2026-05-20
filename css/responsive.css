@@ -55,10 +55,6 @@
     .stat-label {
         font-size: 0.55rem;
     }
-    /* ⭐ الحجم في الوضع الأفقي للموبايل - مصغر قليلاً لكن موحد */
-    .stat-value {
-        font-size: 1.2rem !important;
-    }
     
     /* ========== إعادة تنسيق month-picker للوضع الأفقي - صفين ========== */
     .month-picker {
@@ -219,10 +215,6 @@
     .stats-grid {
         grid-template-columns: repeat(2, 1fr) !important;
     }
-    /* ⭐ الحجم في الموبايل العمودي - مصغر قليلاً ليتسع عمودين */
-    .stat-value {
-        font-size: 1.3rem !important;
-    }
     .scroll-to-top-btn {
         width: 32px;
         height: 32px;
@@ -329,11 +321,6 @@
     }
     .actions-row {
         justify-content: center;
-    }
-    
-    /* ⭐ حجم الخط على الكمبيوتر - كبير وموحد */
-    .stat-value {
-        font-size: 2rem !important;
     }
     
     /* ⭐ تكبير نص العملية في سجل العمليات للكمبيوتر فقط */
