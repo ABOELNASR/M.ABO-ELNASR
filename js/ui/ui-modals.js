@@ -63,7 +63,7 @@ function showEditSubscriberModal(sub) {
             html += `
                 <div class="card-item">
                     <input type="text" class="card-name" value="${escapeHtml(card.cardName)}" placeholder="اسم البطاقة">
-                    <input type="text" class="card-individuals" value="${card.individuals}" placeholder="عدد الأفراد">
+                    <input type="number" inputmode="numeric" class="card-individuals" value="${card.individuals}" placeholder="عدد الأفراد" min="1" step="1">
                     <button class="remove-card-btn" data-edit-idx="${idx}">✖</button>
                 </div>
             `;
