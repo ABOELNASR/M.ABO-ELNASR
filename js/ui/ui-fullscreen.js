@@ -36,6 +36,9 @@ function initCloneEvents() {
             if (clearSearchBtnClone) {
                 clearSearchBtnClone.style.display = this.value ? 'flex' : 'none';
             }
+            
+            // ⭐ تحديث عداد البطاقات في النسخة المستنسخة
+            updateCloneCardsCount();
         });
         
         // الضغط على Enter يلغي التركيز
@@ -68,6 +71,9 @@ function initCloneEvents() {
             if (originalClearBtn) originalClearBtn.style.display = 'none';
             
             if (typeof renderAll === 'function') renderAll();
+            
+            // ⭐ تحديث عداد البطاقات في النسخة المستنسخة
+            updateCloneCardsCount();
         });
     }
     
@@ -92,10 +98,25 @@ function initCloneEvents() {
             });
             
             if (typeof renderAll === 'function') renderAll();
+            
+            // ⭐ تحديث عداد البطاقات في النسخة المستنسخة
+            updateCloneCardsCount();
         });
     });
     
     console.log('✅ تم تهيئة أحداث النسخة المستنسخة');
+}
+
+// ⭐ ========== تحديث عداد البطاقات في النسخة المستنسخة ==========
+function updateCloneCardsCount() {
+    const cloneCardsCount = document.getElementById('cardsCountHeaderClone');
+    if (!cloneCardsCount) return;
+    
+    // استخدام نفس دالة العد المستخدمة في الأصلية
+    if (typeof getFilteredCardsCount === 'function') {
+        const count = getFilteredCardsCount(currentSearch);
+        cloneCardsCount.textContent = `📇 عدد البطاقات: ${count}`;
+    }
 }
 
 // ========== مزامنة أزرار العرض ==========
@@ -142,12 +163,8 @@ function syncAllToClone() {
         }
     });
     
-    // مزامنة عداد البطاقات
-    const originalCardsCount = document.getElementById('cardsCountHeader');
-    const cloneCardsCount = document.getElementById('cardsCountHeaderClone');
-    if (originalCardsCount && cloneCardsCount) {
-        cloneCardsCount.textContent = originalCardsCount.textContent;
-    }
+    // ⭐ مزامنة عداد البطاقات
+    updateCloneCardsCount();
     
     // مزامنة حالة المزامنة
     const originalSync = document.getElementById('syncStatus');
