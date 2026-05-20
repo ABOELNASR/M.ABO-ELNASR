@@ -237,6 +237,9 @@ async function initApp() {
     // ⭐ تطبيق الصلاحيات
     applyPermissions();
     
+    // ⭐ تحديث واجهة الإحصائيات والجدول (هذا السطر هو الحل)
+    renderAll();
+    
     // ⭐ إعداد المزامنة
     setupRealTimeSync();
 
