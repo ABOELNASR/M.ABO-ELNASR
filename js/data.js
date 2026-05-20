@@ -206,7 +206,7 @@ async function saveDataAndWait() {
     return false;
 }
 
-// ⭐ ========== تحديث واجهة المزامنة ==========
+// ========== تحديث واجهة المزامنة ==========
 function updateSyncStatusUI(status) {
     const syncStatus = document.getElementById('syncStatus');
     if (!syncStatus) return;
@@ -233,9 +233,8 @@ function updateSyncStatusUI(status) {
             syncStatus.style.color = '#ef5350';
             break;
         case 'syncing':
-            // ⭐ لمبة صفراء فقط، بدون كلمة
-            syncStatus.innerHTML = '<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ff9800;box-shadow:0 0 8px rgba(255,152,0,0.6);"></span>';
-            syncStatus.style.color = '';
+            syncStatus.innerHTML = '🟡 جاري المزامنة...';
+            syncStatus.style.color = '#ff9800';
             break;
     }
     syncStatus.style.opacity = '1';
@@ -294,7 +293,6 @@ async function loadDataFromCloud() {
 
 // ========== التحميل الرئيسي (السحابة هي الأساس) ==========
 async function loadData(forceLocal = false) {
-        alert("🔄 loadData بدأت!");  // ← ضيف السطر ده
     if (window.location.protocol === 'file:') {
         showToast('⚠️ التطبيق يعمل من ملف محلي', true);
         updateSyncStatusUI('no_connection');
@@ -352,7 +350,6 @@ async function loadData(forceLocal = false) {
             updateSyncStatusUI('success');
         }
     } catch (e) {
-        alert("❌ فشل الاتصال بالسحابة: " + e.message);
         console.warn('❌ فشل تحميل البيانات من السحابة:', e.message);
         
         loadLocalData();
@@ -550,17 +547,16 @@ function loadActivityLogFromLocal() {
     }
 }
 
-// ⭐ ========== حفظ اشتراك Push (POST + JSON) ==========
+// ========== حفظ اشتراك Push ==========
 async function savePushSubscription(subscription) {
     if (!subscription || !subscription.token) return;
     try {
+        const formData = new FormData();
+        formData.append('action', 'saveSubscription');
+        formData.append('data', JSON.stringify(subscription));
         await fetch(API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'saveSubscription',
-                data: subscription
-            })
+            body: formData
         });
         console.log('✅ تم حفظ رمز الاشتراك في الخادم');
     } catch (e) {
