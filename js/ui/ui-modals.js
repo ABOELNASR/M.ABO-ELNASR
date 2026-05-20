@@ -347,3 +347,99 @@ function showUserManagement() {
         document.getElementById('newEmail').value = '';
     };
 }
+
+// ========== نافذة تسجيل الدخول ==========
+
+function showLoginScreen() {
+    // إخفاء شاشة التحميل أولاً
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+        splash.classList.add('hidden');
+        setTimeout(() => {
+            if (splash.parentNode) splash.remove();
+        }, 500);
+    }
+
+    // إظهار حاوية التطبيق مع نموذج تسجيل الدخول
+    const appContainer = document.getElementById('appContainer');
+    if (!appContainer) return;
+
+    appContainer.style.display = 'block';
+    appContainer.innerHTML = `
+        <div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 1rem;">
+            <div style="background: var(--card-bg); border-radius: 16px; padding: 2rem; width: 100%; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <img src="icons/launchericon-192x192.png" alt="Logo" style="width: 64px; height: 64px; border-radius: 12px; margin-bottom: 0.5rem;">
+                    <h2 style="margin: 0; color: var(--text-primary);">منظومة الخبز المدعم</h2>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.85rem;">تسجيل الدخول</p>
+                </div>
+                <div id="loginError" style="background: #ffebee; color: #c62828; padding: 8px 12px; border-radius: 8px; margin-bottom: 1rem; display: none; font-size: 0.85rem; text-align: center;"></div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">اسم المستخدم</label>
+                    <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" autocomplete="username" style="width: 100%; padding: 10px 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; background: var(--input-bg); color: var(--text-primary); box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.25rem; font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">كلمة المرور</label>
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" autocomplete="current-password" style="width: 100%; padding: 10px 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; background: var(--input-bg); color: var(--text-primary); box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="loginRemember" style="width: auto;">
+                    <label for="loginRemember" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">تذكرني</label>
+                </div>
+                <button id="loginSubmitBtn" style="width: 100%; padding: 12px; background: #2c7a4d; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">دخول</button>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.75rem; color: var(--text-secondary);">تصميم م. محمد أبوالنصر</p>
+            </div>
+        </div>
+    `;
+
+    // إضافة الأحداث بعد حقن HTML
+    const submitBtn = document.getElementById('loginSubmitBtn');
+    const usernameInput = document.getElementById('loginUsername');
+    const passwordInput = document.getElementById('loginPassword');
+    const rememberCheck = document.getElementById('loginRemember');
+    const errorDiv = document.getElementById('loginError');
+
+    // دالة تنفيذ تسجيل الدخول
+    const doLogin = () => {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        
+        if (!username || !password) {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'الرجاء إدخال اسم المستخدم وكلمة المرور';
+            return;
+        }
+
+        if (login(username, password, rememberCheck.checked)) {
+            // نجاح - إعادة تحميل الصفحة
+            location.reload();
+        } else {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = '❌ اسم المستخدم أو كلمة المرور غير صحيحة';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    };
+
+    // النقر على زر الدخول
+    submitBtn.addEventListener('click', doLogin);
+
+    // الضغط على Enter في حقل كلمة المرور
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            doLogin();
+        }
+    });
+
+    // الضغط على Enter في حقل اسم المستخدم
+    usernameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            passwordInput.focus();
+        }
+    });
+
+    // تركيز تلقائي على حقل اسم المستخدم
+    setTimeout(() => {
+        usernameInput.focus();
+    }, 600);
+}
