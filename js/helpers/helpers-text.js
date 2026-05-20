@@ -62,8 +62,19 @@ function getTextWidth(text, font) {
 }
 
 // ========== دالة تصغير الخط ==========
-function fitTextToContainer(element, maxFontSize = 1.3, minFontSize = 0.7) {
+function fitTextToContainer(element, maxFontSize, minFontSize = 0.7) {
     if (!element) return;
+    
+    // ⭐ الحصول على حجم خط المشتركين كحجم افتراضي أقصى
+    if (maxFontSize == null) {
+        const subsEl = document.getElementById('totalSubs');
+        if (subsEl) {
+            const subsFontSize = window.getComputedStyle(subsEl).fontSize;
+            maxFontSize = parseFloat(subsFontSize) / 16; // تحويل px إلى rem
+        } else {
+            maxFontSize = 2.0; // احتياطي
+        }
+    }
     
     const card = element.closest('.stat-card');
     if (!card) return;
