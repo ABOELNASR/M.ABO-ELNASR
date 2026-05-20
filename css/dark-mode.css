@@ -118,6 +118,7 @@ body.dark-mode .table-section.fullscreen .card-cards-header {
     font-size: 0.7rem !important;
     padding: 0.4rem 0 !important;
 }
+
 /* ========== شاشة التحميل في الوضع الليلي ========== */
 body.dark-mode .splash-screen {
     background: var(--bg-body);
@@ -127,7 +128,45 @@ body.dark-mode .splash-spinner {
     border-color: var(--border-light);
     border-top-color: var(--btn-light-green);
 }
+
 /* ========== الوضع الليلي - إطار التطبيق ========== */
 body.dark-mode .app-container {
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ⭐ ========== الوضع الليلي - المنطقة المجمعة ========== */
+body.dark-mode .toolbar-area {
+    /* الخلفية تتبع card-bg تلقائيًا */
+}
+
+body.dark-mode .view-toggle-btn {
+    background: #21262d;
+    color: #8b949e;
+}
+
+body.dark-mode .view-toggle-btn.active {
+    background: var(--btn-light-green);
+    color: white;
+}
+
+body.dark-mode .filter-btn {
+    background: #21262d;
+    color: #8b949e;
+}
+
+body.dark-mode .filter-btn.active {
+    background: var(--btn-light-green);
+    color: white;
+}
+
+/* ⭐ الوضع الليلي - خلفية منطقة الأدوات في ملء الشاشة */
+body.dark-mode .table-section.fullscreen .toolbar-area {
+    background: #21262d;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ⭐ الوضع الليلي - زر الخروج من ملء الشاشة */
+body.dark-mode body > #toggleFullscreenBtn {
+    background: #ef5350 !important;
+    box-shadow: 0 4px 16px rgba(239, 83, 80, 0.4) !important;
 }
