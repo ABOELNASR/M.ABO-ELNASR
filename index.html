@@ -27,30 +27,27 @@
     <link rel="stylesheet" href="css/main.css">
     
     <style>
-        /* إخفاء الخلفية البيضاء قبل تحميل التطبيق */
         html, body {
             background-color: #2c7a4d !important;
         }
         
-        /* إرجاع الخلفية للوضع المظلم */
         body.dark-mode {
             background-color: #0d1117 !important;
         }
         
-        /* منع تحديد النص ونسخه */
         body, .app-container, .modal-content, input, textarea, button, table, .stat-card, .toast-notification {
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
         }
-        /* السماح بتحديد النص فقط في حقول الإدخال القابلة للتعديل */
+        
         input[type="text"], input[type="number"], input[type="password"], input[type="email"], textarea {
             user-select: text;
             -webkit-user-select: text;
         }
 
-                .sync-status {
+        .sync-status {
             display: flex;
             align-items: center;
             gap: 6px;
@@ -107,7 +104,6 @@
                 <div class="admin-dropdown" id="adminDropdown">
                     <button class="admin-dropdown-btn">⚙️ الإدارة</button>
                     <div id="adminDropdownContent" class="admin-dropdown-content">
-                        <!-- يتم ملؤها ديناميكيًا من ui-permissions.js -->
                     </div>
                 </div>
                 <button id="darkModeToggle" class="dark-mode-toggle">🌙</button>
@@ -153,7 +149,6 @@
             <div id="actionsContainer" class="actions-container"></div>
         </div>
 
-        <!-- نموذج إضافة مشترك جديد (مطوي افتراضياً) -->
         <div class="form-card form-collapsed" id="addSubscriberCard">
             <div class="form-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <span id="formTitle" style="cursor: pointer; user-select: none;">➕ إضافة مشترك جديد</span>
@@ -169,7 +164,7 @@
                 </div>
                 <div class="cards-section">
                     <div class="cards-header">
-                        <div class="cards-title">📇 البطاقات التموينية (أضف بطاقة واحدة على الأقل)</div>
+                        <div class="cards-title">📇 البطاقات التموينية</div>
                         <button type="button" id="addCardBtn" class="add-card-btn" disabled>+ إضافة بطاقة</button>
                     </div>
                     <div id="cardsListContainer" class="cards-list"></div>
@@ -182,7 +177,6 @@
             </div>
         </div>
 
-        <!-- شريط الأدوات -->
         <div class="toolbar" id="toolbarRow">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="بحث">
@@ -191,28 +185,24 @@
             </div>
             <div class="filter-group">
                 <button data-filter="all" class="filter-btn active">الكل</button>
-                <button data-filter="paid" class="filter-btn">✅ مدفوع بالكامل</button>
-                <button data-filter="unpaid" class="filter-btn">❌ عليه متبقي</button>
-                <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح الفلتر</button>
+                <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
+                <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
+                <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح</button>
             </div>
             <div class="sync-status" id="syncStatus">🟢 متزامن</div>
         </div>
 
-        <!-- أزرار تبديل العرض (Toggle) -->
         <div class="view-toggle" id="viewToggle">
             <button id="tableViewBtn" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
             <button id="cardsViewBtn" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
         </div>
 
-        <!-- عداد البطاقات -->
         <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
 
-        <!-- زر ملء الشاشة -->
         <div id="fullscreenBtnContainer" style="text-align: right; margin-bottom: 4px;">
             <button id="toggleFullscreenBtn" class="btn btn-sm btn-info" title="تكبير الجدول">🖥️</button>
         </div>
 
-        <!-- حاوية الجدول -->
         <div class="table-section" id="tableSection">
             <div class="table-wrapper" id="tableWrapper">
                 <table id="subscribersTable">
@@ -239,7 +229,6 @@
                     </tbody>
                 </table>
             </div>
-            <!-- حاوية الكروت -->
             <div class="cards-view-container" id="cardsViewContainer" style="display: none;"></div>
         </div>
 
@@ -251,34 +240,49 @@
 
     <button id="scrollToTopBtn" class="scroll-to-top-btn" title="العودة للأعلى" style="display: none;">⬆️</button>
 
+    <!-- ⭐ ========== إعداد التوافق مع الموبايل ========== -->
+    <script>
+        (function() {
+            if (!window.Promise || !window.fetch) {
+                alert("المتصفح قديم. الرجاء استخدام Chrome.");
+                return;
+            }
+
+            function isMobile() {
+                return /Mobi|Android/i.test(navigator.userAgent);
+            }
+
+            if (isMobile()) {
+                console.log("🔄 Mobile: تفعيل وضع التوافق");
+                window.MOBILE_MODE = true;
+                
+                // ⭐ إصلاح مشكلة localStorage في WebView
+                try {
+                    localStorage.setItem('_test', '1');
+                    localStorage.removeItem('_test');
+                } catch(e) {
+                    console.warn("⚠️ localStorage غير متاح");
+                }
+            }
+        })();
+    </script>
+
     <!-- ========== ملفات JavaScript ========== -->
-    
-    <!-- 1. الإعدادات - لازم تتحمل الأول -->
     <script src="js/env.js"></script>
     <script src="js/config.js"></script>
-    
-    <!-- 2. الدوال المساعدة - الأساس قبل الباقي -->
     <script src="js/helpers/helpers-ui.js"></script>
     <script src="js/helpers/helpers-text.js"></script>
     <script src="js/helpers/helpers-date.js"></script>
     <script src="js/helpers/helpers-calc.js"></script>
     <script src="js/helpers/helpers-search.js"></script>
     <script src="js/helpers/helpers-misc.js"></script>
-    
-    <!-- 3. البيانات والمستخدمين -->
     <script src="js/data.js"></script>
     <script src="js/users.js"></script>
-    
-    <!-- 4. المشتركين -->
     <script src="js/subscribers.js"></script>
-    
-    <!-- 5. التقارير -->
     <script src="js/reports/reports-cards.js"></script>
     <script src="js/reports/reports-excel.js"></script>
     <script src="js/reports/reports-backup.js"></script>
     <script src="js/reports/reports-other.js"></script>
-    
-    <!-- 6. واجهة المستخدم -->
     <script src="js/ui/ui-main.js"></script>
     <script src="js/ui/ui-table.js"></script>
     <script src="js/ui/ui-cards.js"></script>
@@ -286,8 +290,6 @@
     <script src="js/ui/ui-modals.js"></script>
     <script src="js/ui/ui-reports.js"></script>
     <script src="js/ui/ui-fullscreen.js"></script>
-    
-    <!-- 7. التطبيق الرئيسي - يتحمل أخيرًا -->
     <script src="js/app.js"></script>
 </body>
 </html>
