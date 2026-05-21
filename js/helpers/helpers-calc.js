@@ -34,6 +34,13 @@ function getBreadDifference(sub) {
     return defaultBread - actualBread;
 }
 
+// ⭐ دالة للتحقق من وجود تعديل يدوي على الحصة الشهرية
+function hasMonthlyBreadOverride(subId) {
+    const key = getKey(currentYear, currentMonth);
+    const overrides = breadOverrides[subId]?.[key];
+    return overrides && overrides.length > 0;
+}
+
 // ⭐ دالة حساب قيمة الاشتراك مع مراعاة تغييرات منتصف الشهر
 function subValue(sub) {
     const days = getDays(currentYear, currentMonth);
@@ -60,11 +67,13 @@ function subValue(sub) {
                 const periodDays = changeDay - lastDay;
                 totalValue += lastDailyBread * periodDays * BREAD_PRICE_PER_LOAF;
                 
-                // حساب فرق النقاط عن الحصة الافتراضية
-                const defaultBread = getDefaultDailyBread(sub);
-                const breadDiff = defaultBread - lastDailyBread;
-                if (breadDiff > 0) {
-                    totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
+                // ⭐ التعديل: فرق النقاط يحسب فقط عند وجود تعديل يدوي
+                if (lastDailyBread !== getDefaultDailyBread(sub)) {
+                    const defaultBread = getDefaultDailyBread(sub);
+                    const breadDiff = defaultBread - lastDailyBread;
+                    if (breadDiff > 0) {
+                        totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
+                    }
                 }
             }
             
@@ -77,24 +86,31 @@ function subValue(sub) {
             const periodDays = days - lastDay + 1;
             totalValue += lastDailyBread * periodDays * BREAD_PRICE_PER_LOAF;
             
-            const defaultBread = getDefaultDailyBread(sub);
-            const breadDiff = defaultBread - lastDailyBread;
-            if (breadDiff > 0) {
-                totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
+            // ⭐ التعديل: فرق النقاط يحسب فقط عند وجود تعديل يدوي
+            if (lastDailyBread !== getDefaultDailyBread(sub)) {
+                const defaultBread = getDefaultDailyBread(sub);
+                const breadDiff = defaultBread - lastDailyBread;
+                if (breadDiff > 0) {
+                    totalValue -= breadDiff * periodDays * CREDIT_PRICE_PER_LOAF;
+                }
             }
         }
         
         return Math.max(0, totalValue);
     }
     
-    // لو مفيش تغييرات، الحساب العادي
+    // ⭐ التعديل: لو مفيش تغييرات يدوية، الحساب العادي بدون فرق نقاط
     const modifiedValue = getDailyBread(sub) * days * BREAD_PRICE_PER_LOAF;
-    const breadDiff = getBreadDifference(sub);
-    const credit = breadDiff * days * CREDIT_PRICE_PER_LOAF;
-    return modifiedValue - credit;
+    // تم إلغاء خصم فرق النقاط لأنه لا يوجد تعديل يدوي
+    return modifiedValue;
 }
 
 function getCreditAmount(sub) {
+    // ⭐ التعديل: فرق النقاط يحسب فقط عند وجود تعديل يدوي في الحصة الشهرية
+    if (!hasMonthlyBreadOverride(sub.id)) {
+        return 0;
+    }
+    
     const days = getDays(currentYear, currentMonth);
     const breadDiff = getBreadDifference(sub);
     return Math.max(0, breadDiff * days * CREDIT_PRICE_PER_LOAF);
