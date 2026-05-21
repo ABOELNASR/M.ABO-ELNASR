@@ -22,3 +22,293 @@
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* ========== ✨ مؤثرات بصرية جديدة ========== */
+
+/* 🌊 تأثير التموج على الأزرار (Ripple Effect) */
+@keyframes ripple {
+    0% { transform: scale(0); opacity: 0.6; }
+    100% { transform: scale(4); opacity: 0; }
+}
+
+.ripple-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple-effect .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+}
+
+/* 💫 تأثير الوميض (Shimmer) للتحميل */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.shimmer {
+    background: linear-gradient(90deg, 
+        var(--card-view-bg) 0%, 
+        var(--border-light) 40%, 
+        var(--card-view-bg) 80%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* 🌟 تأثير النبض الخفيف */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* 🎯 تأثير الظهور من الأسفل */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+/* 🎪 تأثير الظهور المتدرج للعناصر */
+@keyframes fadeInStagger {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-item {
+    animation: fadeInStagger 0.3s ease-out both;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+.stagger-item:nth-child(7) { animation-delay: 0.35s; }
+.stagger-item:nth-child(8) { animation-delay: 0.4s; }
+.stagger-item:nth-child(9) { animation-delay: 0.45s; }
+.stagger-item:nth-child(10) { animation-delay: 0.5s; }
+
+/* 🎨 تدرج لوني متحرك للخلفية */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.gradient-animated {
+    background: linear-gradient(135deg, #e8eaf6, #f3e5f5, #fff8e1, #e3f2fd);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+}
+
+/* ⚡ تأثير الاهتزاز الخفيف للتنبيه */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.shake {
+    animation: shake 0.6s ease-in-out;
+}
+
+/* 💡 تأثير التوهج */
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(38, 166, 154, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(38, 166, 154, 0.6); }
+}
+
+.glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* 🎯 تأثير القفز الخفيف */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.bounce {
+    animation: bounce 0.6s ease;
+}
+
+/* 🌈 تأثير قوس قزح للحدود */
+@keyframes rainbowBorder {
+    0% { border-color: #ef5350; }
+    20% { border-color: #ff9800; }
+    40% { border-color: #ffeb3b; }
+    60% { border-color: #4caf50; }
+    80% { border-color: #2196f3; }
+    100% { border-color: #9c27b0; }
+}
+
+.rainbow-border {
+    animation: rainbowBorder 3s linear infinite;
+    border-width: 2px;
+    border-style: solid;
+}
+
+/* 🎪 تأثير الدوران ثلاثي الأبعاد للبطاقات */
+@keyframes floatCard {
+    0%, 100% { transform: translateY(0) rotateX(0); }
+    25% { transform: translateY(-3px) rotateX(1deg); }
+    75% { transform: translateY(3px) rotateX(-1deg); }
+}
+
+.card-float {
+    animation: floatCard 4s ease-in-out infinite;
+}
+
+/* ✨ تأثير الوميض على النص */
+@keyframes textShine {
+    0% { background-position: -100% 0; }
+    100% { background-position: 100% 0; }
+}
+
+.text-shine {
+    background: linear-gradient(90deg, 
+        var(--text-primary) 0%, 
+        var(--btn-primary) 50%, 
+        var(--text-primary) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: textShine 3s linear infinite;
+}
+
+/* 🔔 تأثير الجرس للإشعارات */
+@keyframes bellRing {
+    0%, 100% { transform: rotate(0); }
+    10%, 30% { transform: rotate(10deg); }
+    20%, 40% { transform: rotate(-10deg); }
+    50% { transform: rotate(5deg); }
+    60% { transform: rotate(-5deg); }
+    70% { transform: rotate(0); }
+}
+
+.bell-ring {
+    animation: bellRing 1s ease-in-out;
+}
+
+/* 🎯 تأثير التوسيع من المركز */
+@keyframes expandFromCenter {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.expand-center {
+    animation: expandFromCenter 0.3s ease-out;
+}
+
+/* 🌙 تأثير انتقال الوضع الليلي */
+@keyframes darkModeTransition {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(0.5); }
+    100% { filter: brightness(1); }
+}
+
+.dark-mode-transition {
+    animation: darkModeTransition 0.5s ease-in-out;
+}
+
+/* 🎨 تأثير التدرج اللوني على الأزرار */
+@keyframes btnGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+.btn-gradient-animated {
+    background: linear-gradient(135deg, #26a69a, #43a047, #29b6f6);
+    background-size: 300% 300%;
+    animation: btnGradient 3s ease infinite;
+}
+
+/* 🌟 تأثير النجوم للخلفية */
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+.star-particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: var(--btn-primary);
+    border-radius: 50%;
+    animation: twinkle 1.5s ease-in-out infinite;
+}
+
+/* 💧 تأثير القطرة */
+@keyframes droplet {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
+
+.droplet {
+    animation: droplet 0.8s ease-out;
+}
+
+/* 🎪 تأثير الانزلاق من اليمين */
+@keyframes slideInRight {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+}
+
+/* 🎪 تأثير الانزلاق من اليسار */
+@keyframes slideInLeft {
+    from { transform: translateX(-30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+/* ⭐ تأثير تكبير عند hover للبطاقات */
+.card-hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* 🎯 تأثير ضغط عند click */
+.click-press {
+    transition: transform 0.1s ease;
+}
+
+.click-press:active {
+    transform: scale(0.95);
+}
+
+/* 📊 تأثير العد التصاعدي للأرقام */
+@keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.count-up {
+    animation: countUp 0.5s ease-out;
+}
