@@ -21,11 +21,11 @@ function renderCards() {
         let cardsHtml = '';
         filtered.forEach(sub => {
             if (sub.cardsList) {
-                sub.cardsList.forEach(card => {
+                sub.cardsList.forEach((card, idx) => {
                     if (card.individuals === targetNumber) {
                         const bread = getDailyBreadForCard(card);
                         cardsHtml += `
-                        <div class="subscriber-card row-paid" style="border-right-color: var(--btn-info);">
+                        <div class="subscriber-card row-paid stagger-item card-hover-lift" style="border-right-color: var(--btn-info);">
                             <div class="card-header">
                                 <span class="card-title">📇 ${escapeHtml(card.cardName)}</span>
                                 <span style="font-size:0.7rem; color: var(--text-secondary);">👤 ${escapeHtml(sub.name)}</span>
@@ -60,7 +60,7 @@ function renderCards() {
     }
 
     let cardsHtml = '<div class="cards-view-grid">';
-    filtered.forEach(sub => {
+    filtered.forEach((sub, index) => {
         const totalInd = getTotalIndividuals(sub);
         const total = subValue(sub);
         const paid = getPaid(sub.id);
@@ -114,10 +114,10 @@ function renderCards() {
         }
 
         cardsHtml += `
-        <div class="subscriber-card ${cardClass}" data-id="${sub.id}">
+        <div class="subscriber-card ${cardClass} stagger-item card-hover-lift" data-id="${sub.id}" style="animation-delay: ${index * 0.05}s;">
             <div class="card-tabs">
-                <button class="card-tab active" data-tab="info">📋 معلومات</button>
-                <button class="card-tab" data-tab="cards">📇 البطاقات</button>
+                <button class="card-tab active ripple-effect" data-tab="info">📋 معلومات</button>
+                <button class="card-tab ripple-effect" data-tab="cards">📇 البطاقات</button>
             </div>
             <div class="card-tab-content active" data-content="info">
                 <div class="card-header">
@@ -160,10 +160,10 @@ function renderCards() {
                     ${showPaymentActions ? `<input type="checkbox" class="checkbox-paid" data-id="${sub.id}" ${checked} ${!showPaymentActions ? 'disabled' : ''} title="خالص" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--btn-light-green);">` : ''}
                 </div>
                 <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; flex: 1;">
-                    ${showEditDelete ? `<button class="action-icon-btn edit-btn" data-id="${sub.id}" title="تعديل">✏️</button>` : ''}
-                    ${showEditDelete ? `<button class="action-icon-btn delete-btn" data-id="${sub.id}" title="حذف">🗑️</button>` : ''}
-                    ${showPaymentActions ? `<button class="action-icon-btn edit-payment-btn" data-id="${sub.id}" title="مدفوع">💰</button>` : ''}
-                    ${showPaymentActions ? `<button class="action-icon-btn edit-bread-btn" data-id="${sub.id}" title="حصة">🍞</button>` : ''}
+                    ${showEditDelete ? `<button class="action-icon-btn edit-btn ripple-effect click-press" data-id="${sub.id}" title="تعديل">✏️</button>` : ''}
+                    ${showEditDelete ? `<button class="action-icon-btn delete-btn ripple-effect click-press" data-id="${sub.id}" title="حذف">🗑️</button>` : ''}
+                    ${showPaymentActions ? `<button class="action-icon-btn edit-payment-btn ripple-effect click-press" data-id="${sub.id}" title="مدفوع">💰</button>` : ''}
+                    ${showPaymentActions ? `<button class="action-icon-btn edit-bread-btn ripple-effect click-press" data-id="${sub.id}" title="حصة">🍞</button>` : ''}
                     ${!showEditDelete && !showPaymentActions ? '<span style="padding:6px; opacity:0.6;">🔒</span>' : ''}
                 </div>
             </div>
@@ -176,6 +176,9 @@ function renderCards() {
     bindCardEvents();
     bindCardTabs();
     applyFitTextToCards();
+    
+    // ⭐ إعادة تهيئة ripple effects للعناصر الجديدة
+    setTimeout(initRippleEffects, 50);
 }
 
 // ========== تبويبات الكروت ==========
@@ -192,7 +195,12 @@ function bindCardTabs() {
                 
                 card.querySelectorAll('.card-tab-content').forEach(c => c.classList.remove('active'));
                 const content = card.querySelector(`.card-tab-content[data-content="${tabName}"]`);
-                if (content) content.classList.add('active');
+                if (content) {
+                    content.classList.add('active');
+                    // ⭐ تأثير fadeInUp للمحتوى
+                    content.classList.add('fade-in-up');
+                    setTimeout(() => content.classList.remove('fade-in-up'), 400);
+                }
             });
         });
     });
