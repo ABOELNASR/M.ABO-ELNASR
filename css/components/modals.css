@@ -7,6 +7,7 @@
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -26,9 +27,15 @@
     cursor: default;
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 80px rgba(38, 166, 154, 0.05);
     animation: scaleIn 0.25s ease;
     border: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-content:hover {
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.2), 0 0 100px rgba(38, 166, 154, 0.08);
 }
 
 .date-picker-content {
@@ -45,12 +52,13 @@
     background: var(--input-bg);
     color: var(--text-primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
 }
 
 .date-picker-content input:focus {
     outline: none;
     border-color: var(--btn-info);
-    box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1), 0 0 20px rgba(41, 182, 246, 0.1);
 }
 
 .date-picker-content input[type="date"] {
@@ -73,13 +81,13 @@
     background: var(--input-bg);
     color: var(--text-primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
 }
 
 .report-search-box:focus {
     outline: none;
     border-color: var(--btn-info);
-    box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1), 0 0 20px rgba(41, 182, 246, 0.1);
 }
 
 .cards-report-list {
@@ -94,14 +102,15 @@
     padding: 0.6rem;
     margin-bottom: 0.5rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .report-card-item:hover {
     background: var(--hover-bg);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--card-hover-color);
 }
 
 .report-card-title {
@@ -137,6 +146,8 @@
     width: auto;
     text-align: center;
     line-height: 1.4;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 /* ========== إشعار الجرس الداخلي ========== */
@@ -158,6 +169,8 @@
     transition: transform 0.3s ease;
     max-width: 350px;
     direction: rtl;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .bell-notification.show {
@@ -167,6 +180,7 @@
 .bell-icon {
     font-size: 1.5rem;
     flex-shrink: 0;
+    animation: bellRing 1s ease-in-out;
 }
 
 .bell-content {
