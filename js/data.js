@@ -297,13 +297,11 @@ async function loadData(forceLocal = false) {
         showToast('⚠️ التطبيق يعمل من ملف محلي', true);
         updateSyncStatusUI('no_connection');
         loadLocalData();
-        renderAll();
         return;
     }
 
     if (forceLocal || !navigator.onLine) {
         loadLocalData();
-        renderAll();
         updateSyncStatusUI('offline');
         return;
     }
@@ -361,8 +359,6 @@ async function loadData(forceLocal = false) {
             showToast('❌ تعذر الاتصال بالسحابة ولا توجد نسخة محلية', true);
         }
     }
-    
-    renderAll();
 }
 
 // ========== مزامنة يدوية (تحديث من السحابة) ==========
@@ -400,10 +396,8 @@ async function manualSync() {
             }
             
             saveLocalData();
-            renderAll();
-            
-            showToast('☁️ تم الاتصال بالسحابة');
             updateSyncStatusUI('success');
+            showToast('☁️ تم الاتصال بالسحابة');
             return true;
         }
         
