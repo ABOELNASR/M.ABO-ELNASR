@@ -5,7 +5,14 @@
     padding: 0.8rem;
     margin-bottom: 1.5rem;
     border: 1px solid var(--border-light);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 0 30px rgba(38, 166, 154, 0.02);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.form-card:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06), 0 0 50px rgba(38, 166, 154, 0.05);
 }
 
 .form-title {
@@ -15,6 +22,11 @@
     margin-bottom: 0.6rem;
     padding-right: 0.3rem;
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-title:hover {
+    color: var(--btn-light-green);
 }
 
 .form-row {
@@ -36,6 +48,7 @@
     margin-bottom: 4px;
     display: block;
     color: var(--text-secondary);
+    transition: all 0.3s ease;
 }
 
 .input-group input {
@@ -47,13 +60,18 @@
     color: var(--text-primary);
     font-size: 0.85rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
 }
 
 .input-group input:focus {
     outline: none;
     border-color: var(--btn-light-green);
-    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1);
+    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1), 0 0 20px rgba(67, 160, 71, 0.1);
+}
+
+.input-group input:hover {
+    border-color: var(--btn-info);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 #subName {
@@ -71,6 +89,7 @@
     margin-top: 5px;
     display: inline-block;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    animation: shake 0.5s ease;
 }
 
 .form-actions-row {
@@ -113,12 +132,12 @@
     font-size: 0.7rem;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(41, 182, 246, 0.3);
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 }
 
 .add-card-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(41, 182, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(41, 182, 246, 0.4), 0 0 25px rgba(41, 182, 246, 0.2);
 }
 
 .cards-list {
@@ -137,11 +156,13 @@
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     border: 1px solid var(--border-light);
-    transition: box-shadow 0.2s;
+    transition: all 0.3s ease;
 }
 
 .card-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-color: var(--card-hover-color);
+    transform: translateX(-2px);
 }
 
 .card-item .card-name {
@@ -153,6 +174,12 @@
     color: var(--text-primary);
     font-size: 0.8rem;
     min-width: 100px;
+    transition: all 0.3s ease;
+}
+
+.card-item .card-name:focus {
+    border-color: var(--btn-light-green);
+    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1), 0 0 15px rgba(67, 160, 71, 0.1);
 }
 
 .card-item .card-individuals {
@@ -165,6 +192,12 @@
     font-size: 0.8rem;
     text-align: center;
     min-width: 60px;
+    transition: all 0.3s ease;
+}
+
+.card-item .card-individuals:focus {
+    border-color: var(--btn-light-green);
+    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1);
 }
 
 .card-item .remove-card-btn {
@@ -180,10 +213,10 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(239, 83, 80, 0.3);
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 }
 
 .card-item .remove-card-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(239, 83, 80, 0.4);
+    transform: scale(1.2) rotate(90deg);
+    box-shadow: 0 4px 16px rgba(239, 83, 80, 0.5), 0 0 25px rgba(239, 83, 80, 0.3);
 }
