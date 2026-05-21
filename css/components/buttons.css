@@ -6,27 +6,30 @@
     font-weight: 600;
     cursor: pointer;
     font-size: 0.75rem;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
 }
 
 .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .btn:active {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.97);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary {
-    background: var(--btn-light-green);
+    background: linear-gradient(135deg, var(--btn-light-green), #66bb6a);
     color: white;
 }
 
 .btn-primary:hover {
-    background: var(--btn-light-green-hover);
+    background: linear-gradient(135deg, var(--btn-light-green-hover), #43a047);
+    box-shadow: 0 6px 25px rgba(67, 160, 71, 0.4), 0 0 40px rgba(67, 160, 71, 0.2);
 }
 
 .btn-secondary {
@@ -34,120 +37,25 @@
     color: white;
 }
 
+.btn-secondary:hover {
+    background: #90a4ae;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
 .btn-danger {
-    background: var(--danger);
+    background: linear-gradient(135deg, var(--danger), #f44336);
     color: white;
 }
 
+.btn-danger:hover {
+    background: linear-gradient(135deg, #d32f2f, #c62828);
+    box-shadow: 0 6px 25px rgba(239, 83, 80, 0.4), 0 0 40px rgba(239, 83, 80, 0.2);
+}
+
 .btn-info {
-    background: var(--btn-info);
+    background: linear-gradient(135deg, var(--btn-info), #4fc3f7);
     color: white;
 }
 
 .btn-info:hover {
-    background: var(--btn-info-hover);
-}
-
-.btn-sm {
-    padding: 4px 10px;
-    font-size: 0.7rem;
-}
-
-.btn-disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* ========== أزرار الإجراءات المباشرة ========== */
-.action-buttons-container {
-    display: flex;
-    gap: 4px;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.action-icon-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 8px;
-    transition: all 0.2s;
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-primary);
-    background-color: var(--bg-container);
-    border: 1px solid var(--border-light);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.action-icon-btn:hover {
-    background-color: var(--hover-bg);
-    transform: scale(1.12);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* ========== أزرار تبديل العرض (Toggle) ========== */
-.view-toggle {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 0.8rem;
-}
-
-.view-toggle-btn {
-    padding: 6px 16px;
-    border-radius: 30px;
-    border: 2px solid var(--border-light);
-    background: var(--card-bg);
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.view-toggle-btn:hover {
-    background: var(--hover-bg);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.view-toggle-btn.active {
-    background: var(--btn-light-green);
-    color: white;
-    border-color: var(--btn-light-green);
-    box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
-}
-
-/* ========== زر طي النموذج ========== */
-.toggle-form-btn {
-    background: none;
-    border: 1px solid var(--border-light);
-    color: var(--text-primary);
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 2px 8px;
-    border-radius: 20px;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.toggle-form-btn:hover {
-    background: var(--hover-bg);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.form-collapsed .toggle-form-btn {
-    transform: rotate(0deg);
-}
-
-.form-card:not(.form-collapsed) .toggle-form-btn {
-    transform: rotate(180deg);
-}
+    background: linear-gradient(135
