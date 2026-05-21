@@ -39,6 +39,8 @@ function renderAll() {
     } else {
         renderTable();
     }
+    // ⭐ إعادة تفعيل تأثير ripple بعد إعادة الرسم
+    setTimeout(initRippleEffects, 100);
 }
 
 function changeMonth(delta) {
@@ -80,9 +82,50 @@ function toggleView(mode) {
     }
 }
 
+// ========== تأثير Ripple الديناميكي ==========
+function createRipple(event) {
+    const element = event.currentTarget;
+    
+    // إزالة أي ripple قديم
+    const oldRipple = element.querySelector('.ripple');
+    if (oldRipple) oldRipple.remove();
+    
+    const circle = document.createElement('span');
+    const diameter = Math.max(element.clientWidth, element.clientHeight);
+    const radius = diameter / 2;
+    
+    const rect = element.getBoundingClientRect();
+    const left = event.clientX - rect.left - radius;
+    const top = event.clientY - rect.top - radius;
+    
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${left}px`;
+    circle.style.top = `${top}px`;
+    circle.classList.add('ripple');
+    
+    element.appendChild(circle);
+    
+    // إزالة العنصر بعد انتهاء الأنيميشن
+    setTimeout(() => {
+        if (circle) circle.remove();
+    }, 600);
+}
+
+function initRippleEffects() {
+    document.querySelectorAll('.ripple-effect').forEach(el => {
+        // إزالة القديم لتجنب التكرار
+        el.removeEventListener('click', createRipple);
+        // إضافة الجديد
+        el.addEventListener('click', createRipple);
+    });
+}
+
 // ========== ربط الأحداث العامة للواجهة ==========
 
 window.addEventListener('DOMContentLoaded', function() {
+    // ⭐ تهيئة تأثير ripple
+    initRippleEffects();
+    
     const fullscreenBtn = document.getElementById('toggleFullscreenBtn');
     if (fullscreenBtn) {
         fullscreenBtn.addEventListener('click', toggleFullscreenTable);
@@ -92,6 +135,18 @@ window.addEventListener('DOMContentLoaded', function() {
     const cardsViewBtn = document.getElementById('cardsViewBtn');
     if (tableViewBtn) tableViewBtn.addEventListener('click', () => toggleView('table'));
     if (cardsViewBtn) cardsViewBtn.addEventListener('click', () => toggleView('cards'));
+    
+    // ⭐ تأثير نبض على زر الرجوع للأعلى عند التمرير
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    if (scrollBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300 && scrollBtn.style.display !== 'none') {
+                scrollBtn.classList.add('pulse');
+            } else {
+                scrollBtn.classList.remove('pulse');
+            }
+        });
+    }
 });
 
 // ========== حدث النقر خارج الجدول لإغلاق التفاصيل ==========
