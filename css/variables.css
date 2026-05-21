@@ -49,6 +49,20 @@
     --card-view-hover: #f0f4ff;
     --input-dark-bg: #1a1d24;
     --card-hover-color: #ff9800;
+    
+    /* ⭐ متغيرات جديدة للمؤثرات البصرية */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+    --shadow-glow: 0 0 20px rgba(38, 166, 154, 0.3);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --blur-bg: blur(10px);
 }
 
 body {
