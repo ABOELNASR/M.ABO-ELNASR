@@ -186,50 +186,50 @@
     </div>
 
     <!-- ⭐ حاوية التطبيق الرئيسية - مخفية افتراضيًا -->
-    <div class="app-container" id="appContainer">
+    <div class="app-container gradient-animated" id="appContainer">
         <div class="top-controls">
             <div class="user-info">
                 <span id="userNameDisplay"></span>
-                <button id="logoutBtn">🚪</button>
+                <button id="logoutBtn" class="ripple-effect click-press">🚪</button>
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <div class="admin-dropdown" id="adminDropdown">
-                    <button class="admin-dropdown-btn">⚙️ الإدارة</button>
+                    <button class="admin-dropdown-btn ripple-effect click-press">⚙️ الإدارة</button>
                     <div id="adminDropdownContent" class="admin-dropdown-content">
                     </div>
                 </div>
-                <button id="darkModeToggle" class="dark-mode-toggle">🌙</button>
+                <button id="darkModeToggle" class="dark-mode-toggle ripple-effect click-press">🌙</button>
             </div>
         </div>
 
         <div class="header">
-            <h1>منظومة الخبز المدعم</h1>
+            <h1 class="text-shine">منظومة الخبز المدعم</h1>
         </div>
 
         <div id="statsSection" class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card card-hover-lift">
                 <div class="stat-label">👥 المشتركين</div>
-                <div class="stat-value" id="totalSubs">0</div>
+                <div class="stat-value count-up" id="totalSubs">0</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card card-hover-lift">
                 <div class="stat-label">💰 اجمالي قيمه الاشتراكات</div>
-                <div class="stat-value" id="totalMonthValue">0 ج.م</div>
+                <div class="stat-value count-up" id="totalMonthValue">0 ج.م</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card card-hover-lift">
                 <div class="stat-label">✅ المدفوع</div>
-                <div class="stat-value" id="totalPaidMonth">0 ج.م</div>
+                <div class="stat-value count-up" id="totalPaidMonth">0 ج.م</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card card-hover-lift">
                 <div class="stat-label">⏳ المتبقي</div>
-                <div class="stat-value" id="totalDueMonth">0 ج.م</div>
+                <div class="stat-value count-up" id="totalDueMonth">0 ج.م</div>
             </div>
         </div>
 
         <div class="month-picker">
             <div class="month-control">
-                <button id="prevMonthBtn">◀</button>
+                <button id="prevMonthBtn" class="ripple-effect click-press">◀</button>
                 <span id="currentMonthYear"></span>
-                <button id="nextMonthBtn">▶</button>
+                <button id="nextMonthBtn" class="ripple-effect click-press">▶</button>
             </div>
             <div class="days-info">
                 📆 أيام: <span id="daysCount">30</span> • 🍞 سعر الرغيف: 0.20 ج.م
@@ -241,10 +241,10 @@
             <div id="actionsContainer" class="actions-container"></div>
         </div>
 
-        <div class="form-card form-collapsed" id="addSubscriberCard">
+        <div class="form-card form-collapsed card-hover-lift" id="addSubscriberCard">
             <div class="form-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <span id="formTitle" style="cursor: pointer; user-select: none;">➕ إضافة مشترك جديد</span>
-                <button type="button" id="toggleFormBtn" class="toggle-form-btn" title="فتح النموذج">▼</button>
+                <button type="button" id="toggleFormBtn" class="toggle-form-btn ripple-effect" title="فتح النموذج">▼</button>
             </div>
             <div id="addSubscriberContent">
                 <div class="form-row">
@@ -257,14 +257,14 @@
                 <div class="cards-section">
                     <div class="cards-header">
                         <div class="cards-title">📇 البطاقات التموينية</div>
-                        <button type="button" id="addCardBtn" class="add-card-btn" disabled>+ إضافة بطاقة</button>
+                        <button type="button" id="addCardBtn" class="add-card-btn ripple-effect click-press" disabled>+ إضافة بطاقة</button>
                     </div>
                     <div id="cardsListContainer" class="cards-list"></div>
                     <div id="cardNameWarning" class="warning-message" style="display: none;"></div>
                 </div>
                 <div class="form-actions-row">
-                    <button id="saveBtn" class="btn btn-primary">💾 حفظ</button>
-                    <button id="cancelEditBtn" class="btn btn-danger">🗑️ إلغاء</button>
+                    <button id="saveBtn" class="btn btn-primary ripple-effect click-press btn-gradient-animated">💾 حفظ</button>
+                    <button id="cancelEditBtn" class="btn btn-danger ripple-effect click-press">🗑️ إلغاء</button>
                 </div>
             </div>
         </div>
@@ -273,32 +273,32 @@
         <div class="toolbar-area" id="toolbarArea">
             <!-- الصف الأول: أزرار جدول وكروت في المنتصف -->
             <div class="view-toggle" id="viewToggle">
-                <button id="tableViewBtn" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
-                <button id="cardsViewBtn" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
+                <button id="tableViewBtn" class="view-toggle-btn active ripple-effect click-press" title="عرض جدول">📋 جدول</button>
+                <button id="cardsViewBtn" class="view-toggle-btn ripple-effect click-press" title="عرض كروت">🃏 كروت</button>
             </div>
 
             <!-- الصف الثاني: زر ملء الشاشة + مربع البحث على اليمين -->
             <div class="toolbar-top-row">
-                <button id="toggleFullscreenBtn" class="btn btn-sm btn-info fullscreen-btn" title="تكبير الجدول">🖥️</button>
+                <button id="toggleFullscreenBtn" class="btn btn-sm btn-info fullscreen-btn ripple-effect click-press" title="تكبير الجدول">🖥️</button>
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="بحث">
                     <span class="search-icon">🔍</span>
-                    <button class="search-clear" id="clearSearchBtn">✖</button>
+                    <button class="search-clear ripple-effect" id="clearSearchBtn">✖</button>
                 </div>
             </div>
 
             <!-- الصف الثالث: أزرار الفلاتر -->
             <div class="filter-group" id="filterGroup">
-                <button data-filter="all" class="filter-btn active">الكل</button>
-                <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
-                <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
-                <button id="clearFilterBtn" class="clear-filter-btn">🗑️ مسح</button>
+                <button data-filter="all" class="filter-btn active ripple-effect click-press">الكل</button>
+                <button data-filter="paid" class="filter-btn ripple-effect click-press">✅ مدفوع</button>
+                <button data-filter="unpaid" class="filter-btn ripple-effect click-press">❌ متبقي</button>
+                <button id="clearFilterBtn" class="clear-filter-btn ripple-effect click-press">🗑️ مسح</button>
             </div>
 
             <!-- الصف الرابع: عداد البطاقات يسار + حالة المزامنة يمين -->
             <div class="toolbar-bottom-row">
                 <div class="cards-count-header" id="cardsCountHeader">📇 عدد البطاقات: 0</div>
-                <div class="sync-status" id="syncStatus">🟢 متزامن</div>
+                <div class="sync-status glow" id="syncStatus">🟢 متزامن</div>
             </div>
         </div>
 
@@ -307,8 +307,8 @@
             <div class="toolbar-area toolbar-area-clone" id="toolbarAreaClone" style="display: none;">
                 <!-- الصف الأول: أزرار جدول وكروت في المنتصف -->
                 <div class="view-toggle" id="viewToggleClone">
-                    <button id="tableViewBtnClone" class="view-toggle-btn active" title="عرض جدول">📋 جدول</button>
-                    <button id="cardsViewBtnClone" class="view-toggle-btn" title="عرض كروت">🃏 كروت</button>
+                    <button id="tableViewBtnClone" class="view-toggle-btn active ripple-effect click-press" title="عرض جدول">📋 جدول</button>
+                    <button id="cardsViewBtnClone" class="view-toggle-btn ripple-effect click-press" title="عرض كروت">🃏 كروت</button>
                 </div>
 
                 <!-- الصف الثاني: مربع البحث على اليمين (بدون زر ملء الشاشة) -->
@@ -316,21 +316,21 @@
                     <div class="search-box">
                         <input type="text" id="searchInputClone" placeholder="بحث">
                         <span class="search-icon">🔍</span>
-                        <button class="search-clear" id="clearSearchBtnClone">✖</button>
+                        <button class="search-clear ripple-effect" id="clearSearchBtnClone">✖</button>
                     </div>
                 </div>
 
                 <!-- الصف الثالث: أزرار الفلاتر (بدون زر مسح) -->
                 <div class="filter-group" id="filterGroupClone">
-                    <button data-filter="all" class="filter-btn active">الكل</button>
-                    <button data-filter="paid" class="filter-btn">✅ مدفوع</button>
-                    <button data-filter="unpaid" class="filter-btn">❌ متبقي</button>
+                    <button data-filter="all" class="filter-btn active ripple-effect click-press">الكل</button>
+                    <button data-filter="paid" class="filter-btn ripple-effect click-press">✅ مدفوع</button>
+                    <button data-filter="unpaid" class="filter-btn ripple-effect click-press">❌ متبقي</button>
                 </div>
 
                 <!-- الصف الرابع: عداد البطاقات يسار + حالة المزامنة يمين -->
                 <div class="toolbar-bottom-row">
                     <div class="cards-count-header" id="cardsCountHeaderClone">📇 عدد البطاقات: 0</div>
-                    <div class="sync-status" id="syncStatusClone">🟢 متزامن</div>
+                    <div class="sync-status glow" id="syncStatusClone">🟢 متزامن</div>
                 </div>
             </div>
 
@@ -351,7 +351,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr><td colspan="9">
-                            <div class="loading-wrapper">
+                            <div class="loading-wrapper shimmer">
                                 <span class="loading-spinner"></span>
                                 <span>جاري تحميل البيانات...</span>
                             </div>
@@ -368,7 +368,7 @@
         </div>
     </div>
 
-    <button id="scrollToTopBtn" class="scroll-to-top-btn" title="العودة للأعلى" style="display: none;">⬆️</button>
+    <button id="scrollToTopBtn" class="scroll-to-top-btn bounce" title="العودة للأعلى" style="display: none;">⬆️</button>
 
     <!-- ⭐ ========== إعداد التوافق مع الموبايل ========== -->
     <script>
