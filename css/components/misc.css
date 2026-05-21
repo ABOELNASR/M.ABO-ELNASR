@@ -10,20 +10,57 @@
     background: var(--card-bg);
     border-radius: 16px;
     padding: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 0 30px rgba(38, 166, 154, 0.02);
     border: 1px solid var(--border-light);
-    transition: all 0.2s;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* ⭐ تأثير توهج خلفي على كارد المستخدم */
+.user-card-modern::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(38, 166, 154, 0.08) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.user-card-modern:hover::before {
+    opacity: 1;
+    animation: rotateGlow 4s linear infinite;
+}
+
+@keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .user-card-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 0 60px rgba(38, 166, 154, 0.08);
+    border-color: var(--btn-light-green);
+}
+
+.user-card-modern > * {
+    position: relative;
+    z-index: 1;
 }
 
 .user-avatar {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, var(--btn-light-green), var(--btn-info));
+    background: linear-gradient(135deg, var(--btn-light-green), var(--btn-info), #9c27b0);
+    background-size: 200% 200%;
+    animation: avatarGradient 4s ease infinite;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -31,7 +68,18 @@
     color: white;
     font-size: 1.4rem;
     margin-bottom: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 25px rgba(38, 166, 154, 0.2);
+    transition: all 0.4s ease;
+}
+
+@keyframes avatarGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.user-card-modern:hover .user-avatar {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 0 40px rgba(38, 166, 154, 0.3);
 }
 
 .add-user-form {
@@ -40,6 +88,14 @@
     padding: 16px;
     margin-top: 20px;
     border: 1px solid var(--border-light);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 0 30px rgba(38, 166, 154, 0.02);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.add-user-form:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08), 0 0 40px rgba(38, 166, 154, 0.05);
 }
 
 .add-user-form input,
@@ -51,6 +107,14 @@
     border: 1px solid var(--border-light);
     background: var(--input-bg);
     color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.add-user-form input:focus,
+.add-user-form select:focus {
+    outline: none;
+    border-color: var(--btn-light-green);
+    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1), 0 0 20px rgba(67, 160, 71, 0.1);
 }
 
 /* ========== الملاحظات العامة ========== */
@@ -64,6 +128,14 @@
     margin-bottom: 1rem;
     min-height: 200px;
     resize: vertical;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.notes-textarea:focus {
+    outline: none;
+    border-color: var(--btn-light-green);
+    box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.1), 0 0 20px rgba(67, 160, 71, 0.1);
 }
 
 /* ========== أيقونة تحميل دوارة ========== */
@@ -75,6 +147,7 @@
     border-radius: 50%;
     border-top-color: var(--btn-light-green);
     animation: spin 0.8s linear infinite;
+    box-shadow: 0 0 20px rgba(67, 160, 71, 0.3);
 }
 
 .loading-wrapper {
@@ -84,4 +157,194 @@
     gap: 10px;
     padding: 2rem;
     color: var(--text-secondary);
+}
+
+/* ⭐⭐ مؤثرات إبداعية جديدة ⭐⭐ */
+
+/* تأثير وميض النجوم على الخلفية */
+@keyframes particleFloat {
+    0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+    20% { opacity: 0.6; }
+    80% { opacity: 0.2; }
+}
+
+.bg-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.bg-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--btn-light-green);
+    border-radius: 50%;
+    animation: particleFloat 3s ease-in-out infinite;
+}
+
+.bg-particle:nth-child(odd) {
+    background: var(--btn-info);
+    animation-duration: 4s;
+}
+
+.bg-particle:nth-child(3n) {
+    background: #ff9800;
+    animation-duration: 5s;
+}
+
+/* تأثير تموج المياه */
+@keyframes waterRipple {
+    0% { transform: scale(0); opacity: 0.5; }
+    100% { transform: scale(3); opacity: 0; }
+}
+
+.water-ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(38, 166, 154, 0.4);
+    animation: waterRipple 1.5s ease-out infinite;
+}
+
+/* تأثير نبض القلب */
+@keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.1); }
+    60% { transform: scale(1); }
+}
+
+.heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* تأثير توهج الحدود الدوار */
+@keyframes rotatingBorder {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+
+.border-rotate {
+    position: relative;
+    overflow: hidden;
+}
+
+.border-rotate::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #26a69a, #43a047, #29b6f6, #ff9800, #9c27b0);
+    background-size: 400% 400%;
+    border-radius: inherit;
+    z-index: -1;
+    animation: rotatingBorder 3s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.border-rotate:hover::before {
+    opacity: 1;
+}
+
+/* تأثير الكتابة المتحركة */
+@keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+}
+
+@keyframes blinkCursor {
+    0%, 100% { border-color: transparent; }
+    50% { border-color: var(--btn-light-green); }
+}
+
+.typewriter {
+    overflow: hidden;
+    white-space: nowrap;
+    border-left: 3px solid var(--btn-light-green);
+    animation: typewriter 2s steps(30) forwards, blinkCursor 0.8s step-end infinite;
+}
+
+/* تأثير انعكاس الزجاج */
+.glass-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* تأثير aurora على الخلفية */
+@keyframes aurora {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    50% { transform: translateX(-50%) rotate(180deg); }
+}
+
+.aurora-bg {
+    position: fixed;
+    top: -50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, 
+        rgba(38, 166, 154, 0.08) 0%, 
+        rgba(67, 160, 71, 0.04) 30%, 
+        rgba(41, 182, 246, 0.04) 60%, 
+        transparent 70%
+    );
+    animation: aurora 20s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* تأثير تكبير سلس للعناصر */
+@keyframes smoothBounce {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-8px); }
+    60% { transform: translateY(-4px); }
+}
+
+.smooth-bounce {
+    animation: smoothBounce 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* تأثير موجة متتالية */
+@keyframes wave {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+.wave-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.wave-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.2) 25%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        rgba(255, 255, 255, 0.2) 75%, 
+        transparent 100%
+    );
+    animation: wave 2s linear infinite;
 }
