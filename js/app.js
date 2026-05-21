@@ -203,8 +203,8 @@ async function initApp() {
         return;
     }
 
-    // ⭐ 6. فيه جلسة → أظهر السبلاش وحمل البيانات
-    console.log('✅ جلسة موجودة - إظهار السبلاش وتحميل البيانات...');
+    // ⭐ 6. فيه جلسة → ابدأ الاتصال بالسحابة فوراً وأظهر السبلاش
+    console.log('✅ جلسة موجودة - بدء الاتصال الفوري بالسحابة...');
     showSplashScreen();
 
     const appContainer = document.getElementById('appContainer');
@@ -214,15 +214,10 @@ async function initApp() {
         return;
     }
 
-    // ⭐ تحميل البيانات
-    try {
-        await loadData();
-        console.log('✅ تم تحميل البيانات بنجاح');
-    } catch (err) {
-        console.error('❌ فشل تحميل البيانات:', err);
-    }
-
-    // ⭐ إظهار الحاوية والأقسام
+    // ⭐⭐ التعديل: إطلاق طلب السحابة فوراً دون انتظار تجهيز الواجهة ⭐⭐
+    const cloudPromise = loadData();
+    
+    // ⭐ تجهيز الواجهة بالتوازي مع تحميل البيانات من السحابة
     appContainer.style.display = 'block';
     
     const statsSection = document.getElementById('statsSection');
@@ -234,10 +229,18 @@ async function initApp() {
     const cardsCountHeader = document.getElementById('cardsCountHeader');
     if (cardsCountHeader) cardsCountHeader.style.display = 'block';
 
+    // ⭐ انتظار نتيجة تحميل البيانات من السحابة
+    try {
+        await cloudPromise;
+        console.log('✅ تم تحميل البيانات من السحابة بنجاح');
+    } catch (err) {
+        console.error('❌ فشل تحميل البيانات من السحابة:', err);
+    }
+
     // ⭐ تطبيق الصلاحيات
     applyPermissions();
     
-    // ⭐ تحديث واجهة الإحصائيات والجدول (هذا السطر هو الحل)
+    // ⭐ تحديث واجهة الإحصائيات والجدول
     renderAll();
     
     // ⭐ إعداد المزامنة
