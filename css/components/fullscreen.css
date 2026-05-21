@@ -1,0 +1,236 @@
+/* ========== وضع ملء الشاشة للجدول ========== */
+.table-section {
+    transition: all 0.3s ease;
+}
+
+.table-section.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1500;
+    /* ⭐ خلفية متدرجة جميلة للوضع النهاري */
+    background: linear-gradient(135deg, #e8eaf6 0%, #e3f2fd 30%, #f3e5f5 70%, #fff8e1 100%);
+    padding: 0.5rem;
+    border-radius: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ⭐ خلفية متدرجة للوضع الليلي */
+body.dark-mode .table-section.fullscreen {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 30%, #1a1f2e 70%, #0d1117 100%);
+}
+
+/* ========== زر الخروج من ملء الشاشة (ثابت وصغير) ========== */
+body > #toggleFullscreenBtn {
+    position: fixed !important;
+    top: 8px !important;
+    right: 8px !important;
+    z-index: 1600 !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    font-size: 0.7rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--danger) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    transition: all 0.3s ease !important;
+}
+
+body > #toggleFullscreenBtn:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ========== المنطقة المجمعة داخل وضع ملء الشاشة ========== */
+.table-section.fullscreen .toolbar-area-clone {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 0.6rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
+}
+
+/* الصف الأول: أزرار جدول وكروت في المنتصف */
+.table-section.fullscreen .view-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-section.fullscreen .view-toggle-btn {
+    font-size: 0.8rem;
+    padding: 5px 14px;
+    background: #f5f6fa;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    color: #546e7a;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s;
+}
+
+.table-section.fullscreen .view-toggle-btn.active {
+    background: var(--btn-light-green);
+    color: white;
+    box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
+}
+
+/* الصف الثاني: مربع البحث على اليمين (بدون زر ملء الشاشة) */
+.table-section.fullscreen .toolbar-top-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+    direction: rtl;
+}
+
+/* ⭐ مربع البحث في وضع ملء الشاشة - يكبر مع التركيز */
+.table-section.fullscreen .search-box input {
+    width: 160px;
+    transition: width 0.3s ease;
+}
+
+.table-section.fullscreen .search-box input:focus {
+    width: 260px;
+    outline: none;
+    border-color: var(--btn-info);
+    box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1);
+}
+
+/* الصف الثالث: أزرار الفلاتر (بدون زر مسح) */
+.table-section.fullscreen .filter-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    direction: rtl;
+}
+
+/* الصف الرابع: عداد البطاقات يسار + حالة المزامنة يمين */
+.table-section.fullscreen .toolbar-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    direction: rtl;
+    background: transparent;
+}
+
+.table-section.fullscreen .cards-count-header {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.3rem;
+}
+
+/* ========== حاوية الجدول في وضع ملء الشاشة ========== */
+.table-section.fullscreen .table-wrapper {
+    border-radius: 1rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    background: var(--card-bg);
+}
+
+.table-section.fullscreen table {
+    min-width: 100%;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.table-section.fullscreen th,
+.table-section.fullscreen td {
+    padding: 10px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ========== أزرار الإجراءات في وضع ملء الشاشة ========== */
+.table-section.fullscreen .action-buttons-container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 0;
+    max-width: 100%;
+}
+
+.table-section.fullscreen .action-buttons-container::-webkit-scrollbar {
+    display: none;
+}
+
+.table-section.fullscreen .action-buttons-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.table-section.fullscreen .action-icon-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+/* ========== الكروت في وضع ملء الشاشة ========== */
+.table-section.fullscreen .subscriber-card {
+    font-size: 0.75rem;
+    padding: 0.7rem;
+}
+
+.table-section.fullscreen .card-detail-value {
+    font-size: 0.75rem;
+}
+
+.table-section.fullscreen .card-detail-label {
+    font-size: 0.6rem;
+}
+
+.table-section.fullscreen .card-checkbox {
+    width: 24px !important;
+    height: 24px !important;
+    margin: 0 0 0 14px !important;
+}
+
+.table-section.fullscreen .card-actions-row .action-icon-btn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1.3rem !important;
+}
+
+.table-section.fullscreen .card-actions-row {
+    gap: 8px !important;
+}
+
+.table-section.fullscreen .card-cards-header {
+    text-align: center !important;
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0 !important;
+}
+
+/* ========== حاوية الكروت في وضع ملء الشاشة ========== */
+.table-section.fullscreen .cards-view-container {
+    padding: 0.5rem 0;
+}
+
+/* ========== إخفاء سكرول الجسم ========== */
+body:has(.table-section.fullscreen) {
+    overflow: hidden;
+}
