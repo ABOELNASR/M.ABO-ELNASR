@@ -30,14 +30,24 @@
 @media screen and (max-width: 900px) and (orientation: landscape) {
     body {
         padding: 0.3rem;
+        background: linear-gradient(135deg, #e8eaf6 0%, #e3f2fd 50%, #f3e5f5 100%) !important;
+        background-attachment: fixed !important;
     }
+    
+    body.dark-mode {
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a1f2e 100%) !important;
+        background-attachment: fixed !important;
+    }
+    
     .app-container {
         padding: 0.5rem;
         border-radius: 1rem;
+        animation: fadeInUp 0.4s ease;
     }
     .header {
         margin-bottom: 0.5rem;
         padding: 0.4rem;
+        border-radius: 1rem;
     }
     .header h1 {
         font-size: 1rem;
@@ -51,6 +61,11 @@
     .stat-card {
         padding: 0.4rem;
         border-radius: 0.8rem;
+        transition: all 0.3s ease;
+    }
+    .stat-card:active {
+        transform: scale(0.96);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     .stat-label {
         font-size: 0.55rem;
@@ -65,6 +80,8 @@
         padding: 0.5rem 0.8rem !important;
         margin-bottom: 0.8rem !important;
         flex-wrap: nowrap !important;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
     }
     
     /* السطر الأول: الشهر + الأيام + الساعة في صف أفقي */
@@ -113,6 +130,11 @@
 
     .month-control button {
         font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .month-control button:active {
+        transform: scaleX(-1) scale(0.9);
     }
     
     #currentMonthYear {
@@ -133,6 +155,7 @@
     .form-card {
         padding: 0.5rem;
         margin-bottom: 0.8rem;
+        border-radius: 1rem;
     }
     .toolbar {
         flex-wrap: nowrap;
@@ -160,9 +183,15 @@
         height: 26px;
         font-size: 1rem;
     }
+    .action-icon-btn:active {
+        transform: scale(0.85) !important;
+    }
     .btn {
         padding: 4px 10px;
         font-size: 0.7rem;
+    }
+    .btn:active {
+        transform: scale(0.93);
     }
     .btn-sm {
         padding: 3px 8px;
@@ -194,15 +223,34 @@
     .app-container {
         min-width: 320px;
     }
+    
+    /* ⭐ سكرول بار أجمل للموبايل */
+    .table-wrapper::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .table-wrapper::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+    }
 }
 
 /* ========== شاشات الموبايل العمودية ========== */
 @media (max-width: 700px) {
     body {
         padding: 0.5rem;
+        background: linear-gradient(135deg, #e8eaf6 0%, #e3f2fd 50%, #f3e5f5 100%) !important;
+        background-attachment: fixed !important;
     }
+    
+    body.dark-mode {
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1a1f2e 100%) !important;
+        background-attachment: fixed !important;
+    }
+    
     .app-container {
         padding: 0.8rem;
+        border-radius: 1.2rem;
+        animation: fadeInUp 0.5s ease;
     }
     .top-controls {
         flex-direction: row;
@@ -215,13 +263,26 @@
     .stats-grid {
         grid-template-columns: repeat(2, 1fr) !important;
     }
+    
+    /* ⭐ تأثير ضغط على بطاقات الإحصائيات */
+    .stat-card:active {
+        transform: scale(0.95);
+        transition: transform 0.15s ease;
+    }
+    
     .scroll-to-top-btn {
         width: 32px;
         height: 32px;
         font-size: 1rem;
         bottom: 12px;
         right: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
     }
+    
+    .scroll-to-top-btn:active {
+        transform: scale(0.85);
+    }
+    
     .action-buttons-container {
         flex-wrap: nowrap !important;
         gap: 2px;
@@ -232,12 +293,24 @@
         font-size: 0.9rem;
         padding: 2px;
     }
+    
+    .action-icon-btn:active {
+        transform: scale(0.8) !important;
+        background-color: var(--hover-bg);
+    }
+    
     .modal-content {
         width: 95%;
         padding: 0.6rem;
+        border-radius: 1rem;
+        animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .report-card-item {
         padding: 0.4rem;
+    }
+    .report-card-item:active {
+        transform: scale(0.96);
+        background: var(--selected-row-bg);
     }
     .report-card-title {
         font-size: 0.75rem;
@@ -294,6 +367,18 @@
     .table-section.fullscreen td {
         padding: 7px 5px;
     }
+    
+    /* ⭐ تحسين تجربة اللمس */
+    .btn, .action-icon-btn, .view-toggle-btn, .filter-btn {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    
+    /* ⭐ منع التأثيرات الثقيلة على الموبايل */
+    .app-container::before,
+    .header::before {
+        display: none;
+    }
 }
 
 /* ========== شاشات الكمبيوتر ========== */
@@ -335,6 +420,44 @@
     .modal-content div[style*="border-right: 3px solid"] > div:last-child {
         font-size: 0.9rem !important;
         line-height: 1.6 !important;
+    }
+    
+    /* ⭐ تأثيرات hover محسنة للكمبيوتر */
+    .stat-card:hover {
+        transform: translateY(-4px);
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .action-icon-btn:hover {
+        transform: scale(1.15) rotate(5deg);
+    }
+    
+    /* ⭐ سكرول بار أجمل */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #78909c;
+    }
+    
+    ::-webkit-scrollbar-thumb:active {
+        background: #546e7a;
     }
 }
 
@@ -380,5 +503,110 @@
     .app-container {
         max-width: 100%;
         min-height: 100vh;
+        border-radius: 0;
+    }
+    
+    /* ⭐ تحسين شريط الحالة في PWA */
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+}
+
+/* ========== تحسينات اللمس العامة ========== */
+@media (hover: none) and (pointer: coarse) {
+    /* ⭐ تأثيرات active بدل hover للأجهزة اللمسية */
+    .btn:active {
+        transform: scale(0.94);
+        transition: transform 0.1s ease;
+    }
+    
+    .action-icon-btn:active {
+        transform: scale(0.85);
+        transition: transform 0.1s ease;
+    }
+    
+    .stat-card:active {
+        transform: scale(0.96);
+        transition: transform 0.15s ease;
+    }
+    
+    .subscriber-card:active {
+        transform: scale(0.97);
+        transition: transform 0.15s ease;
+    }
+    
+    .filter-btn:active,
+    .view-toggle-btn:active {
+        transform: scale(0.92);
+        transition: transform 0.1s ease;
+    }
+    
+    /* ⭐ تحسين استجابة اللمس */
+    button, 
+    .btn, 
+    .action-icon-btn,
+    .filter-btn,
+    .view-toggle-btn,
+    input[type="checkbox"] {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+
+/* ========== تحسينات للشاشات الصغيرة جداً ========== */
+@media (max-width: 380px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem;
+    }
+    
+    .stat-card {
+        padding: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.6rem;
+    }
+    
+    .stat-value {
+        font-size: clamp(0.7rem, 2.5vw, 1.2rem) !important;
+    }
+    
+    .search-box input {
+        width: 120px;
+        font-size: 0.7rem;
+    }
+    
+    .header h1 {
+        font-size: 0.9rem;
+        padding: 0.2rem 0.8rem;
+    }
+    
+    .action-icon-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 0.85rem;
+    }
+}
+
+/* ========== دعم الشاشات الكبيرة جداً ========== */
+@media (min-width: 1600px) {
+    .app-container {
+        max-width: 1500px;
+    }
+    
+    .stats-grid {
+        gap: 1.2rem;
+    }
+    
+    table {
+        font-size: 0.85rem;
+    }
+    
+    .cards-view-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     }
 }
