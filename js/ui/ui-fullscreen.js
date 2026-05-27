@@ -216,6 +216,67 @@ function toggleFullscreenTable() {
     }
 }
 
+// ========== إعداد زر الرجوع للأعلى في وضع ملء الشاشة ==========
+function setupFullscreenScrollToTop() {
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    const tableWrapper = document.getElementById('tableWrapper');
+    
+    if (!scrollBtn || !tableWrapper) return;
+    
+    // دالة إظهار/إخفاء زر الرجوع للأعلى بناءً على تمرير الجدول
+    const fullscreenScrollHandler = function() {
+        if (tableWrapper.scrollTop > 300) {
+            scrollBtn.style.display = 'flex';
+        } else {
+            scrollBtn.style.display = 'none';
+        }
+    };
+    
+    // ربط الحدث
+    tableWrapper.addEventListener('scroll', fullscreenScrollHandler);
+    
+    // حفظ المرجع لإزالته لاحقًا
+    tableWrapper._fullscreenScrollHandler = fullscreenScrollHandler;
+    
+    // إعداد النقر للرجوع للأعلى
+    scrollBtn._fullscreenClickHandler = function() {
+        tableWrapper.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+    scrollBtn.addEventListener('click', scrollBtn._fullscreenClickHandler);
+    
+    // إظهار الزر مباشرة (سيكون مخفيًا افتراضيًا حتى يتم التمرير)
+    scrollBtn.style.display = 'none';
+    
+    // فحص أولي إذا كان هناك تمرير بالفعل
+    fullscreenScrollHandler();
+}
+
+// ========== إزالة إعدادات زر الرجوع للأعلى عند الخروج ==========
+function cleanupFullscreenScrollToTop() {
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    const tableWrapper = document.getElementById('tableWrapper');
+    
+    if (scrollBtn && tableWrapper) {
+        // إزالة مستمع التمرير
+        if (tableWrapper._fullscreenScrollHandler) {
+            tableWrapper.removeEventListener('scroll', tableWrapper._fullscreenScrollHandler);
+            delete tableWrapper._fullscreenScrollHandler;
+        }
+        
+        // إزالة مستمع النقر
+        if (scrollBtn._fullscreenClickHandler) {
+            scrollBtn.removeEventListener('click', scrollBtn._fullscreenClickHandler);
+            delete scrollBtn._fullscreenClickHandler;
+        }
+        
+        // إخفاء الزر وإعادته للحالة الطبيعية (سيتحكم به مستمع window scroll في app.js)
+        scrollBtn.style.display = 'none';
+    }
+}
+
 // ========== دخول وضع ملء الشاشة ==========
 function enterFullscreen(section, btn) {
     // ⭐ إخفاء العناصر الأصلية خارج table-section
@@ -235,6 +296,9 @@ function enterFullscreen(section, btn) {
     
     // ⭐ نقل الزر إلى body عشان يظهر ثابت فوق الكل
     document.body.appendChild(btn);
+    
+    // ⭐ إعداد زر الرجوع للأعلى
+    setupFullscreenScrollToTop();
     
     section.classList.add('fullscreen');
     btn.innerHTML = '✖';
@@ -272,6 +336,9 @@ function exitFullscreen(section, btn, isBackButton) {
     if (topRow && btn.parentNode === document.body) {
         topRow.insertBefore(btn, topRow.firstChild);
     }
+    
+    // ⭐ تنظيف إعدادات زر الرجوع للأعلى
+    cleanupFullscreenScrollToTop();
     
     section.classList.remove('fullscreen');
     btn.innerHTML = '🖥️';
