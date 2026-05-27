@@ -166,6 +166,23 @@ function importFromExcel() {
     input.click();
 }
 
+// ========== دالة مساعدة لاستخراج العدد من نهاية النص (للنمط: اسم+رقم) ==========
+function extractNameAndCountFromLine(line) {
+    const trimmed = line.trim();
+    if (!trimmed) return null;
+    // اكتشاف رقم عربي/هندي في نهاية النص دون مسافات
+    const match = trimmed.match(/^(.*?)([٠-٩0-9]+)$/);
+    if (match) {
+        const namePart = match[1].trim();
+        const numStr = match[2];
+        const num = parseInt(arabicToEnglishNumber(numStr));
+        if (!isNaN(num) && num > 0) {
+            return { name: namePart || trimmed, individuals: num };
+        }
+    }
+    return null;
+}
+
 function importBulkText() {
     disableBodyScroll();
     const modal = document.createElement('div');
@@ -173,7 +190,7 @@ function importBulkText() {
     modal.innerHTML = `
         <div class="modal-content">
             <h3>📝 استيراد نصي (بالجملة)</h3>
-            <textarea id="bulkTextInput" rows="15" class="notes-textarea" placeholder="اكتب البيانات بالشكل التالي:&#10;اسم المشترك&#10;اسم البطاقة عدد_الأفراد&#10;اسم بطاقة ثانية عدد_أفراد&#10;&#10;اسم مشترك آخر&#10;بطاقته عدد_أفراد&#10;..."></textarea>
+            <textarea id="bulkTextInput" rows="15" class="notes-textarea" placeholder="اكتب البيانات بالشكل التالي:&#10;اسم المشترك&#10;أحمد&#10;محمد٣&#10;اسم البطاقة عدد_الأفراد&#10;اسم بطاقة ثانية عدد_أفراد&#10;&#10;اسم مشترك آخر&#10;بطاقته عدد_أفراد&#10;..."></textarea>
             <div class="date-picker-buttons">
                 <button id="importBulkBtn" class="btn btn-primary btn-sm">📥 استيراد</button>
                 <button id="closeBulkBtn" class="btn btn-secondary btn-sm">إلغاء</button>
@@ -206,6 +223,29 @@ function importBulkText() {
                 continue;
             }
             
+            // 1. تحليل النمط: اسم مشترك فقط أو اسم+عدد ملتصق (مثال: محمد، أحمد٢)
+            const compactInfo = extractNameAndCountFromLine(line);
+            if (compactInfo && !line.includes(' ')) {
+                // سطر لا يحتوي على مسافات ويحتوي على عدد في نهايته أو اسم فقط
+                const subName = compactInfo.name;
+                const individuals = compactInfo.individuals || 1; // إذا لم يوجد عدد → 1
+                
+                // نعتبر هذا اسم مشترك جديد وننشئ بطاقة افتراضية باسم "البطاقة الأساسية" بالعدد
+                if (!newSubscribersMap.has(subName)) {
+                    newSubscribersMap.set(subName, []);
+                }
+                // إضافة بطاقة افتراضية (لن نضيفها الآن لأننا سنتعامل معها لاحقًا)
+                // بدلاً من ذلك سنضع علامة على أن هذا المشترك لديه بطاقة افتراضية مضمنة
+                currentSubscriber = subName;
+                const existingCards = newSubscribersMap.get(subName);
+                // تجنب تكرار البطاقة الافتراضية إذا تمت إضافتها مسبقًا
+                if (!existingCards.some(c => c.cardName === 'البطاقة الأساسية' && c.individuals === individuals)) {
+                    existingCards.push({ cardName: 'البطاقة الأساسية', individuals });
+                }
+                continue;
+            }
+            
+            // 2. التنسيق القديم: اسم بطاقة متبوع بعدد أفراد (يحتوي على مسافة)
             const parts = line.split(/\s+/);
             const lastPart = parts[parts.length - 1];
             const possibleNumber = parseInt(arabicToEnglishNumber(lastPart));
@@ -222,6 +262,7 @@ function importBulkText() {
                     showToast(`سطر ${lineNumber}: لا يوجد مشترك محدد للبطاقة: ${line}`, true);
                 }
             } else {
+                // سطر لا يتطابق مع أي نمط: ربما اسم مشترك بدون عدد وبدون مسافات
                 currentSubscriber = line;
                 if (!newSubscribersMap.has(currentSubscriber)) {
                     newSubscribersMap.set(currentSubscriber, []);
@@ -244,6 +285,11 @@ function importBulkText() {
             let cardsList = [];
             let valid = true;
             const cardNamesInSub = new Set();
+            
+            // إذا لم تكن هناك بطاقات صريحة، نضيف بطاقة افتراضية (عدد 1) إن لم تكن موجودة
+            if (cards.length === 0) {
+                cards.push({ cardName: 'البطاقة الأساسية', individuals: 1 });
+            }
             
             for (const card of cards) {
                 if (cardNamesInSub.has(card.cardName.toLowerCase())) {
