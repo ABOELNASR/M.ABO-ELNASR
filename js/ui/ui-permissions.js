@@ -30,6 +30,7 @@ function applyPermissions() {
             dropdownContent.innerHTML += '<button id="backupDownloadBtn">💾 نسخ احتياطي (تحميل)</button>';
             dropdownContent.innerHTML += '<button id="restoreBackupBtn">🔄 استعادة نسخة احتياطية</button>';
             dropdownContent.innerHTML += '<button id="activityLogBtn">📜 سجل العمليات</button>';
+            dropdownContent.innerHTML += '<button id="deletedCardsLogBtn">🗑️ البطاقات المحذوفة</button>';
             
             document.getElementById('exportSubscribersBtn').onclick = exportSubscribersToExcel;
             document.getElementById('exportReportsBtn').onclick = exportReportsToExcel;
@@ -39,6 +40,7 @@ function applyPermissions() {
             document.getElementById('backupDownloadBtn').onclick = backupDownload;
             document.getElementById('restoreBackupBtn').onclick = showRestoreBackupModal;
             document.getElementById('activityLogBtn').onclick = showActivityLog;
+            document.getElementById('deletedCardsLogBtn').onclick = showDeletedCardsLog;
         } else if (currentUser && currentUser.role === ROLES.WRITE) {
             dropdownContent.innerHTML += '<button id="systemNotesBtn">📝 الملاحظات العامة</button>';
             dropdownContent.innerHTML += '<button id="activityLogBtn">📜 سجل العمليات</button>';
