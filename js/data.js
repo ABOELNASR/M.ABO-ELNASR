@@ -15,7 +15,8 @@ function loadLocalData() {
             monthlyPayments = d.monthlyPayments || {};
             paymentDates = d.paymentDates || {};
             breadOverrides = d.breadOverrides || {};
-            
+            deletedCardsLog = d.deletedCardsLog || [];
+
             console.log('✅ تم تحميل البيانات المحلية. عدد المشتركين:', subscribers.length);
         } catch (e) {
             console.error('خطأ في قراءة البيانات المحلية:', e);
@@ -23,6 +24,7 @@ function loadLocalData() {
             monthlyPayments = {};
             paymentDates = {};
             breadOverrides = {};
+            deletedCardsLog = [];
         }
     } else {
         console.log('لا توجد بيانات محلية، بدء بقائمة فارغة');
@@ -30,14 +32,16 @@ function loadLocalData() {
         monthlyPayments = {};
         paymentDates = {};
         breadOverrides = {};
+        deletedCardsLog = [];
     }
-    
+
     subscribers.forEach(s => { if (!s.cardsList) s.cardsList = []; });
-    
+
     const notes = localStorage.getItem(STORAGE_SYSTEM_NOTES);
     if (notes) systemNotes = notes;
-    
+
     loadActivityLogFromLocal();
+    loadDeletedCardsLogFromLocal();
 }
 
 // ========== حفظ محلي (نسخة احتياطية فقط) ==========
@@ -48,11 +52,13 @@ function saveLocalData() {
             monthlyPayments: monthlyPayments,
             paymentDates: paymentDates,
             breadOverrides: breadOverrides,
+            deletedCardsLog: deletedCardsLog,
             lastSaved: new Date().toISOString()
         };
         localStorage.setItem(STORAGE_DATA, JSON.stringify(dataToStore));
         localStorage.setItem(STORAGE_SYSTEM_NOTES, systemNotes);
         saveActivityLogToLocal();
+        saveDeletedCardsLogToLocal();
         console.log('✅ تم حفظ نسخة محلية احتياطية');
     } catch (e) {
         console.error('خطأ في الحفظ المحلي:', e);
@@ -66,19 +72,20 @@ async function saveDataToCloudForce() {
         console.log('⏳ رفع سابق لسه شغال، الانتظار...');
         return false;
     }
-    
+
     isSavingToCloud = true;
     let confirmed = false;
-    
+
     try {
         const cleanSubscribers = subscribers.map(s => sanitizeSubscriber(s));
         const recentActivityLog = (activityLog || []).slice(0, 50);
-        
+
         const payload = {
             subscribers: cleanSubscribers,
             monthlyPayments: monthlyPayments,
             paymentDates: paymentDates,
             breadOverrides: breadOverrides,
+            deletedCardsLog: deletedCardsLog,
             users: usersList.map(u => ({
                 username: u.username,
                 password: u.password,
@@ -97,13 +104,13 @@ async function saveDataToCloudForce() {
             method: 'POST',
             body: JSON.stringify(payload)
         });
-        
+
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
+
         console.log('☁️☁️ رفع فوري ناجح');
-        
+
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         try {
             const verifyData = await loadDataFromCloud();
             if (verifyData && verifyData.subscribers && Array.isArray(verifyData.subscribers)) {
@@ -117,7 +124,7 @@ async function saveDataToCloudForce() {
         } catch (e) {
             console.log(`⚠️ فشل التحقق:`, e.message);
         }
-        
+
         if (confirmed) {
             updateSyncStatusUI('success');
             lastSaveTime = Date.now();
@@ -137,11 +144,11 @@ async function saveDataToCloudForce() {
         throw e;
     } finally {
         isSavingToCloud = false;
-        
+
         if (!confirmed && navigator.onLine) {
             showToast('⚠️ تعذر تأكيد الحفظ في السحابة. سيتم إعادة المحاولة.', true);
         }
-        
+
         if (pendingSaveToCloud) {
             pendingSaveToCloud = false;
             console.log('🔄 تنفيذ الرفع المعلق...');
@@ -165,7 +172,7 @@ async function saveData() {
     saveLocalData();
     saveUsersToLocal();
     updateSyncStatusUI('saving');
-    
+
     if (navigator.onLine && window.location.protocol !== 'file:') {
         try {
             await saveDataToCloudForce();
@@ -189,7 +196,7 @@ async function saveDataAndWait() {
     saveLocalData();
     saveUsersToLocal();
     updateSyncStatusUI('saving');
-    
+
     if (navigator.onLine && window.location.protocol !== 'file:') {
         try {
             await saveDataToCloudForce();
@@ -210,7 +217,7 @@ async function saveDataAndWait() {
 function updateSyncStatusUI(status) {
     const syncStatus = document.getElementById('syncStatus');
     if (!syncStatus) return;
-    
+
     switch(status) {
         case 'saving':
             syncStatus.innerHTML = '⏳ جاري الرفع...';
@@ -244,10 +251,10 @@ function updateSyncStatusUI(status) {
 async function syncPendingActions() {
     if (!navigator.onLine) return false;
     if (!syncNeeded && !localStorage.getItem('pending_sync')) return false;
-    
+
     console.log('🔄 رفع الإجراءات المعلقة إلى السحابة...');
     updateSyncStatusUI('syncing');
-    
+
     try {
         await saveDataToCloudForce();
         updateSyncStatusUI('success');
@@ -270,7 +277,7 @@ function setupAutoSync() {
         await syncPendingActions();
         if (typeof renderAll === 'function') renderAll();
     });
-    
+
     window.addEventListener('offline', () => {
         console.log('⚠️ فقد الاتصال');
         updateSyncStatusUI('offline');
@@ -307,34 +314,35 @@ async function loadData(forceLocal = false) {
     }
 
     updateSyncStatusUI('syncing');
-    
+
     try {
         const data = await loadDataFromCloud();
-        
+
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
-            
+
             subscribers = cloudSubscribers;
             monthlyPayments = data.monthlyPayments || {};
             paymentDates = data.paymentDates || {};
             breadOverrides = data.breadOverrides || {};
-            
+            deletedCardsLog = data.deletedCardsLog || [];
+
             if (data.users && Array.isArray(data.users) && data.users.length) {
                 usersList = data.users;
                 saveUsersToLocal();
             }
-            
+
             if (data.systemNotes !== undefined) systemNotes = data.systemNotes;
             if (data.activityLog) {
                 activityLog = data.activityLog;
                 saveActivityLogToLocal();
             }
-            
+
             saveLocalData();
-            
+
             updateSyncStatusUI('success');
             console.log(`☁️ تم تحميل ${subscribers.length} مشترك من السحابة`);
-            
+
             if (subscribers.length > 0) {
                 showToast('☁️ تم الاتصال');
             }
@@ -344,15 +352,16 @@ async function loadData(forceLocal = false) {
             monthlyPayments = {};
             paymentDates = {};
             breadOverrides = {};
+            deletedCardsLog = [];
             saveLocalData();
             updateSyncStatusUI('success');
         }
     } catch (e) {
         console.warn('❌ فشل تحميل البيانات من السحابة:', e.message);
-        
+
         loadLocalData();
         updateSyncStatusUI('failed');
-        
+
         if (subscribers.length > 0) {
             showToast(`⚠️ تعذر الاتصال بالسحابة. عرض ${subscribers.length} مشترك من النسخة المحلية`, true);
         } else {
@@ -367,40 +376,41 @@ async function manualSync() {
         showToast('❌ لا يوجد اتصال بالإنترنت', true);
         return false;
     }
-    
+
     showToast('🔄 جاري تحميل البيانات من السحابة...');
     updateSyncStatusUI('syncing');
-    
+
     try {
         await saveDataToCloudForce();
-        
+
         const data = await loadDataFromCloud();
-        
+
         if (data && data.subscribers && Array.isArray(data.subscribers)) {
             const cloudSubscribers = data.subscribers.map(s => migrateSubscriber(s)).filter(s => s !== null);
-            
+
             subscribers = cloudSubscribers;
             monthlyPayments = data.monthlyPayments || {};
             paymentDates = data.paymentDates || {};
             breadOverrides = data.breadOverrides || {};
-            
+            deletedCardsLog = data.deletedCardsLog || [];
+
             if (data.users && Array.isArray(data.users) && data.users.length) {
                 usersList = data.users;
                 saveUsersToLocal();
             }
-            
+
             if (data.systemNotes !== undefined) systemNotes = data.systemNotes;
             if (data.activityLog) {
                 activityLog = data.activityLog;
                 saveActivityLogToLocal();
             }
-            
+
             saveLocalData();
             updateSyncStatusUI('success');
             showToast('☁️ تم الاتصال');
             return true;
         }
-        
+
         updateSyncStatusUI('success');
         showToast('✅ لا توجد تغييرات');
         return true;
@@ -422,7 +432,7 @@ function sanitizeSubscriber(sub) {
         updatedAt: new Date().toISOString(),
         history: Array.isArray(sub.history) ? sub.history : []
     };
-    
+
     if (Array.isArray(sub.cardsList)) {
         clean.cardsList = sub.cardsList.map(card => ({
             cardName: String(card.cardName || '').trim(),
@@ -434,7 +444,7 @@ function sanitizeSubscriber(sub) {
             notes: String(card.notes || '')
         })).filter(card => card.cardName !== '');
     }
-    
+
     return clean;
 }
 
@@ -445,7 +455,7 @@ function migrateSubscriber(sub) {
         console.warn('تم تجاهل مشترك بدون ID:', sub);
         return null;
     }
-    
+
     if (typeof sub.cardsList === 'string') {
         try {
             sub.cardsList = JSON.parse(sub.cardsList);
@@ -453,9 +463,9 @@ function migrateSubscriber(sub) {
             sub.cardsList = [];
         }
     }
-    
+
     if (!Array.isArray(sub.cardsList)) sub.cardsList = [];
-    
+
     sub.cardsList = sub.cardsList.map(card => {
         let cardName = card.cardName;
         if (!cardName || cardName === 'individuals' || cardName === 'monthlyPayments' || cardName === 'activityLog' || cardName === 'user') {
@@ -471,13 +481,13 @@ function migrateSubscriber(sub) {
             notes: String(card.notes || '')
         };
     });
-    
+
     sub.cardsList = sub.cardsList.filter(card => card.cardName !== '');
     if (sub.balance === undefined) sub.balance = 0;
     if (!sub.createdAt) sub.createdAt = new Date().toISOString();
     if (!sub.updatedAt) sub.updatedAt = new Date().toISOString();
     if (!Array.isArray(sub.history)) sub.history = [];
-    
+
     return sub;
 }
 
@@ -538,6 +548,24 @@ function loadActivityLogFromLocal() {
         } catch (e) {
             activityLog = [];
         }
+    }
+}
+
+// ========== سجل البطاقات المحذوفة ==========
+function saveDeletedCardsLogToLocal() {
+    localStorage.setItem(STORAGE_DELETED_CARDS_LOG, JSON.stringify(deletedCardsLog));
+}
+
+function loadDeletedCardsLogFromLocal() {
+    const stored = localStorage.getItem(STORAGE_DELETED_CARDS_LOG);
+    if (stored) {
+        try {
+            deletedCardsLog = JSON.parse(stored);
+        } catch (e) {
+            deletedCardsLog = [];
+        }
+    } else {
+        deletedCardsLog = [];
     }
 }
 
