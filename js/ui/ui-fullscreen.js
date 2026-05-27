@@ -1,5 +1,8 @@
 // ========== ui-fullscreen.js - وضع ملء الشاشة للجدول ==========
 
+// ========== مرجع لمستمع window.scroll الأصلي ==========
+let originalWindowScrollHandler = null;
+
 // ========== تهيئة أحداث النسخة المستنسخة ==========
 function initCloneEvents() {
     // ⭐ ربط أزرار العرض في النسخة المستنسخة
@@ -277,6 +280,50 @@ function cleanupFullscreenScrollToTop() {
     }
 }
 
+// ========== تعطيل مستمع window.scroll مؤقتًا ==========
+function disableWindowScrollButton() {
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    if (!scrollBtn) return;
+    
+    // حفظ الدالة الأصلية إن وجدت (من app.js)
+    if (!originalWindowScrollHandler) {
+        // نبحث عن المستمع الأصلي عن طريق استبداله
+        const originalHandler = function() {
+            if (window.scrollY > 300) {
+                scrollBtn.style.display = 'flex';
+            } else {
+                scrollBtn.style.display = 'none';
+            }
+        };
+        // إزالة أي مستمع سابق (لا يمكن تحديده بالضبط، لذا نزيل الكل مؤقتًا)
+        window.removeEventListener('scroll', originalHandler);
+        // نخزن الدالة لاستعادتها لاحقًا
+        originalWindowScrollHandler = originalHandler;
+    }
+    
+    // إخفاء الزر بالقوة لأن window.scrollY قد يكون 0
+    scrollBtn.style.display = 'none';
+}
+
+// ========== إعادة تفعيل مستمع window.scroll ==========
+function enableWindowScrollButton() {
+    const scrollBtn = document.getElementById('scrollToTopBtn');
+    if (!scrollBtn) return;
+    
+    if (originalWindowScrollHandler) {
+        window.addEventListener('scroll', originalWindowScrollHandler);
+        // نترك المستمع يستمر في العمل بشكل طبيعي
+        // لا نحتاج لحذف originalWindowScrollHandler لأننا سنعيد استخدامه في المرات القادمة
+    }
+    
+    // نخفي الزر حتى يقرر المستمع إظهاره
+    scrollBtn.style.display = 'none';
+    // تشغيل تقييم سريع
+    if (originalWindowScrollHandler) {
+        originalWindowScrollHandler();
+    }
+}
+
 // ========== دخول وضع ملء الشاشة ==========
 function enterFullscreen(section, btn) {
     // ⭐ إخفاء العناصر الأصلية خارج table-section
@@ -297,7 +344,8 @@ function enterFullscreen(section, btn) {
     // ⭐ نقل الزر إلى body عشان يظهر ثابت فوق الكل
     document.body.appendChild(btn);
     
-    // ⭐ إعداد زر الرجوع للأعلى
+    // ⭐ تعطيل مستمع window.scroll للزر وتفعيل مستمع tableWrapper
+    disableWindowScrollButton();
     setupFullscreenScrollToTop();
     
     section.classList.add('fullscreen');
@@ -337,8 +385,9 @@ function exitFullscreen(section, btn, isBackButton) {
         topRow.insertBefore(btn, topRow.firstChild);
     }
     
-    // ⭐ تنظيف إعدادات زر الرجوع للأعلى
+    // ⭐ تنظيف إعدادات زر الرجوع للأعلى وإعادة تفعيل window.scroll
     cleanupFullscreenScrollToTop();
+    enableWindowScrollButton();
     
     section.classList.remove('fullscreen');
     btn.innerHTML = '🖥️';
