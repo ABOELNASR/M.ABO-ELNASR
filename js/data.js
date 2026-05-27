@@ -217,23 +217,23 @@ function updateSyncStatusUI(status) {
             syncStatus.style.color = '#ff9800';
             break;
         case 'success':
-            syncStatus.innerHTML = '🟢 متزامن';
+            syncStatus.innerHTML = '🟢 متصل';
             syncStatus.style.color = '#4caf50';
             break;
         case 'failed':
-            syncStatus.innerHTML = '🔴 غير متزامن';
+            syncStatus.innerHTML = '🔴 غير متصل';
             syncStatus.style.color = '#ef5350';
             break;
         case 'offline':
-            syncStatus.innerHTML = '🔴 غير متزامن';
+            syncStatus.innerHTML = '🔴 غير متصل';
             syncStatus.style.color = '#ef5350';
             break;
         case 'no_connection':
-            syncStatus.innerHTML = '🔴 غير متزامن';
+            syncStatus.innerHTML = '🔴 غير متصل';
             syncStatus.style.color = '#ef5350';
             break;
         case 'syncing':
-            syncStatus.innerHTML = '🟡 جاري المزامنة...';
+            syncStatus.innerHTML = '🟡 جاري الاتصال...';
             syncStatus.style.color = '#ff9800';
             break;
     }
@@ -336,7 +336,7 @@ async function loadData(forceLocal = false) {
             console.log(`☁️ تم تحميل ${subscribers.length} مشترك من السحابة`);
             
             if (subscribers.length > 0) {
-                showToast('☁️ تم الاتصال بالسحابة');
+                showToast('☁️ تم الاتصال');
             }
         } else {
             console.log('☁️ السحابة فارغة، بدء بقائمة فارغة');
@@ -397,7 +397,7 @@ async function manualSync() {
             
             saveLocalData();
             updateSyncStatusUI('success');
-            showToast('☁️ تم الاتصال بالسحابة');
+            showToast('☁️ تم الاتصال');
             return true;
         }
         
