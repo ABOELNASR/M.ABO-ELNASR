@@ -29,8 +29,18 @@ function logDeletedCard(cardName, individuals, subscriberName, reason) {
     });
     // حفظ فوري في localStorage منفصل للاحتياط
     localStorage.setItem(STORAGE_DELETED_CARDS_LOG, JSON.stringify(deletedCardsLog));
-    // حفظ البيانات الكاملة لترفع للسحابة
+    // حفظ البيانات الكاملة محلياً
     saveLocalData();
+    // رفع فوري للسحابة إذا كان متصلاً
+    if (navigator.onLine && window.location.protocol !== 'file:') {
+        saveDataToCloudForce().then(() => {
+            console.log('☁️ تم رفع سجل البطاقات المحذوفة إلى السحابة');
+        }).catch(e => {
+            console.warn('⚠️ فشل رفع سجل البطاقات المحذوفة:', e);
+            syncNeeded = true;
+            localStorage.setItem('pending_sync', 'true');
+        });
+    }
 }
 
 // ========== دوال الإشعارات ==========
