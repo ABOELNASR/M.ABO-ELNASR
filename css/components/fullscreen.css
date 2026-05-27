@@ -10,7 +10,6 @@
     right: 0;
     bottom: 0;
     z-index: 1500;
-    /* ⭐ خلفية متدرجة جميلة للوضع النهاري */
     background: linear-gradient(135deg, #e8eaf6 0%, #e3f2fd 30%, #f3e5f5 70%, #fff8e1 100%);
     padding: 0.5rem;
     border-radius: 0;
@@ -18,12 +17,11 @@
     overflow-x: hidden;
 }
 
-/* ⭐ خلفية متدرجة للوضع الليلي */
 body.dark-mode .table-section.fullscreen {
     background: linear-gradient(135deg, #0d1117 0%, #161b22 30%, #1a1f2e 70%, #0d1117 100%);
 }
 
-/* ========== زر الخروج من ملء الشاشة (ثابت وصغير) ========== */
+/* ========== زر الخروج من ملء الشاشة ========== */
 body > #toggleFullscreenBtn {
     position: fixed !important;
     top: 8px !important;
@@ -64,7 +62,6 @@ body > #toggleFullscreenBtn:hover {
     border: 1px solid var(--border-light);
 }
 
-/* الصف الأول: أزرار جدول وكروت في المنتصف */
 .table-section.fullscreen .view-toggle {
     display: flex;
     justify-content: center;
@@ -91,7 +88,6 @@ body > #toggleFullscreenBtn:hover {
     box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
 }
 
-/* الصف الثاني: مربع البحث على اليمين (بدون زر ملء الشاشة) */
 .table-section.fullscreen .toolbar-top-row {
     display: flex;
     justify-content: flex-start;
@@ -100,7 +96,6 @@ body > #toggleFullscreenBtn:hover {
     direction: rtl;
 }
 
-/* ⭐ مربع البحث في وضع ملء الشاشة - يكبر مع التركيز */
 .table-section.fullscreen .search-box input {
     width: 160px;
     transition: width 0.3s ease;
@@ -113,7 +108,6 @@ body > #toggleFullscreenBtn:hover {
     box-shadow: 0 0 0 3px rgba(41, 182, 246, 0.1);
 }
 
-/* الصف الثالث: أزرار الفلاتر (بدون زر مسح) */
 .table-section.fullscreen .filter-group {
     display: flex;
     gap: 5px;
@@ -122,7 +116,6 @@ body > #toggleFullscreenBtn:hover {
     direction: rtl;
 }
 
-/* الصف الرابع: عداد البطاقات يسار + حالة المزامنة يمين */
 .table-section.fullscreen .toolbar-bottom-row {
     display: flex;
     justify-content: space-between;
@@ -144,10 +137,12 @@ body > #toggleFullscreenBtn:hover {
     border-radius: 1rem;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
     background: var(--card-bg);
+    overflow-x: auto;
 }
 
 .table-section.fullscreen table {
-    min-width: 100%;
+    min-width: 850px;
+    width: 100%;
     font-size: 0.75rem;
     white-space: nowrap;
 }
@@ -225,7 +220,6 @@ body > #toggleFullscreenBtn:hover {
     padding: 0.4rem 0 !important;
 }
 
-/* ========== حاوية الكروت في وضع ملء الشاشة ========== */
 .table-section.fullscreen .cards-view-container {
     padding: 0.5rem 0;
 }
@@ -233,4 +227,36 @@ body > #toggleFullscreenBtn:hover {
 /* ========== إخفاء سكرول الجسم ========== */
 body:has(.table-section.fullscreen) {
     overflow: hidden;
+}
+
+/* ⭐ ========== وضع ملء الشاشة على الهاتف في الوضع الأفقي ========== */
+@media screen and (max-width: 900px) and (orientation: landscape) {
+    .table-section.fullscreen .table-wrapper {
+        overflow-x: visible;
+    }
+
+    .table-section.fullscreen table {
+        min-width: 100%;
+        width: 100%;
+        font-size: 0.75rem;
+        white-space: normal;
+        table-layout: fixed;
+    }
+
+    .table-section.fullscreen th,
+    .table-section.fullscreen td {
+        padding: 6px 4px;
+        white-space: normal;
+        word-break: break-word;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .table-section.fullscreen th {
+        font-size: 0.7rem;
+    }
+
+    .table-section.fullscreen td {
+        font-size: 0.7rem;
+    }
 }
