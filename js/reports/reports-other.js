@@ -1,4 +1,4 @@
-// ========== reports-other.js - ملاحظات، سجل عمليات، بريد إلكتروني ==========
+// ========== reports-other.js - ملاحظات، سجل عمليات، بريد إلكتروني، سجل البطاقات المحذوفة ==========
 
 function showSystemNotes() {
     disableBodyScroll();
@@ -116,6 +116,79 @@ function showActivityLog() {
             }
         };
     }
+}
+
+// ========== سجل البطاقات المحذوفة ==========
+function showDeletedCardsLog() {
+    disableBodyScroll();
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 95%; width: 95%; padding: 0.4rem;">
+            <h3 style="font-size: 0.75rem; margin-bottom: 0.3rem;">🗑️ سجل البطاقات المحذوفة</h3>
+            <div class="search-box" style="margin-bottom: 0.5rem;">
+                <input type="text" id="deletedCardsSearch" placeholder="بحث باسم البطاقة..." style="width:100%; padding:6px; border-radius:20px; border:1px solid var(--border-light); background:var(--input-bg); color:var(--text-primary);">
+            </div>
+            <div id="deletedCardsListContainer" style="max-height: 65vh; overflow-y: auto; overflow-x: hidden;">
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; gap: 0.5rem;">
+                <span id="deletedCardsCount" style="font-size: 0.55rem; color: var(--text-secondary);"></span>
+                <button id="closeDeletedCardsBtn" class="btn btn-sm btn-secondary" style="font-size:0.6rem; padding:3px 8px;">إغلاق</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); enableBodyScroll(); } });
+    document.getElementById('closeDeletedCardsBtn').onclick = () => { modal.remove(); enableBodyScroll(); };
+
+    const searchInput = document.getElementById('deletedCardsSearch');
+    const container = document.getElementById('deletedCardsListContainer');
+    const countSpan = document.getElementById('deletedCardsCount');
+
+    function renderDeletedCards(filterText = '') {
+        const log = deletedCardsLog || [];
+        const filtered = filterText.trim() === '' ? log : log.filter(entry => entry.cardName && entry.cardName.toLowerCase().includes(filterText.toLowerCase()));
+        container.innerHTML = '';
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:1rem; color: var(--text-secondary);">لا توجد بطاقات محذوفة مسجلة.</div>';
+            countSpan.textContent = '';
+            return;
+        }
+        filtered.forEach(entry => {
+            const date = entry.deletedAt ? formatDateTimeArabic(entry.deletedAt) : 'غير معروف';
+            const cardName = entry.cardName || 'بطاقة غير مسماة';
+            const subscriberName = entry.subscriberName || 'غير معروف';
+            const individuals = entry.individuals || 0;
+            const reason = entry.reason || 'بدون سبب';
+            const deletedBy = entry.deletedBy || 'غير معروف';
+            const div = document.createElement('div');
+            div.style.cssText = `
+                background: var(--card-bg);
+                border-radius: 8px;
+                padding: 0.5rem;
+                margin-bottom: 0.3rem;
+                border-right: 3px solid #ef5350;
+                font-size: 0.6rem;
+                line-height: 1.5;
+            `;
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong style="color:#e53935;">${escapeHtml(cardName)}</strong>
+                    <span style="font-size:0.55rem; color: var(--text-secondary);">${escapeHtml(date)}</span>
+                </div>
+                <div>👤 المشترك: ${escapeHtml(subscriberName)} | 👥 الأفراد: ${individuals}</div>
+                <div>📝 السبب: ${escapeHtml(reason)}</div>
+                <div>🕵️ القائم بالحذف: ${escapeHtml(deletedBy)}</div>
+            `;
+            container.appendChild(div);
+        });
+        countSpan.textContent = `📊 ${filtered.length} بطاقة محذوفة`;
+    }
+
+    renderDeletedCards();
+    searchInput.addEventListener('input', () => {
+        renderDeletedCards(searchInput.value);
+    });
 }
 
 async function sendMonthlyReport(user) {
