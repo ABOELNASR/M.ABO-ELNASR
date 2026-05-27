@@ -24,9 +24,13 @@ function logDeletedCard(cardName, individuals, subscriberName, reason) {
         individuals: individuals,
         subscriberName: subscriberName,
         reason: reason,
-        timestamp: new Date().toISOString()
+        deletedAt: new Date().toISOString(),
+        deletedBy: currentUser ? currentUser.username : 'النظام'
     });
+    // حفظ فوري في localStorage منفصل للاحتياط
     localStorage.setItem(STORAGE_DELETED_CARDS_LOG, JSON.stringify(deletedCardsLog));
+    // حفظ البيانات الكاملة لترفع للسحابة
+    saveLocalData();
 }
 
 // ========== دوال الإشعارات ==========
