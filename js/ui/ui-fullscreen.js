@@ -1,7 +1,8 @@
 // ========== ui-fullscreen.js - وضع ملء الشاشة للجدول ==========
 
-// ========== مرجع لمستمع window.scroll الأصلي ==========
-let originalWindowScrollHandler = null;
+// ========== مرجع للوالد الأصلي لزر الرجوع للأعلى ==========
+let originalScrollBtnParent = null;
+let originalScrollBtnNextSibling = null;
 
 // ========== تهيئة أحداث النسخة المستنسخة ==========
 function initCloneEvents() {
@@ -222,51 +223,48 @@ function toggleFullscreenTable() {
 // ========== إعداد زر الرجوع للأعلى في وضع ملء الشاشة ==========
 function setupFullscreenScrollToTop() {
     const scrollBtn = document.getElementById('scrollToTopBtn');
-    const tableWrapper = document.getElementById('tableWrapper');
+    const tableSection = document.getElementById('tableSection');
     
-    if (!scrollBtn || !tableWrapper) return;
+    if (!scrollBtn || !tableSection) return;
     
-    // دالة إظهار/إخفاء زر الرجوع للأعلى بناءً على تمرير الجدول
+    // دالة إظهار/إخفاء زر الرجوع للأعلى بناءً على تمرير table-section
     const fullscreenScrollHandler = function() {
-        if (tableWrapper.scrollTop > 300) {
+        if (tableSection.scrollTop > 300) {
             scrollBtn.style.display = 'flex';
         } else {
             scrollBtn.style.display = 'none';
         }
     };
     
-    // ربط الحدث
-    tableWrapper.addEventListener('scroll', fullscreenScrollHandler);
+    // ربط الحدث بـ tableSection
+    tableSection.addEventListener('scroll', fullscreenScrollHandler);
     
     // حفظ المرجع لإزالته لاحقًا
-    tableWrapper._fullscreenScrollHandler = fullscreenScrollHandler;
+    tableSection._fullscreenScrollHandler = fullscreenScrollHandler;
     
     // إعداد النقر للرجوع للأعلى
     scrollBtn._fullscreenClickHandler = function() {
-        tableWrapper.scrollTo({
+        tableSection.scrollTo({
             top: 0,
             behavior: 'smooth'
         });
     };
     scrollBtn.addEventListener('click', scrollBtn._fullscreenClickHandler);
     
-    // إظهار الزر مباشرة (سيكون مخفيًا افتراضيًا حتى يتم التمرير)
-    scrollBtn.style.display = 'none';
-    
-    // فحص أولي إذا كان هناك تمرير بالفعل
+    // إظهار الزر إذا كان هناك تمرير بالفعل
     fullscreenScrollHandler();
 }
 
 // ========== إزالة إعدادات زر الرجوع للأعلى عند الخروج ==========
 function cleanupFullscreenScrollToTop() {
     const scrollBtn = document.getElementById('scrollToTopBtn');
-    const tableWrapper = document.getElementById('tableWrapper');
+    const tableSection = document.getElementById('tableSection');
     
-    if (scrollBtn && tableWrapper) {
+    if (scrollBtn && tableSection) {
         // إزالة مستمع التمرير
-        if (tableWrapper._fullscreenScrollHandler) {
-            tableWrapper.removeEventListener('scroll', tableWrapper._fullscreenScrollHandler);
-            delete tableWrapper._fullscreenScrollHandler;
+        if (tableSection._fullscreenScrollHandler) {
+            tableSection.removeEventListener('scroll', tableSection._fullscreenScrollHandler);
+            delete tableSection._fullscreenScrollHandler;
         }
         
         // إزالة مستمع النقر
@@ -274,54 +272,50 @@ function cleanupFullscreenScrollToTop() {
             scrollBtn.removeEventListener('click', scrollBtn._fullscreenClickHandler);
             delete scrollBtn._fullscreenClickHandler;
         }
-        
-        // إخفاء الزر وإعادته للحالة الطبيعية (سيتحكم به مستمع window scroll في app.js)
-        scrollBtn.style.display = 'none';
     }
 }
 
-// ========== تعطيل مستمع window.scroll مؤقتًا ==========
-function disableWindowScrollButton() {
+// ========== نقل زر الرجوع للأعلى إلى body ليكون مرئيًا ==========
+function moveScrollBtnToBody() {
     const scrollBtn = document.getElementById('scrollToTopBtn');
     if (!scrollBtn) return;
     
-    // حفظ الدالة الأصلية إن وجدت (من app.js)
-    if (!originalWindowScrollHandler) {
-        // نبحث عن المستمع الأصلي عن طريق استبداله
-        const originalHandler = function() {
-            if (window.scrollY > 300) {
-                scrollBtn.style.display = 'flex';
-            } else {
-                scrollBtn.style.display = 'none';
-            }
-        };
-        // إزالة أي مستمع سابق (لا يمكن تحديده بالضبط، لذا نزيل الكل مؤقتًا)
-        window.removeEventListener('scroll', originalHandler);
-        // نخزن الدالة لاستعادتها لاحقًا
-        originalWindowScrollHandler = originalHandler;
-    }
+    // حفظ الموقع الأصلي
+    originalScrollBtnParent = scrollBtn.parentNode;
+    originalScrollBtnNextSibling = scrollBtn.nextSibling;
     
-    // إخفاء الزر بالقوة لأن window.scrollY قد يكون 0
-    scrollBtn.style.display = 'none';
+    // نقله إلى body
+    document.body.appendChild(scrollBtn);
+    
+    // ضبط تنسيق fixed ليظهر فوق fullscreen
+    scrollBtn.style.position = 'fixed';
+    scrollBtn.style.bottom = '20px';
+    scrollBtn.style.right = '20px';
+    scrollBtn.style.zIndex = '1600';
+    scrollBtn.style.display = 'none'; // سيظهر عند التمرير
 }
 
-// ========== إعادة تفعيل مستمع window.scroll ==========
-function enableWindowScrollButton() {
+// ========== إعادة زر الرجوع للأعلى إلى موضعه الأصلي ==========
+function restoreScrollBtnPosition() {
     const scrollBtn = document.getElementById('scrollToTopBtn');
-    if (!scrollBtn) return;
+    if (!scrollBtn || !originalScrollBtnParent) return;
     
-    if (originalWindowScrollHandler) {
-        window.addEventListener('scroll', originalWindowScrollHandler);
-        // نترك المستمع يستمر في العمل بشكل طبيعي
-        // لا نحتاج لحذف originalWindowScrollHandler لأننا سنعيد استخدامه في المرات القادمة
+    // إعادة إلى الموضع الأصلي
+    if (originalScrollBtnNextSibling && originalScrollBtnNextSibling.parentNode === originalScrollBtnParent) {
+        originalScrollBtnParent.insertBefore(scrollBtn, originalScrollBtnNextSibling);
+    } else {
+        originalScrollBtnParent.appendChild(scrollBtn);
     }
     
-    // نخفي الزر حتى يقرر المستمع إظهاره
+    // إعادة التنسيق الافتراضي (من app.js)
+    scrollBtn.style.position = '';
+    scrollBtn.style.bottom = '';
+    scrollBtn.style.right = '';
+    scrollBtn.style.zIndex = '';
     scrollBtn.style.display = 'none';
-    // تشغيل تقييم سريع
-    if (originalWindowScrollHandler) {
-        originalWindowScrollHandler();
-    }
+    
+    originalScrollBtnParent = null;
+    originalScrollBtnNextSibling = null;
 }
 
 // ========== دخول وضع ملء الشاشة ==========
@@ -344,8 +338,8 @@ function enterFullscreen(section, btn) {
     // ⭐ نقل الزر إلى body عشان يظهر ثابت فوق الكل
     document.body.appendChild(btn);
     
-    // ⭐ تعطيل مستمع window.scroll للزر وتفعيل مستمع tableWrapper
-    disableWindowScrollButton();
+    // ⭐ نقل زر الرجوع للأعلى إلى body وتفعيله
+    moveScrollBtnToBody();
     setupFullscreenScrollToTop();
     
     section.classList.add('fullscreen');
@@ -385,9 +379,9 @@ function exitFullscreen(section, btn, isBackButton) {
         topRow.insertBefore(btn, topRow.firstChild);
     }
     
-    // ⭐ تنظيف إعدادات زر الرجوع للأعلى وإعادة تفعيل window.scroll
+    // ⭐ تنظيف وإعادة زر الرجوع للأعلى
     cleanupFullscreenScrollToTop();
-    enableWindowScrollButton();
+    restoreScrollBtnPosition();
     
     section.classList.remove('fullscreen');
     btn.innerHTML = '🖥️';
