@@ -206,7 +206,7 @@ function importBulkText() {
     modal.innerHTML = `
         <div class="modal-content">
             <h3>📝 استيراد نصي (بالجملة)</h3>
-            <textarea id="bulkTextInput" rows="15" class="notes-textarea" placeholder="اكتب البيانات بالشكل التالي:&#10;اسم المشترك&#10;اسم البطاقة عدد_الأفراد&#10;أو اسم البطاقةعدد_الأفراد (بدون مسافة)&#10;...&#10;&#10;مثال:&#10;ياسر&#10;احمد ياسر١&#10;محمد ياسر٢&#10;&#10;خالد&#10;يحي خالد٣&#10;رمزي خالد١"></textarea>
+            <textarea id="bulkTextInput" rows="15" class="notes-textarea" placeholder="اكتب البيانات بالشكل التالي:&#10;اسم المشترك&#10;اسم البطاقةعدد_الأفراد (بدون مسافة)&#10;أو اسم البطاقة عدد_الأفراد (بمسافة)&#10;&#10;مثال:&#10;ياسر&#10;احمد ياسر١&#10;محمد ياسر٢&#10;&#10;خالد&#10;يحي خالد٣&#10;رمزي خالد١"></textarea>
             <div class="date-picker-buttons">
                 <button id="importBulkBtn" class="btn btn-primary btn-sm">📥 استيراد</button>
                 <button id="closeBulkBtn" class="btn btn-secondary btn-sm">إلغاء</button>
@@ -234,30 +234,32 @@ function importBulkText() {
         for (const rawLine of lines) {
             lineNumber++;
             const line = rawLine.trim();
+            
+            // السطر الفارغ = فاصل بين المشتركين
             if (line === '') {
-                currentSubscriber = null; // سطر فارغ ينهي المشترك الحالي
+                currentSubscriber = null;
                 continue;
             }
             
-            // إذا كان هناك مشترك حالي، نحاول تفسير السطر كبطاقة
-            if (currentSubscriber) {
+            // هل السطر يحتوي على رقم (عربي أو هندي)؟
+            const hasNumber = /[٠-٩0-9]/.test(line);
+            
+            if (hasNumber) {
+                // سطر يحتوي على رقم = هذا بطاقة
                 const cardInfo = parseCardLine(line);
-                if (cardInfo) {
-                    // تأكد من وجود المشترك في الخريطة
+                
+                if (cardInfo && currentSubscriber) {
+                    // توجد بطاقة صالحة ومشترك حالي ← أضف البطاقة للمشترك
                     if (!newSubscribersMap.has(currentSubscriber)) {
                         newSubscribersMap.set(currentSubscriber, []);
                     }
                     newSubscribersMap.get(currentSubscriber).push(cardInfo);
-                } else {
-                    // لا يمثل بطاقة واضحة: نعتبره اسم مشترك جديد (بدون فاصل)
-                    // إعادة تعيين المشترك الحالي
-                    currentSubscriber = line;
-                    if (!newSubscribersMap.has(currentSubscriber)) {
-                        newSubscribersMap.set(currentSubscriber, []);
-                    }
+                } else if (cardInfo && !currentSubscriber) {
+                    // بطاقة بدون مشترك حالي ← تحذير
+                    showToast(`⚠️ سطر ${lineNumber}: لا يوجد مشترك محدد للبطاقة "${line}"`, true);
                 }
             } else {
-                // لا يوجد مشترك حالي -> السطر هو اسم مشترك جديد
+                // سطر لا يحتوي على رقم = اسم مشترك جديد
                 currentSubscriber = line;
                 if (!newSubscribersMap.has(currentSubscriber)) {
                     newSubscribersMap.set(currentSubscriber, []);
@@ -267,36 +269,43 @@ function importBulkText() {
         
         let addedCount = 0;
         let duplicateSubs = 0;
-        let duplicateCardsGlobal = 0;
-        let invalidCards = 0;
+        let skippedCardsCount = 0;
+        let invalidSubs = 0;
         const newSubscribersArray = [];
+        const skippedCardsMessages = [];
         
         for (const [subName, cards] of newSubscribersMap) {
             // تجاهل المشترك إذا لم تكن له بطاقات
-            if (cards.length === 0) continue;
+            if (cards.length === 0) {
+                invalidSubs++;
+                continue;
+            }
             
             if (isDuplicateSubscriberName(subName)) {
                 duplicateSubs++;
+                showToast(`⚠️ المشترك "${subName}" موجود بالفعل وتم تخطيه`, true);
                 continue;
             }
             
             let cardsList = [];
-            let valid = true;
             const cardNamesInSub = new Set();
             
             for (const card of cards) {
+                // التحقق من تكرار اسم البطاقة داخل نفس المشترك
                 if (cardNamesInSub.has(card.cardName.toLowerCase())) {
-                    showToast(`❌ المشترك "${subName}" يحتوي على بطاقة مكررة: "${card.cardName}"`, true);
-                    valid = false;
-                    break;
+                    skippedCardsCount++;
+                    skippedCardsMessages.push(`المشترك ${subName} لم يتم إضافة البطاقة ${card.cardName} الخاصة به لأنها مكررة داخل نفس المشترك`);
+                    continue;
                 }
-                cardNamesInSub.add(card.cardName.toLowerCase());
                 
+                // التحقق من تكرار اسم البطاقة عالمياً (مع بطاقات موجودة بالفعل)
                 if (isDuplicateCardNameGlobal(card.cardName)) {
-                    duplicateCardsGlobal++;
-                    valid = false;
-                    break;
+                    skippedCardsCount++;
+                    skippedCardsMessages.push(`المشترك ${subName} لم يتم إضافة البطاقة ${card.cardName} الخاصة به لأنها تتطابق مع اسم بطاقة موجودة`);
+                    continue;
                 }
+                
+                cardNamesInSub.add(card.cardName.toLowerCase());
                 
                 cardsList.push({
                     cardName: card.cardName,
@@ -309,12 +318,9 @@ function importBulkText() {
                 });
             }
             
-            if (!valid) {
-                invalidCards++;
-                continue;
-            }
+            // إذا لم يتبق أي بطاقات صالحة بعد التصفية
             if (cardsList.length === 0) {
-                invalidCards++;
+                invalidSubs++;
                 continue;
             }
             
@@ -335,11 +341,16 @@ function importBulkText() {
             addedCount++;
         }
         
+        // عرض رسائل البطاقات التي تم تخطيها
+        for (const msg of skippedCardsMessages) {
+            showToast(`⚠️ ${msg}`, true);
+        }
+        
         if (addedCount > 0) {
             await saveData();
             renderAll();
-            addActivityLog('استيراد نصي بالجملة', `تم استيراد ${addedCount} مشترك. تخطي ${duplicateSubs} مشترك مكرر، ${duplicateCardsGlobal} بطاقة مكررة عالمياً، ${invalidCards} مشترك بسبب بيانات غير صالحة.`);
-            showToast(`✅ تم استيراد ${addedCount} مشترك. تخطي: ${duplicateSubs} مكرر اسم مشترك، ${duplicateCardsGlobal} بطاقة مكررة، ${invalidCards} مشترك غير صالح.`);
+            addActivityLog('استيراد نصي بالجملة', `تم استيراد ${addedCount} مشترك. تخطي ${duplicateSubs} مشترك مكرر، ${skippedCardsCount} بطاقة مكررة، ${invalidSubs} مشترك غير صالح.`);
+            showToast(`✅ تم استيراد ${addedCount} مشترك بنجاح. تخطي: ${duplicateSubs} مشترك مكرر، ${skippedCardsCount} بطاقة مكررة، ${invalidSubs} مشترك بدون بطاقات صالحة.`);
         } else {
             showToast('⚠️ لم يتم إضافة أي مشترك جديد. تحقق من البيانات وتجنب التكرار.', true);
         }
