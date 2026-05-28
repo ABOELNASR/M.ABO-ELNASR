@@ -14,7 +14,7 @@
     padding: 0.5rem;
     border-radius: 0;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto; /* يسمح بالتمرير الأفقي عند الحاجة */
 }
 
 body.dark-mode .table-section.fullscreen {
@@ -137,22 +137,7 @@ body > #toggleFullscreenBtn:hover {
     border-radius: 1rem;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
     background: var(--card-bg);
-    overflow-x: auto;
-}
-
-.table-section.fullscreen table {
-    min-width: 850px;
-    width: 100%;
-    font-size: 0.75rem;
-    white-space: nowrap;
-}
-
-.table-section.fullscreen th,
-.table-section.fullscreen td {
-    padding: 10px 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow-x: auto; /* تمكين التمرير الأفقي للحاوية */
 }
 
 /* ========== أزرار الإجراءات في وضع ملء الشاشة ========== */
@@ -227,36 +212,4 @@ body > #toggleFullscreenBtn:hover {
 /* ========== إخفاء سكرول الجسم ========== */
 body:has(.table-section.fullscreen) {
     overflow: hidden;
-}
-
-/* ⭐ ========== وضع ملء الشاشة على الهاتف في الوضع الأفقي ========== */
-@media screen and (max-width: 900px) and (orientation: landscape) {
-    .table-section.fullscreen .table-wrapper {
-        overflow-x: visible;
-    }
-
-    .table-section.fullscreen table {
-        min-width: 100%;
-        width: 100%;
-        font-size: 0.75rem;
-        white-space: normal;
-        table-layout: fixed;
-    }
-
-    .table-section.fullscreen th,
-    .table-section.fullscreen td {
-        padding: 6px 4px;
-        white-space: normal;
-        word-break: break-word;
-        overflow: visible;
-        text-overflow: clip;
-    }
-
-    .table-section.fullscreen th {
-        font-size: 0.7rem;
-    }
-
-    .table-section.fullscreen td {
-        font-size: 0.7rem;
-    }
 }
