@@ -22,6 +22,12 @@ function showSystemNotes() {
         await saveData();
         addActivityLog('تحديث الملاحظات العامة', 'تم تحديث الملاحظات العامة للنظام');
         showToast('✅ تم حفظ الملاحظات');
+        
+        // إرسال إشعار خارجي لجميع المستخدمين بنص الملاحظة
+        if (systemNotes.trim()) {
+            requestPushNotification('📝 ملاحظة عامة جديدة', systemNotes);
+        }
+        
         modal.remove();
         enableBodyScroll();
     };
