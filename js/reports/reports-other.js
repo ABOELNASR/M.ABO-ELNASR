@@ -18,33 +18,44 @@ function showSystemNotes() {
     modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); enableBodyScroll(); } });
     document.getElementById('closeNotesBtn').onclick = () => { modal.remove(); enableBodyScroll(); };
     document.getElementById('saveNotesBtn').onclick = async () => {
-        const newNote = document.getElementById('systemNotesTextarea').value;
         const oldNote = systemNotes;
+        const newNote = document.getElementById('systemNotesTextarea').value;
         systemNotes = newNote;
         await saveData();
         addActivityLog('تحديث الملاحظات العامة', 'تم تحديث الملاحظات العامة للنظام');
         
-        // إشعار الجرس من الجنب فقط (بدون toast)
-        if (systemNotes.trim()) {
-            showBellNotification('📝 ملاحظة عامة جديدة', systemNotes);
+        // استخراج النص المضاف فقط (الفرق بين القديم والجديد)
+        let addedText = '';
+        if (oldNote.trim() === '') {
+            addedText = newNote.trim();
+        } else if (newNote.includes(oldNote)) {
+            addedText = newNote.substring(newNote.indexOf(oldNote) + oldNote.length).trim();
+        } else {
+            addedText = newNote.trim();
         }
         
-        // إرسال إشعار خارجي بآخر ملاحظة فقط
-        if (navigator.onLine && window.location.protocol !== 'file:') {
-            try {
-                const formData = new FormData();
-                formData.append('action', 'sendPush');
-                formData.append('data', JSON.stringify({ 
-                    title: '📝 ملاحظة عامة جديدة', 
-                    body: systemNotes
-                }));
-                await fetch(API_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-                console.log('📤 تم إرسال إشعار الملاحظة الخارجي');
-            } catch (e) {
-                console.warn('⚠️ فشل إرسال الإشعار الخارجي للملاحظة:', e);
+        // إرسال الإشعارات فقط إذا كان هناك نص مضاف
+        if (addedText) {
+            // إشعار داخلي (جرس) بالنص المضاف فقط
+            showBellNotification('📝 ملاحظة عامة جديدة', addedText);
+            
+            // إشعار خارجي بالنص المضاف فقط
+            if (navigator.onLine && window.location.protocol !== 'file:') {
+                try {
+                    const formData = new FormData();
+                    formData.append('action', 'sendPush');
+                    formData.append('data', JSON.stringify({ 
+                        title: '📝 ملاحظة عامة جديدة', 
+                        body: addedText
+                    }));
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    console.log('📤 تم إرسال إشعار الملاحظة الخارجي');
+                } catch (e) {
+                    console.warn('⚠️ فشل إرسال الإشعار الخارجي للملاحظة:', e);
+                }
             }
         }
         
