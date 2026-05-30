@@ -23,9 +23,28 @@ function showSystemNotes() {
         addActivityLog('تحديث الملاحظات العامة', 'تم تحديث الملاحظات العامة للنظام');
         showToast('✅ تم حفظ الملاحظات');
         
-        // إرسال إشعار خارجي لجميع المستخدمين بنص الملاحظة
+        // إرسال إشعار داخلي (جرس) بنص الملاحظة الجديدة فقط
         if (systemNotes.trim()) {
-            requestPushNotification('📝 ملاحظة عامة جديدة', systemNotes);
+            showBellNotification('📝 ملاحظة عامة جديدة', systemNotes);
+            
+            // إرسال إشعار خارجي منفصل يحتوي على الملاحظة الجديدة فقط (بدون تجميع)
+            if (navigator.onLine && window.location.protocol !== 'file:') {
+                try {
+                    const formData = new FormData();
+                    formData.append('action', 'sendPush');
+                    formData.append('data', JSON.stringify({ 
+                        title: '📝 ملاحظة عامة جديدة', 
+                        body: systemNotes
+                    }));
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    console.log('📤 تم إرسال إشعار الملاحظة الخارجي');
+                } catch (e) {
+                    console.warn('⚠️ فشل إرسال الإشعار الخارجي للملاحظة:', e);
+                }
+            }
         }
         
         modal.remove();
