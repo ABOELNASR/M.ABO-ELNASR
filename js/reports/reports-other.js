@@ -18,35 +18,47 @@ function showSystemNotes() {
     modal.addEventListener('click', (e) => { if (e.target === modal) { modal.remove(); enableBodyScroll(); } });
     document.getElementById('closeNotesBtn').onclick = () => { modal.remove(); enableBodyScroll(); };
     document.getElementById('saveNotesBtn').onclick = async () => {
-        const oldNote = systemNotes;
+        const oldLines = systemNotes.split('\n').map(l => l.trim()).filter(l => l !== '');
         const newNote = document.getElementById('systemNotesTextarea').value;
+        const newLines = newNote.split('\n').map(l => l.trim()).filter(l => l !== '');
         systemNotes = newNote;
         await saveData();
         addActivityLog('تحديث الملاحظات العامة', 'تم تحديث الملاحظات العامة للنظام');
         
-        // استخراج النص المضاف فقط (الفرق بين القديم والجديد)
-        let addedText = '';
-        if (oldNote.trim() === '') {
-            addedText = newNote.trim();
-        } else if (newNote.includes(oldNote)) {
-            addedText = newNote.substring(newNote.indexOf(oldNote) + oldNote.length).trim();
-        } else {
-            addedText = newNote.trim();
+        // استخراج السطور المضافة أو المعدلة فقط
+        const changedLines = [];
+        const maxLen = Math.max(oldLines.length, newLines.length);
+        
+        for (let i = 0; i < maxLen; i++) {
+            const oldLine = oldLines[i] || '';
+            const newLine = newLines[i] || '';
+            
+            if (oldLine !== newLine) {
+                if (oldLine === '' && newLine !== '') {
+                    // سطر مضاف جديد
+                    changedLines.push(newLine);
+                } else if (oldLine !== '' && newLine !== '' && oldLine !== newLine) {
+                    // سطر معدل
+                    changedLines.push(newLine);
+                }
+            }
         }
         
-        // إرسال الإشعارات فقط إذا كان هناك نص مضاف
-        if (addedText) {
-            // إشعار داخلي (جرس) بالنص المضاف فقط
-            showBellNotification('📝 ملاحظة عامة جديدة', addedText);
+        // إرسال الإشعارات فقط إذا كان هناك تغيير
+        if (changedLines.length > 0) {
+            const notificationText = changedLines.join('\n');
             
-            // إشعار خارجي بالنص المضاف فقط
+            // إشعار داخلي (جرس) بالسطور المتغيرة فقط
+            showBellNotification('📝 ملاحظة عامة جديدة', notificationText);
+            
+            // إشعار خارجي بالسطور المتغيرة فقط
             if (navigator.onLine && window.location.protocol !== 'file:') {
                 try {
                     const formData = new FormData();
                     formData.append('action', 'sendPush');
                     formData.append('data', JSON.stringify({ 
                         title: '📝 ملاحظة عامة جديدة', 
-                        body: addedText
+                        body: notificationText
                     }));
                     await fetch(API_URL, {
                         method: 'POST',
